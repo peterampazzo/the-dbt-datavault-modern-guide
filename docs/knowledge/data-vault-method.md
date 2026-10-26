@@ -71,3 +71,5 @@ In a lakehouse the Databricks article maps this onto medallion layers: raw/stagi
 - **3NF / Inmon**: integrated, but schema changes ripple when sources change.
 - **Kimball star**: optimised for consumption, but tied to current requirements, and history and restatement are hard.
 - **Data Vault**: optimised for integration, history and change. Marts are still built on top for consumption. The trade-offs are more tables and joins, and the need for automation (hence dbt and datavault4dbt).
+
+For the full rule checklist (entity variants, required fields, hub/link/satellite rules, deprecated practices, hard vs soft rules), see `data-vault-standards.md`.
