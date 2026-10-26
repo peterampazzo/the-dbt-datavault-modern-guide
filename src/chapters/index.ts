@@ -124,6 +124,45 @@ export const CHAPTERS = [
     Component: lazy(() => import('./DvNames')),
   },
   {
+    slug: 'dbt-primer',
+    title: 'dbt primer',
+    short: 'dbt primer',
+    minutes: 10,
+    part: 2,
+    audience: 'essential',
+    summary: [
+      'Plain dbt models are SQL SELECTs; source() and ref() name inputs and dependencies.',
+      'Jinja macros compile into SQL, while materializations choose how model results are stored.',
+      'Incremental filters, tests and lineage make changes easier to build and check.',
+    ],
+    recap: [
+      'source() names an input relation; ref() names another model and adds a dependency to the graph.',
+      'Macros compile reusable SQL, and a materialization determines how dbt stores or updates a result.',
+      'Incremental models process newer rows after their first run; tests and docs provide repeatable checks and lineage.',
+    ],
+    quiz: [
+      {
+        q: 'What does ref() do in a dbt model?',
+        options: ['Declares a dependency on another model', 'Creates a SQL Server job', 'Runs a data test'],
+        answer: 0,
+        why: 'ref() resolves a model relation and adds the dependency to dbt’s graph.',
+      },
+      {
+        q: 'When does the is_incremental() branch run?',
+        options: ['On every first run', 'When an incremental target already exists and is not being fully refreshed', 'Only when dbt docs generate runs'],
+        answer: 1,
+        why: 'The branch can filter new rows when the incremental target already exists and the model is not being rebuilt from scratch.',
+      },
+      {
+        q: 'What does a unique test check?',
+        options: ['That a column has no duplicate values', 'That every model is a table', 'That the SQL has a Jinja macro'],
+        answer: 0,
+        why: 'A unique test returns failing rows when values in the tested column are duplicated.',
+      },
+    ],
+    Component: lazy(() => import('./DbtPrimer')),
+  },
+  {
     slug: 'dbt',
     title: 'Building it with dbt',
     short: 'dbt',
@@ -386,5 +425,38 @@ export const CHAPTERS = [
       },
     ],
     Component: lazy(() => import('./OneLake')),
+  },
+  {
+    slug: 'modern-way',
+    title: 'Working the modern way',
+    short: 'Modern workflow',
+    minutes: 6,
+    part: 4,
+    audience: 'essential',
+    summary: [
+      'A model change moves through a branch, pull request, CI, review, merge and deployment.',
+      'A satellite hashdiff must cover its payload so a changed attribute creates a new version.',
+      'State selection and defer can reduce CI work, but they do not guarantee a build duration.',
+    ],
+    recap: [
+      'Use a branch and reviewed pull request to make a vault change visible before deployment.',
+      'Keep the satellite payload and hashdiff columns in sync, and add tests for changed history behavior.',
+      'state:modified+ selects changed nodes and downstream work; --defer can reuse eligible unselected upstream relations from saved state.',
+    ],
+    quiz: [
+      {
+        q: 'What should happen when a satellite payload gains c_email?',
+        options: ['Add c_email to the stage hashdiff columns too', 'Remove ldts from the stage', 'Change the customer business key'],
+        answer: 0,
+        why: 'The hashdiff must cover the satellite payload so an email change is detected as a new version.',
+      },
+      {
+        q: 'What does --defer help dbt do in CI?',
+        options: ['Resolve eligible unselected refs to relations from a saved manifest', 'Skip every test', 'Deploy directly to production'],
+        answer: 0,
+        why: 'With --state and a manifest, defer can resolve references for eligible unselected upstream nodes to existing relations.',
+      },
+    ],
+    Component: lazy(() => import('./ModernWay')),
   },
 ] as const satisfies readonly ChapterDefinition[]

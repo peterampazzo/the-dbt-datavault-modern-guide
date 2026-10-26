@@ -26,6 +26,8 @@ Each chapter has a generated cover, one page per `<Section>`, and a generated re
 
 Every content page has a numbered heading, a one-sentence lead explaining what it contains, and a short key point at the end. The recap repeats the chapter’s three key ideas, offers an optional quick check with feedback, and links to the next chapter in the active reading path or back home. Reaching the recap marks the chapter complete; the quick check never gates progress.
 
+For a cross-platform lesson, a brief `SqlServerNote` can follow the main explanation on each page. It connects the same modelling or loading decision to a familiar SQL Server operation without opening a separate platform topic.
+
 ## Rules
 
 Each rule gives Do, Don't, Why and Source.

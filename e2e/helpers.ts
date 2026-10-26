@@ -5,6 +5,7 @@ export const ROUTES = [
   { slug: 'what-is-data-vault', title: 'What is Data Vault' },
   { slug: 'modelling', title: 'Modelling three datasets' },
   { slug: 'dv-names', title: "Data Vault in this guide's names" },
+  { slug: 'dbt-primer', title: 'dbt primer' },
   { slug: 'dbt', title: 'Building it with dbt' },
   { slug: 'hash-lab', title: 'Hash lab' },
   { slug: 'load-player', title: 'Loading, batch by batch' },
@@ -13,6 +14,7 @@ export const ROUTES = [
   { slug: 'dbt-project', title: 'The whole dbt project' },
   { slug: 'replay', title: 'Replay: one history, two shapes' },
   { slug: 'one-lake', title: 'One lake, any engine' },
+  { slug: 'modern-way', title: 'Working the modern way' },
 ] as const
 
 /** Opens a route, by default as one long page so every section is on screen. */

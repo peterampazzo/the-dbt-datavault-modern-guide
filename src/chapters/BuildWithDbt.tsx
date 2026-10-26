@@ -7,6 +7,7 @@ import { HandVsDbt } from '@/components/HandVsDbt'
 import { Switch } from '@/components/ui/switch'
 import { MODEL, LAYER_META, type DbtModel } from '@/lib/dv/models'
 import { cn } from '@/lib/utils'
+import { Link } from 'react-router'
 
 const GROUPS: { label: string; models: string[] }[] = [
   { label: 'Stage', models: ['stg_customer', 'stg_nation', 'stg_orders'] },
@@ -222,47 +223,13 @@ export default function BuildWithDbt() {
     <Chapter>
       <ChapterHeader
         title="Building it with dbt"
-        lead="Every box from the modelling canvas becomes one dbt model. With datavault4dbt, each model is a few lines of YAML handed to a macro, and the macro writes the loading SQL."
+        lead={
+          <>
+            Every box from the modelling canvas becomes one dbt model. With datavault4dbt, each model is a few lines of YAML handed to a macro.{' '}
+            <Link to="/dbt-primer" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Read the dbt primer first</Link>.
+          </>
+        }
       />
-
-      <Section
-        title="dbt in one minute"
-        lead="Follow the model files and dependency graph as dbt builds the guide’s vault."
-        keyPoint="dbt builds models in dependency order, and datavault4dbt macros generate vault SQL from model metadata."
-      >
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            ['Models are SELECTs', 'Each .sql file in models/ is one table or view. dbt wraps your SELECT in the right DDL.'],
-            ['ref() builds the graph', "{{ ref('stg_customer') }} tells dbt what depends on what, so it runs stages before hubs before satellites."],
-            ['Incremental = insert-only', 'An incremental model only processes new rows after its first run. That matches how vault tables load.'],
-          ].map(([t, d]) => (
-            <div key={t} className="rounded-xl border bg-card/50 p-4">
-              <div className="font-medium">{t}</div>
-              <p className="mt-1 text-sm text-muted-foreground">{d}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <div>
-            <P>
-              <a href="https://github.com/ScalefreeCOM/datavault4dbt" className="text-sky-700 dark:text-sky-400 underline underline-offset-4" target="_blank" rel="noreferrer">
-                datavault4dbt
-              </a>{' '}
-              is a dbt package by Scalefree with one macro per Data Vault entity type: <Code>stage</Code>, <Code>hub</Code>, <Code>link</Code>, <Code>nh_link</Code>,{' '}
-              <Code>sat_v0</Code>, <Code>sat_v1</Code>, <Code>pit</Code> and more. It follows the Data Vault 2.0 standards and supports Snowflake, BigQuery, Databricks, Fabric,
-              Postgres and others.
-            </P>
-            <P>Add it to <Code>packages.yml</Code>, run <Code>dbt deps</Code>, and the macros are available in every model.</P>
-          </div>
-          <CodeBlock
-            lang="yaml"
-            title="packages.yml"
-            code={`packages:
-  - package: ScalefreeCOM/datavault4dbt
-    version: [">=1.9.0", "<2.0.0"]`}
-          />
-        </div>
-      </Section>
 
       <Section
         title="By hand vs with dbt"

@@ -37,6 +37,9 @@ export default function DvNames() {
           the kind (<code>_ma_s</code> multi-active, <code>_es</code> effectivity, <code>_rts</code> record tracking).
           The datavault4dbt macro behind each is listed in the table.
         </P>
+        <P>
+          New to dbt? Start with the <Link to="/dbt-primer" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">dbt primer</Link>.
+        </P>
         <div className="max-w-full overflow-x-auto rounded-xl border">
           <table className="w-full min-w-[46rem] border-collapse text-left text-sm">
             <thead className="bg-muted/60">

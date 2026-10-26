@@ -10,6 +10,19 @@
 
 When adding content, cite the source in the chapter's further-reading section.
 
+## dbt primer and change workflow
+
+| Source | Use it for |
+|---|---|
+| [dbt unit tests](https://docs.getdbt.com/docs/build/unit-tests) | Unit-test support from dbt v1.8, static `given` inputs and `expect` results. |
+| [dbt incremental models](https://docs.getdbt.com/docs/build/incremental-models) | Incremental model behavior and the `is_incremental()` context variable. |
+| [dbt materializations](https://docs.getdbt.com/docs/build/materializations) | The built-in materializations and how they determine a model’s stored relation. |
+| [dbt `ref()`](https://docs.getdbt.com/reference/dbt-jinja-functions/ref) and [`source()`](https://docs.getdbt.com/reference/dbt-jinja-functions/source) | Declaring model dependencies and source-table dependencies in SQL. |
+| [dbt `compile`](https://docs.getdbt.com/reference/commands/compile) | Rendering model SQL and Jinja into compiled SQL. |
+| [dbt documentation](https://docs.getdbt.com/docs/build/documentation) | Generating project documentation and model lineage. |
+| [dbt profiles](https://docs.getdbt.com/docs/core/connect-data-platform/profiles.yml) and [`env_var()`](https://docs.getdbt.com/reference/dbt-jinja-functions/env_var) | Targets, connection configuration and environment-provided values. |
+| [dbt state selection](https://docs.getdbt.com/reference/node-selection/methods#the-state-method) and [`--defer`](https://docs.getdbt.com/reference/node-selection/defer) | Selecting modified resources and resolving eligible unselected references from a saved manifest. |
+
 ## Replay and lakehouse portability
 
 | Source | Use it for |
