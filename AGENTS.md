@@ -14,6 +14,7 @@ pnpm dev --host 0.0.0.0 --port 5173
 pnpm lint      # oxlint
 pnpm test      # vitest (simulation engine)
 pnpm build     # tsc -b + vite build (BASE_PATH env sets the Pages base)
+pnpm ux:check  # overflow / hidden-content / reduced-motion scan against the dev server (see docs/knowledge/ux-audit.md)
 ```
 
 Run lint, test and build before pushing. CI (`.github/workflows/deploy.yml`) runs the same, and deploys to GitHub Pages on `main`.
@@ -38,10 +39,20 @@ Run lint, test and build before pushing. CI (`.github/workflows/deploy.yml`) run
 6. **Model code is the single source.** Chapters pull SQL/YAML from `models.ts` (`MODEL[name].code`) rather than duplicating it.
 7. Keep the routing hash-based (`HashRouter`) so GitHub Pages works without rewrites.
 8. Keep a future DuckDB-WASM playground possible: chapters shouldn't depend on engine internals beyond the exported functions.
+9. **Follow the learning design rules** in `docs/knowledge/learning-design.md`. The guide must work for interrupted, attention-variable readers (ADHD). The non-negotiables:
+   - content is visible by default;
+   - no motion that starts by itself and loops without a pause;
+   - `prefers-reduced-motion` is respected;
+   - new terms are defined where they are first used;
+   - about 4 primary controls per interactive;
+   - each chapter has an optional, never-blocking quick check.
+   Run `pnpm ux:check` and the steps in `docs/knowledge/ux-audit.md` before UX-facing PRs.
 
 ## Knowledge base
 
 - `docs/knowledge/data-vault-method.md`: concepts, the 9-step modelling method, satellite split criteria, architecture layers, anti-patterns.
 - `docs/knowledge/datavault4dbt.md`: macros, YAML keys, hashing defaults, loading semantics.
 - `docs/knowledge/datasets.md`: how the three datasets map to the vault, and what each batch demonstrates.
-- `docs/knowledge/sources.md`: the reference material and what each one is used for.
+- `docs/knowledge/sources.md`: the reference material and what each one is used for (Data Vault, and learning design/accessibility).
+- `docs/knowledge/learning-design.md`: rules for ADHD-friendly, cognitively accessible chapters, with success criteria S1–S7.
+- `docs/knowledge/ux-audit.md`: how to audit the UI (automated scan, code greps, the referenced review skills), severity scale, latest findings.
