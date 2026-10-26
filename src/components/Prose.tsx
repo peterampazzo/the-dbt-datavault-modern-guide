@@ -30,16 +30,10 @@ export function ChapterHeader({ n, title, lead }: { n: number; title: string; le
 
 export function Section({ title, children, className }: { title?: string; children: ReactNode; className?: string }) {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.5 }}
-      className={cn('mb-14', className)}
-    >
+    <section className={cn('mb-14', className)}>
       {title && <h2 className="mb-4 text-2xl font-semibold tracking-tight">{title}</h2>}
       {children}
-    </motion.section>
+    </section>
   )
 }
 

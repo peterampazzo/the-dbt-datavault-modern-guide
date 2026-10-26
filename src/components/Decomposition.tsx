@@ -64,8 +64,8 @@ export function Decomposition({ auto = false, className }: { auto?: boolean; cla
 
   useEffect(() => {
     if (!auto) return
-    const t = setInterval(() => setSplit((s) => !s), 3200)
-    return () => clearInterval(t)
+    const t = setTimeout(() => setSplit(true), 1200)
+    return () => clearTimeout(t)
   }, [auto])
 
   const col = (n: string) => {
@@ -79,11 +79,9 @@ export function Decomposition({ auto = false, className }: { auto?: boolean; cla
         <div className="text-xs text-muted-foreground">
           {split ? 'Data Vault: identity, relationship and context are separated' : 'Classic model: one customer table holds everything'}
         </div>
-        {!auto && (
-          <Button size="sm" variant="outline" onClick={() => setSplit(!split)}>
-            {split ? <Merge /> : <Split />} {split ? 'Recombine' : 'Decompose'}
-          </Button>
-        )}
+        <Button size="sm" variant="outline" onClick={() => setSplit(!split)}>
+          {split ? <Merge /> : <Split />} {split ? 'Recombine' : 'Decompose'}
+        </Button>
       </div>
       <LayoutGroup id={id}>
         <div className="flex min-h-[19rem] items-center justify-center">

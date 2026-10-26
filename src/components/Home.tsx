@@ -50,13 +50,13 @@ export function Home() {
 
       <section className="mt-16 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {CHAPTERS.map((c, i) => (
-          <motion.div key={c.slug} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}>
+          <div key={c.slug}>
             <Link to={`/${c.slug}`} className="group block h-full rounded-xl border bg-card/50 p-5 transition-colors hover:border-sky-500/50 hover:bg-card">
               <div className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, '0')}</div>
               <div className="mt-2 font-semibold group-hover:text-sky-400">{c.title}</div>
               <p className="mt-2 text-sm text-muted-foreground">{blurbs[c.slug]}</p>
             </Link>
-          </motion.div>
+          </div>
         ))}
       </section>
     </div>
