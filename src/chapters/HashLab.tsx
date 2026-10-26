@@ -155,11 +155,11 @@ function DiffFlip() {
       <div className="flex flex-col justify-center gap-3 font-mono text-sm">
         <div className="rounded-xl border px-4 py-3">
           <div className="text-xs text-muted-foreground">latest hd_customer_n_s in the satellite</div>
-          <div className="text-amber-400">{before}</div>
+          <div className="break-all text-amber-400">{before}</div>
         </div>
         <div className={cn('rounded-xl border px-4 py-3 transition-colors', changed && 'border-emerald-500/60')}>
           <div className="text-xs text-muted-foreground">hashdiff of today's stage row</div>
-          <motion.div key={after} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className={changed ? 'text-emerald-400' : 'text-amber-400'}>
+          <motion.div key={after} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className={cn('break-all', changed ? 'text-emerald-400' : 'text-amber-400')}>
             {after}
           </motion.div>
         </div>
