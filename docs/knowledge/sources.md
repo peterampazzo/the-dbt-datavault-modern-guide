@@ -9,3 +9,25 @@
 | [dbt blog: Data Vault with dbt](https://docs.getdbt.com/blog/data-vault-with-dbt) | How dbt fits: incremental models, `ref()` lineage, automation of repetitive patterns. |
 
 When adding content, cite the source in the chapter's further-reading section.
+
+## Learning design and accessibility
+
+These sources back the rules in `learning-design.md` and the audit in `ux-audit.md`.
+
+| Source | Use it for |
+|---|---|
+| [W3C COGA, *Making Content Usable for People with Cognitive and Learning Disabilities*](https://www.w3.org/TR/coga-usable/) | The objectives and design patterns. Most used: Objective 5 [Help Users Focus](https://www.w3.org/WAI/WCAG2/supplemental/objectives/o5-user-focus/), "Make Each Step Clear", "Make the Purpose of Your Page Clear", "Use a Consistent Visual Design". |
+| [W3C WAI, *Cognitive, learning and neurological disabilities*](https://www.w3.org/WAI/people-use-web/abilities-barriers/cognitive/) | Who is affected (including ADHD) and the barriers they meet. |
+| [UK DfE, *Cognitive accessibility guidelines*](https://deliver-good-services.education.gov.uk/guides/cognitive-accessibility-guidelines) | The 8 practical guidelines. Most used: 5 "Help users focus", 6 "Ensure processes do not rely on memory", 8 "Support adaptation and personalisation". |
+| [MDN, *Cognitive accessibility*](https://developer.mozilla.org/en-US/docs/Web/Accessibility/Guides/Cognitive_accessibility) | Timers, moving content, navigation and heading structure, multiple ways to find content. |
+| [Section508.gov, *Designing digital content for users with cognitive disabilities*](https://www.section508.gov/design/digital-content-users-with-cognitive-disabilities/) | Plain language, predictable layout, avoiding distraction. |
+| [WCAG 2.2 SC 2.2.2 *Pause, Stop, Hide*](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) | Motion that starts automatically and lasts more than 5s needs pause, stop or hide (Level A). |
+| [WCAG 2.2 SC 2.3.3 *Animation from Interactions*](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html) | Interaction-triggered motion can be disabled (`prefers-reduced-motion`). |
+| [Mayer, *Segmenting, pretraining and modality principles* (Cambridge Handbook of Multimedia Learning)](https://doi.org/10.1017/cbo9780511816819.012) | Learner-paced segments (median d = 0.98); naming key concepts first (median d = 0.92). |
+| [Knouse et al., retrieval practice in college students with ADHD (*Learning and Instruction*, 2020)](https://www.sciencedirect.com/science/article/abs/pii/S0959475219305092) | The retrieval-practice benefit did not depend on ADHD status: the reason for the quick checks. |
+| [Temporal video segmentation for learners with ADHD (ACM, 2026)](https://doi.org/10.1145/3797867.3829033) | Short single-instruction chunks followed by pauses reduced errors and hesitations. |
+| [Technology support for focus, comprehension and retention in e-learning for students with ADHD (ACM, 2025)](https://doi.org/10.1145/3663547.3759705) | Segmentation, summaries, quizzes and annotated visuals as support patterns. |
+| [Nicky Case, *Explorable Explanations*](https://blog.ncase.me/explorable-explanations/) | Do, Show and Tell (medium by purpose), interest curves, "See, Model, Apply", cognitive gates. |
+| [learn-ui.com, *Explorable explanations*](https://learn-ui.com/chapters/explaining/explorable-explanations) | "The demo comes first", legible controls, handing the reader the controls. |
+| [jakubkrehel/skills](https://github.com/jakubkrehel/skills) (MIT) | `better-interface`, `better-layout`, `better-writing`, `better-ui`: review method, severity escalation triggers, motion rules. Referenced only, not vendored. |
+| [pbakaus/impeccable](https://github.com/pbakaus/impeccable) (Apache-2.0) | `critique` (cognitive-load checks, personas, Read vs Operate mode) and `craft-floor` (banned patterns). Referenced only, not vendored. |
