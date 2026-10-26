@@ -87,7 +87,7 @@ export default function SatelliteFlavours() {
       />
       <Section>
         <Tabs defaultValue="v1">
-          <TabsList className="mb-6 h-auto max-w-full flex-wrap justify-start">
+          <TabsList className="mb-6 max-w-full flex-wrap justify-start group-data-horizontal/tabs:h-auto [&>*]:h-7">
             <TabsTrigger value="v1">v0 vs v1</TabsTrigger>
             <TabsTrigger value="ma">Multi-active</TabsTrigger>
             <TabsTrigger value="es">Effectivity</TabsTrigger>
