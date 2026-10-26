@@ -43,7 +43,7 @@ export function Home() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="mt-8 flex flex-wrap items-center gap-3">
             {resume ? (
               <Link
-                to={`/${resume.chapter.slug}${resume.section ? `?s=${resume.section}` : ''}`}
+                to={`/${resume.chapter.slug}${resume.section ? `/${resume.section}` : ''}`}
                 className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90"
               >
                 Continue: {resume.chapter.title}

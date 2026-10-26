@@ -12,7 +12,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<Home />} />
             {CHAPTERS.map(({ slug, Component }) => (
-              <Route key={slug} path={slug} element={<Component />} />
+              <Route key={slug} path={`${slug}/:page?`} element={<Component />} />
             ))}
           </Route>
         </Routes>

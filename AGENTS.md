@@ -22,7 +22,7 @@ Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs th
 
 ## Layout
 
-- `src/chapters/`: one file per chapter, registered in `src/chapters/index.ts` (order = navigation order).
+- `src/chapters/`: one file per chapter, registered in `src/chapters/index.ts` (order = navigation order). Each chapter wraps its content in `<Chapter>` (`src/components/Chapter.tsx`): every `<Section>` is one page at `/#/<chapter>/<section-id>`, and `ChapterHeader` shows on the first page. Keep `ChapterHeader` and `Section` as direct children of `<Chapter>`. The "Show as one page" switch (`src/lib/reading.ts`) renders them all as one scroll. e2e helpers open routes as one page unless `{ paged: true }`.
 - `src/components/`: shared UI (`CodeBlock` Shiki, `DataTable`, `Prose`, `Decomposition`, `Layout`). `src/components/ui/` is shadcn (Base UI).
 - `src/lib/dv/hash.ts`: datavault4dbt-compatible hashing.
 - `src/lib/dv/dataset.ts`: the three-batch fictional TPC-H-style dataset and its `STORY`.

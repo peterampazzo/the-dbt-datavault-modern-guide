@@ -60,7 +60,7 @@ Use the two reference skill sets as checklists. They are referenced here, not in
 | HIGH | No reduced-motion support. | Fixed in PR #3 |
 | HIGH | Loops started on their own with no pause (Decomposition, architecture flow, terminal). | Fixed in PR #3 |
 | MED | No progress, resume or time estimate. | Fixed in the orientation PR |
-| MED | Ch1 (727 words) and Ch3 (662 words, 22 controls) are long for one sitting. | Planned (less at once, Focus mode) |
+| MED | Ch1 (727 words) and Ch3 (662 words, 22 controls) are long for one sitting. | Paged reader: one section per page, "Show as one page" switch |
 | MED | The load player shows about 11 controls at once. | Planned (progressive disclosure) |
 | MED | Jargon used before it is defined (`ldts`, HWM, hashdiff). | Planned (glossary) |
 | MED | No self-check. | Planned (quick checks) |

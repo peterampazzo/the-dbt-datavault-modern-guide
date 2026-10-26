@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useMemo } from 'react'
 import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
@@ -18,7 +19,7 @@ export default function Pit() {
   const phonePointers = new Set(rows.map((r) => `${r.customer_phone_ma_s_hk}|${r.customer_phone_ma_s_ldts}`))
 
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
         n={7}
         title="Business vault: snapshots and PITs"
@@ -79,6 +80,6 @@ export default function Pit() {
         </P>
         <CodeBlock title="dim_customer.sql" code={MODEL.dim_customer.code} />
       </Section>
-    </article>
+    </Chapter>
   )
 }

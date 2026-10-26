@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useMemo, useState } from 'react'
 import { Background, Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -93,7 +94,7 @@ export default function Lineage() {
 
   const m = MODEL[sel]
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
         n={8}
         title="The whole dbt project"
@@ -145,6 +146,6 @@ export default function Lineage() {
           <CodeBlock title={`${m.name}.sql`} code={m.code} lang={m.layer === 'seed' ? 'bash' : 'sql'} />
         </div>
       </Section>
-    </article>
+    </Chapter>
   )
 }

@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Code } from '@/components/Prose'
@@ -79,7 +80,7 @@ export default function SatelliteFlavours() {
   const last = useMemo(() => simulate()[2].tables, [])
   const v1 = useMemo(() => satV1(last.customer_n_s, 'hk_customer_h'), [last])
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
         n={6}
         title="Satellite flavours"
@@ -131,6 +132,6 @@ export default function SatelliteFlavours() {
           Ghost rows use ldts {BEGIN} (unknown) and {END}. Names shown for readability: {Object.values(NAMES).join(', ')}.
         </p>
       </Section>
-    </article>
+    </Chapter>
   )
 }

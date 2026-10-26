@@ -1,11 +1,12 @@
-import { Suspense, useEffect, useState, useRef } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router'
-import { ArrowLeft, ArrowRight, Moon, Sun, Check } from 'lucide-react'
+import { Suspense, useEffect, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
+import { ArrowRight, BookOpen, Moon, ScrollText, Sun, Check } from 'lucide-react'
 import { motion } from 'motion/react'
 import { CHAPTERS } from '@/chapters'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { markDone, setLast, useProgress } from '@/lib/progress'
+import { setLast, useProgress } from '@/lib/progress'
+import { setReadingMode, usePages, useReadingMode } from '@/lib/reading'
 
 function useTheme() {
   const [dark, setDark] = useState(() => localStorage.getItem('theme') !== 'light')
@@ -67,46 +68,27 @@ function useSections(pathname: string) {
 export function Layout() {
   const [dark, setDark] = useTheme()
   const { pathname, search } = useLocation()
-  const idx = CHAPTERS.findIndex((c) => pathname.endsWith(c.slug))
-  const prev = idx > 0 ? CHAPTERS[idx - 1] : null
-  const next = idx >= 0 && idx < CHAPTERS.length - 1 ? CHAPTERS[idx + 1] : idx === -1 ? CHAPTERS[0] : null
-
+  const navigate = useNavigate()
+  const [slug, pageSeg] = pathname.split('/').filter(Boolean)
+  const idx = CHAPTERS.findIndex((c) => c.slug === slug)
   const chapter = idx >= 0 ? CHAPTERS[idx] : null
   const progress = useProgress()
   const doneCount = CHAPTERS.filter((c) => progress.done.includes(c.slug)).length
+  const mode = useReadingMode()
   const { sections, active } = useSections(pathname)
-  const footer = useRef<HTMLDivElement>(null)
+  const published = usePages()
+  const chapterPages = chapter && published.slug === chapter.slug ? published.pages : []
+  const currentPage = mode === 'paged' ? (pageSeg ?? chapterPages[0]?.id) : active
 
   useEffect(() => {
-    const target = new URLSearchParams(search).get('s')
-    if (!target) {
-      window.scrollTo({ top: 0 })
-      return
-    }
-    let tries = 0
-    const t = setInterval(() => {
-      const el = document.getElementById(target)
-      if (el || ++tries > 30) {
-        clearInterval(t)
-        el?.scrollIntoView({ block: 'start' })
-      }
-    }, 100)
-    return () => clearInterval(t)
-  }, [pathname, search])
+    const s = new URLSearchParams(search).get('s')
+    if (chapter && s) navigate(`/${chapter.slug}/${s}`, { replace: true })
+    else if (!chapter) window.scrollTo({ top: 0 })
+  }, [chapter, pathname, search, navigate])
 
   useEffect(() => {
-    if (chapter) setLast(chapter.slug, active, sections.find((s) => s.id === active)?.title)
-  }, [chapter, active, sections])
-
-  useEffect(() => {
-    const el = footer.current
-    if (!el || !chapter) return
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && window.scrollY > 200 && document.querySelector('main h1')) markDone(chapter.slug)
-    })
-    io.observe(el)
-    return () => io.disconnect()
-  }, [chapter])
+    if (chapter && mode === 'scroll') setLast(chapter.slug, active, sections.find((s) => s.id === active)?.title)
+  }, [chapter, active, sections, mode])
 
   return (
     <div className="min-h-svh bg-background text-foreground">
@@ -137,6 +119,16 @@ export function Layout() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Show as one page"
+              aria-pressed={mode === 'scroll'}
+              title={mode === 'scroll' ? 'Read page by page' : 'Show as one page'}
+              onClick={() => setReadingMode(mode === 'scroll' ? 'paged' : 'scroll')}
+            >
+              {mode === 'scroll' ? <BookOpen /> : <ScrollText />}
+            </Button>
             <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={() => setDark(!dark)}>
               {dark ? <Sun /> : <Moon />}
             </Button>
@@ -192,6 +184,27 @@ export function Layout() {
                     </>
                   )}
                 </NavLink>
+                {chapter?.slug === c.slug && chapterPages.length > 1 && (
+                  <ol aria-label={`Pages in ${c.title}`} className="mb-2 ml-7 mt-1 space-y-0.5 border-l">
+                    {chapterPages.map((p, j) => (
+                      <li key={p.id || 'start'}>
+                        <Link
+                          to={j === 0 ? `/${c.slug}` : `/${c.slug}/${p.id}`}
+                          aria-current={currentPage === p.id ? 'page' : undefined}
+                          onClick={() => {
+                            if (mode === 'scroll' && p.id) document.getElementById(p.id)?.scrollIntoView({ block: 'start' })
+                          }}
+                          className={cn(
+                            '-ml-px block border-l-2 py-1 pl-3 text-[13px] leading-5',
+                            currentPage === p.id ? 'border-sky-500 text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
+                          )}
+                        >
+                          {p.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </li>
             ))}
           </ol>
@@ -214,43 +227,14 @@ export function Layout() {
           <Suspense fallback={<div className="h-96 rounded-xl motion-safe:animate-pulse bg-muted/40" />}>
             <Outlet />
           </Suspense>
-          <div ref={footer} className="mt-16 flex justify-between gap-4 border-t pt-6">
-            {prev ? (
-              <Link to={`/${prev.slug}`} className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" /> {prev.title}
+          {!chapter && (
+            <div className="mt-16 flex justify-end gap-4 border-t pt-6">
+              <Link to={`/${CHAPTERS[0].slug}`} className="group flex items-center gap-2 text-sm font-medium hover:text-sky-400">
+                {CHAPTERS[0].title} <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-            ) : (
-              <span />
-            )}
-            {next && (
-              <Link to={`/${next.slug}`} className="group flex items-center gap-2 text-sm font-medium hover:text-sky-400">
-                {next.title} <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            )}
-          </div>
+            </div>
+          )}
         </main>
-        {chapter && sections.length > 1 && (
-          <nav aria-label="On this page" className="sticky top-14 hidden h-[calc(100svh-3.5rem)] w-52 shrink-0 overflow-y-auto py-10 pr-4 xl:block">
-            <div className="mb-2 text-xs font-medium text-muted-foreground">On this page</div>
-            <ul className="space-y-1 border-l text-sm">
-              {sections.map((s) => (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    aria-current={active === s.id ? 'location' : undefined}
-                    onClick={() => document.getElementById(s.id)?.scrollIntoView({ block: 'start' })}
-                    className={cn(
-                      '-ml-px border-l-2 py-0.5 pl-3 text-left',
-                      active === s.id ? 'border-sky-500 text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    {s.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
       </div>
     </div>
   )

@@ -13,7 +13,9 @@ export function ChapterHeader({ n, title, lead }: { n: number; title: string; le
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="text-4xl font-semibold tracking-tight md:text-5xl"
+        id="chapter-title"
+        tabIndex={-1}
+        className="text-4xl font-semibold tracking-tight outline-none md:text-5xl"
       >
         {title}
       </motion.h1>
@@ -37,13 +39,13 @@ export function ChapterHeader({ n, title, lead }: { n: number; title: string; le
   )
 }
 
-const slugify = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+export const slugify = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
 export function Section({ title, children, className }: { title?: string; children: ReactNode; className?: string }) {
   return (
     <section className={cn('mb-14', className)}>
       {title && (
-        <h2 id={slugify(title)} className="mb-4 scroll-mt-20 text-2xl font-semibold tracking-tight">
+        <h2 id={slugify(title)} tabIndex={-1} className="mb-4 scroll-mt-20 outline-none text-2xl font-semibold tracking-tight">
           {title}
         </h2>
       )}

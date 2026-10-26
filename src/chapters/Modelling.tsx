@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
@@ -504,7 +505,7 @@ function Stepper() {
 
 export default function Modelling() {
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
         n={2}
         title="Modelling three datasets"
@@ -534,6 +535,6 @@ export default function Modelling() {
           datavault4dbt model.
         </P>
       </Section>
-    </article>
+    </Chapter>
   )
 }

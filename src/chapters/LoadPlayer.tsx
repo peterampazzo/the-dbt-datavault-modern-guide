@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Pause, Play, SkipForward, RotateCcw } from 'lucide-react'
@@ -169,7 +170,7 @@ function Player() {
 
 export default function LoadPlayer() {
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
         n={5}
         title="Loading, batch by batch"
@@ -201,6 +202,6 @@ export default function LoadPlayer() {
           </Callout>
         </div>
       </Section>
-    </article>
+    </Chapter>
   )
 }

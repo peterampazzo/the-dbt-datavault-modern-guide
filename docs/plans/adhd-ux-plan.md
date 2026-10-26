@@ -92,7 +92,7 @@ Already working: show-then-explain, a single dataset story, steppers with keyboa
 
 **PR 1b – Less at once**
 - **Segment long chapters.** Ch1 and Ch3 split into learner-paced sections with a "Next: …" button at the end of each (segmenting). Scrolling still works; the button is a guide, not a gate.
-- **Focus mode** (toggle in the header, remembered). Hides the sidebar and legend, shows one section at a time with Back/Next and a step counter, and turns motion down. This is the personalisation lever from COGA guideline 8.
+- **Paged reader** (replaces the Focus mode toggle, see decision 5). Each section is a page at its own address (`/#/<chapter>/<section>`), with Previous/Next, "Page N of M", page dots and ← → keys. A "Show as one page" switch in the header (remembered) brings back the long scroll. This is the personalisation lever from COGA guideline 8.
 - **Progressive disclosure in the interactives.**
   - Load player: batches and Play/Step stay visible; "Late-arriving row", "Ghost records" and the phase jump go behind "More options".
   - Build with dbt: the model list starts at the 4 groups collapsed.
@@ -158,10 +158,11 @@ Each PR passes `pnpm lint`, `test` and `build`, plus the Playwright suite in `e2
 
 ## 7. Decisions (agreed with Pietro, 2026-10-26)
 
-1. **Focus mode** is a reader toggle, off by default and remembered.
+1. ~~**Focus mode** is a reader toggle, off by default and remembered.~~ Replaced by decision 5.
 2. **Quick checks** are optional and never block progress or "done" ticks.
 3. **impeccable and jakubkrehel/skills** are referenced in the docs only, not vendored into the repo.
 4. **"About this guide" page:** yes, a public page crediting the learning-design sources.
+5. **Paged by default** (later decision, replaces 1): chapters read one page at a time, with a remembered "Show as one page" switch for skimming and Ctrl+F. Pietro found the long chapters overwhelming and asked for a book-style walkthrough.
 
 ## Out of scope
 - Audio narration (Mayer's modality principle): possible later.

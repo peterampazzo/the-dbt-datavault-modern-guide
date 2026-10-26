@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Boxes, GitBranch, Layers, Scale, Workflow } from 'lucide-react'
@@ -134,7 +135,7 @@ const COMPARE = [
 
 export default function WhatIsDataVault() {
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
         n={1}
         title="What is Data Vault"
@@ -277,6 +278,6 @@ export default function WhatIsDataVault() {
           ))}
         </ul>
       </Section>
-    </article>
+    </Chapter>
   )
 }

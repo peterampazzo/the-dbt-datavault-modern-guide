@@ -12,8 +12,9 @@ export const ROUTES = [
   { slug: 'dbt-project', title: 'The whole dbt project' },
 ] as const
 
-/** Opens a route, waits for its heading and collects page and console errors. */
-export async function open(page: Page, slug: string) {
+/** Opens a route, by default as one long page so every section is on screen. */
+export async function open(page: Page, slug: string, { paged = false } = {}) {
+  await page.addInitScript((m) => localStorage.setItem('reading-mode', m), paged ? 'paged' : 'scroll')
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   page.on('console', (m) => {

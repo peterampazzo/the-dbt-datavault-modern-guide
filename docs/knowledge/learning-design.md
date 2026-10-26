@@ -67,7 +67,7 @@ Each rule gives Do, Don't, Why and Source.
     - Do: end each chapter with 2–3 questions about the dataset story, give instant feedback that explains why, and make them optional. Answers must agree with `engine.ts` and be tested.
     - Why: retrieval practice helps students with ADHD as much as other students (Learning and Instruction, 2020); Nicky Case "See, Model, Apply".
 12. **Let readers turn things down.**
-    - Do: offer Focus mode as a reader toggle (off by default, remembered): one section at a time, sidebar hidden, motion reduced.
+    - Do: read one page at a time by default (each `<Section>` in a `<Chapter>` is a page with its own address, Previous/Next, "Page N of M" and ← → keys), and offer a remembered "Show as one page" switch for skimming.
     - Why: UK DfE COGA guideline 8, "Support adaptation and personalisation".
 13. **Meaning is never colour only.**
     - Do: pair layer colours with a name, a suffix (`_h`, `_l`, `_s`) or an icon.

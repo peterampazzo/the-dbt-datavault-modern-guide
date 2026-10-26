@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
@@ -218,7 +219,7 @@ function Terminal() {
 
 export default function BuildWithDbt() {
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
         n={3}
         title="Building it with dbt"
@@ -319,6 +320,6 @@ export default function BuildWithDbt() {
           <Terminal />
         </div>
       </Section>
-    </article>
+    </Chapter>
   )
 }

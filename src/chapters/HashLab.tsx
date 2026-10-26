@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Plus, X } from 'lucide-react'
@@ -184,7 +185,7 @@ function DiffFlip() {
 
 export default function HashLab() {
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
         n={4}
         title="Hash lab"
@@ -214,6 +215,6 @@ export default function HashLab() {
           </Callout>
         </div>
       </Section>
-    </article>
+    </Chapter>
   )
 }
