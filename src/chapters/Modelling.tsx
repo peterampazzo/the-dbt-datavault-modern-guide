@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { CUSTOMERS, NATIONS, ORDERS } from '@/lib/dv/dataset'
 import { cn } from '@/lib/utils'
+import { usePersistentState } from '@/lib/progress'
 
 type Kind = 'bk' | 'fk' | 'attr'
 type Source = 'customer' | 'nation' | 'orders'
@@ -401,7 +402,7 @@ function VaultCanvas({ step, split, hover, setHover }: { step: number; split: bo
 }
 
 function Stepper() {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = usePersistentState('modelling.step', 0)
   const [split, setSplit] = useState(false)
   const [hover, setHover] = useState<Hover>(null)
   const go = useCallback((d: number) => setStep((s) => Math.min(STEPS.length - 1, Math.max(0, s + d))), [])

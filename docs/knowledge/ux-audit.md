@@ -19,6 +19,7 @@ The suite lives in `e2e/` and runs in two projects, `desktop` (1280×800) and `m
 | `audit.e2e.ts` | 5.5s after load, with and without reduced motion: no element still changing transform, opacity or size, and no infinite CSS/WAAPI animation. | S2, WCAG 2.2.2, 2.3.3 |
 | `a11y.e2e.ts` | axe-core with WCAG 2.0/2.1/2.2 A and AA tags on every route, in dark and light themes. Any violation fails. | WCAG 2.2 AA |
 | `keyboard.e2e.ts` | Tab reaches every control, each focused control shows an outline or ring, the PIT slider moves with the arrow keys, and timeline bars are focusable. | WCAG 2.1.1, 2.4.7, S7 |
+| `orientation.e2e.ts` | Chapter header shows position, time and the 3-bullet summary; interactive state and the last section survive a reload; Home's Continue link returns to that section; the progress bar ticks a chapter at its end and Start over clears it. | S3, S4 |
 | `chapters.e2e.ts` | The main interaction in each chapter works (steppers, terminal, hash lab, load player, timeline tap, lineage click), and the theme survives a reload. | Regression |
 
 `oxlint` also runs the `jsx-a11y` plugin, so missing labels and similar problems fail at lint time.
@@ -58,7 +59,7 @@ Use the two reference skill sets as checklists. They are referenced here, not in
 | HIGH | Satellite v0/v1 timeline bars stuck at `scaleX(0)` on phones (same `whileInView` cause); hover-only details. | Fixed in PR #3 (visible bars; tap or focus to inspect) |
 | HIGH | No reduced-motion support. | Fixed in PR #3 |
 | HIGH | Loops started on their own with no pause (Decomposition, architecture flow, terminal). | Fixed in PR #3 |
-| MED | No progress, resume or time estimate. | Planned (orientation and resume) |
+| MED | No progress, resume or time estimate. | Fixed in the orientation PR |
 | MED | Ch1 (727 words) and Ch3 (662 words, 22 controls) are long for one sitting. | Planned (less at once, Focus mode) |
 | MED | The load player shows about 11 controls at once. | Planned (progressive disclosure) |
 | MED | Jargon used before it is defined (`ldts`, HWM, hashdiff). | Planned (glossary) |

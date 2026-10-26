@@ -240,7 +240,7 @@ export default function BuildWithDbt() {
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <div>
             <P>
-              <a href="https://github.com/ScalefreeCOM/datavault4dbt" className="text-sky-700 dark:text-sky-400 hover:underline" target="_blank" rel="noreferrer">
+              <a href="https://github.com/ScalefreeCOM/datavault4dbt" className="text-sky-700 dark:text-sky-400 underline underline-offset-4" target="_blank" rel="noreferrer">
                 datavault4dbt
               </a>{' '}
               is a dbt package by Scalefree with one macro per Data Vault entity type: <Code>stage</Code>, <Code>hub</Code>, <Code>link</Code>, <Code>nh_link</Code>,{' '}

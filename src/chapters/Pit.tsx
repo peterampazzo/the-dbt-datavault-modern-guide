@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { DataTable } from '@/components/DataTable'
@@ -6,11 +6,12 @@ import { CodeBlock } from '@/components/CodeBlock'
 import { Slider } from '@/components/ui/slider'
 import { pit, simulate, SNAPSHOTS, UNKNOWN_KEY } from '@/lib/dv/engine'
 import { MODEL } from '@/lib/dv/models'
+import { usePersistentState } from '@/lib/progress'
 
 export default function Pit() {
   const tables = useMemo(() => simulate()[2].tables, [])
   const all = useMemo(() => pit(tables), [tables])
-  const [i, setI] = useState(1)
+  const [i, setI] = usePersistentState('pit.snapshot', 1)
   const sdts = SNAPSHOTS[i]
   const rows = all.filter((r) => r.sdts === sdts)
   const pointers = new Set(rows.map((r) => `${r.customer_n_s_hk}|${r.customer_n_s_ldts}`))

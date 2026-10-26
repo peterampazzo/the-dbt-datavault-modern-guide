@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { simulate, type TableName } from '@/lib/dv/engine'
 import { STORY } from '@/lib/dv/dataset'
 import { cn } from '@/lib/utils'
+import { usePersistentState } from '@/lib/progress'
 
 const PHASES = ['Source lands', 'Stage hashes', 'Hubs load', 'Links load', 'Satellites load']
 
@@ -21,8 +22,8 @@ const TARGETS: { t: TableName; phase: number; tone: Tone; cols: string[] }[] = [
 function Player() {
   const [late, setLate] = useState(false)
   const runs = useMemo(() => simulate({ lateArrival: late }), [late])
-  const [batch, setBatch] = useState(0)
-  const [phase, setPhase] = useState(0)
+  const [batch, setBatch] = usePersistentState('load.batch', 0)
+  const [phase, setPhase] = usePersistentState('load.phase', 0)
   const [playing, setPlaying] = useState(false)
   const [showGhosts, setShowGhosts] = useState(false)
 

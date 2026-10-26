@@ -5,6 +5,7 @@ import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { Button } from '@/components/ui/button'
 import { dvHash, type HashAlg, type HashKind } from '@/lib/dv/hash'
 import { cn } from '@/lib/utils'
+import { usePersistentState } from '@/lib/progress'
 
 function Toggle<T extends string>({ value, options, onChange }: { value: T; options: T[]; onChange: (v: T) => void }) {
   return (
@@ -27,9 +28,9 @@ interface Input {
 }
 
 function Lab() {
-  const [alg, setAlg] = useState<HashAlg>('MD5')
-  const [kind, setKind] = useState<HashKind>('hashkey')
-  const [inputs, setInputs] = useState<Input[]>([
+  const [alg, setAlg] = usePersistentState<HashAlg>('hash.alg', 'MD5')
+  const [kind, setKind] = usePersistentState<HashKind>('hash.kind', 'hashkey')
+  const [inputs, setInputs] = usePersistentState<Input[]>('hash.inputs', [
     { id: 1, col: 'c_custkey', value: ' 42 ', isNull: false },
     { id: 2, col: 'c_nationkey', value: 'de', isNull: false },
   ])
@@ -86,7 +87,7 @@ function Lab() {
           ].map(([label, vals]) => (
             <button
               key={label as string}
-              className="block text-sky-700 dark:text-sky-400 hover:underline"
+              className="block text-sky-700 dark:text-sky-400 underline underline-offset-4"
               onClick={() =>
                 setInputs((xs) => xs.map((x, j) => (vals ? { ...x, value: (vals as string[])[j] ?? x.value, isNull: false } : { ...x, isNull: true })))
               }
@@ -150,7 +151,7 @@ function DiffFlip() {
             />
           </label>
         ))}
-        <button className="text-xs text-sky-700 dark:text-sky-400 hover:underline" onClick={() => setP(BASE)}>
+        <button className="text-xs text-sky-700 dark:text-sky-400 underline underline-offset-4" onClick={() => setP(BASE)}>
           reset
         </button>
       </div>

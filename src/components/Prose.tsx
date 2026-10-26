@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
+import { CHAPTERS } from '@/chapters'
 
 export function ChapterHeader({ n, title, lead }: { n: number; title: string; lead: ReactNode }) {
   return (
     <header className="mb-10">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-2 font-mono text-sm text-sky-700 dark:text-sky-400">
-        Chapter {n}
+        Chapter {n} of {CHAPTERS.length} · about {CHAPTERS[n - 1].minutes} min
       </motion.div>
       <motion.h1
         initial={{ opacity: 0, y: 12 }}
@@ -24,14 +25,28 @@ export function ChapterHeader({ n, title, lead }: { n: number; title: string; le
       >
         {lead}
       </motion.p>
+      <section aria-label="In 30 seconds" className="mt-6 max-w-3xl rounded-xl border bg-card/60 px-4 py-3">
+        <h2 className="mb-1.5 text-sm font-semibold">In 30 seconds</h2>
+        <ul className="list-disc space-y-1 pl-5 text-sm leading-6 text-foreground/85">
+          {CHAPTERS[n - 1].summary.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+      </section>
     </header>
   )
 }
 
+const slugify = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
 export function Section({ title, children, className }: { title?: string; children: ReactNode; className?: string }) {
   return (
     <section className={cn('mb-14', className)}>
-      {title && <h2 className="mb-4 text-2xl font-semibold tracking-tight">{title}</h2>}
+      {title && (
+        <h2 id={slugify(title)} className="mb-4 scroll-mt-20 text-2xl font-semibold tracking-tight">
+          {title}
+        </h2>
+      )}
       {children}
     </section>
   )
