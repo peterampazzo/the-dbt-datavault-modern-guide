@@ -49,6 +49,7 @@ Use the two reference skill sets as checklists. They are referenced here, not in
 | Sev | Finding | Status |
 |---|---|---|
 | HIGH | PIT "Drag the snapshot" section stayed invisible at 390px (`whileInView` never fired). | Fixed in PR #3 |
+| HIGH | Satellite v0/v1 timeline bars stuck at `scaleX(0)` on phones (same `whileInView` cause); hover-only details. | Fixed in PR #3 (visible bars; tap or focus to inspect) |
 | HIGH | No reduced-motion support. | Fixed in PR #3 |
 | HIGH | Loops started on their own with no pause (Decomposition, architecture flow, terminal). | Fixed in PR #3 |
 | MED | No progress, resume or time estimate. | Planned (orientation and resume) |

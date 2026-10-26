@@ -55,4 +55,5 @@ Run lint, test and build before pushing. CI (`.github/workflows/deploy.yml`) run
 - `docs/knowledge/datasets.md`: how the three datasets map to the vault, and what each batch demonstrates.
 - `docs/knowledge/sources.md`: the reference material and what each one is used for (Data Vault, and learning design/accessibility).
 - `docs/knowledge/learning-design.md`: rules for ADHD-friendly, cognitively accessible chapters, with success criteria S1–S7.
+- `docs/plans/adhd-ux-plan.md`: the agreed ADHD/UX roadmap (phases, per-chapter changes, decisions).
 - `docs/knowledge/ux-audit.md`: how to audit the UI (automated scan, code greps, the referenced review skills), severity scale, latest findings.
