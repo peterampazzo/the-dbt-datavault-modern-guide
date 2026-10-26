@@ -13,12 +13,12 @@ pnpm install
 pnpm dev --host 0.0.0.0 --port 5173
 pnpm lint      # oxlint
 pnpm test      # vitest (simulation engine)
-pnpm build     # tsc -b + vite build (BASE_PATH env sets the Pages base)
+pnpm build     # tsc -b + vite build (BASE_PATH env sets the base path, default /)
 pnpm e2e       # Playwright suite: chapter flows, keyboard, axe WCAG 2.2 AA, overflow/hidden/motion audit
 pnpm ux:check  # just the audit + WCAG specs (see docs/knowledge/ux-audit.md)
 ```
 
-Run lint, test and build before pushing. CI (`.github/workflows/deploy.yml`) runs the same, and deploys to GitHub Pages on `main`.
+Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs the same plus `pnpm e2e`. Cloudflare Pages deploys: `deploy-preview.yml` (main → `preview`, each PR → `pr-<number>`; fork PRs only via a manual run with the PR number) and `deploy-production.yml` (published `vX.Y.Z` release → production). Both use the `preview`/`production` GitHub environments (`CLOUDFLARE_API_TOKEN` secret, `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PROJECT_NAME` variables).
 
 ## Layout
 
@@ -38,7 +38,7 @@ Run lint, test and build before pushing. CI (`.github/workflows/deploy.yml`) run
 4. **The simulation must match package defaults** (MD5, `||`, `^^`, trim, upper-case hashkeys, ghost records). If you change `engine.ts` or `dataset.ts`, update `engine.test.ts` and any chapter copy that quotes counts or outcomes.
 5. **Show, then explain.** Every concept gets a visual or an interaction (Motion animation, stepper, toggle, slider) with short prose next to it. Keep the prose plain and brief.
 6. **Model code is the single source.** Chapters pull SQL/YAML from `models.ts` (`MODEL[name].code`) rather than duplicating it.
-7. Keep the routing hash-based (`HashRouter`) so GitHub Pages works without rewrites.
+7. Keep the routing hash-based (`HashRouter`) so static hosting works without rewrites.
 8. Keep a future DuckDB-WASM playground possible: chapters shouldn't depend on engine internals beyond the exported functions.
 9. **Follow the learning design rules** in `docs/knowledge/learning-design.md`. The guide must work for interrupted, attention-variable readers (ADHD). The non-negotiables:
    - content is visible by default;
