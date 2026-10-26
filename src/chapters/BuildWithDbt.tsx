@@ -221,12 +221,15 @@ export default function BuildWithDbt() {
   return (
     <Chapter>
       <ChapterHeader
-        n={3}
         title="Building it with dbt"
         lead="Every box from the modelling canvas becomes one dbt model. With datavault4dbt, each model is a few lines of YAML handed to a macro, and the macro writes the loading SQL."
       />
 
-      <Section title="dbt in one minute">
+      <Section
+        title="dbt in one minute"
+        lead="Follow the model files and dependency graph as dbt builds the guide’s vault."
+        keyPoint="dbt builds models in dependency order, and datavault4dbt macros generate vault SQL from model metadata."
+      >
         <div className="grid gap-4 md:grid-cols-3">
           {[
             ['Models are SELECTs', 'Each .sql file in models/ is one table or view. dbt wraps your SELECT in the right DDL.'],
@@ -261,7 +264,33 @@ export default function BuildWithDbt() {
         </div>
       </Section>
 
-      <Section title="From canvas to code">
+      <Section
+        title="By hand vs with dbt"
+        lead="Compare handwritten loading SQL with the declaration and macro used for the same vault model."
+        keyPoint="Macros reduce repeated SQL, while the model still needs accurate keys, payload and source metadata."
+      >
+        <P>
+          The same loads, written by hand and declared with datavault4dbt. Pick an entity, then a part, to see which hand-written lines each declaration
+          replaces.
+        </P>
+        <HandVsDbt />
+        <details className="mt-4 max-w-3xl rounded-lg border px-4 py-3 text-sm">
+          <summary className="cursor-pointer font-medium">What else you'd write by hand</summary>
+          <ul className="mt-2 list-disc space-y-1 pl-5 leading-6 text-foreground/85">
+            <li>The stage: trimming, upper-casing, the <Code>||</Code> and <Code>^^</Code> rules and the MD5 for every hashkey and hashdiff.</li>
+            <li>Ghost records, so joins to an unknown or missing key still find a row.</li>
+            <li>The <Code>sat_v1</Code> view that works out each version's end date.</li>
+            <li>The table definitions, and a first-run path that creates them.</li>
+            <li>All of this again for every hub, link and satellite, kept consistent by hand.</li>
+          </ul>
+        </details>
+      </Section>
+
+      <Section
+        title="From canvas to code"
+        lead="Select a model and a YAML key to connect the modelling canvas to the guide’s dbt files."
+        keyPoint="Stage models calculate shared hash columns; downstream vault models reference those prepared columns."
+      >
         <P>
           Pick a model on the left to see its file. Click a YAML key on the right to see what it means and where it appears. The stages compute the hashes once;
           everything downstream just references the hash columns by name.
@@ -269,7 +298,11 @@ export default function BuildWithDbt() {
         <ModelExplorer />
       </Section>
 
-      <Section title="What the hub macro generates">
+      <Section
+        title="What the hub macro generates"
+        lead="Compare a first hub load with an incremental run to see the SQL the macro builds."
+        keyPoint="The incremental load filters by the high-water mark and inserts only hashkeys not already in the hub."
+      >
         <div className="grid items-start gap-6 lg:grid-cols-[1fr_1.3fr]">
           <div>
             <P>
@@ -288,25 +321,11 @@ export default function BuildWithDbt() {
         </div>
       </Section>
 
-      <Section title="By hand vs with dbt">
-        <P>
-          The same loads, written by hand and declared with datavault4dbt. Pick an entity, then a part, to see which hand-written lines each declaration
-          replaces.
-        </P>
-        <HandVsDbt />
-        <details className="mt-4 max-w-3xl rounded-lg border px-4 py-3 text-sm">
-          <summary className="cursor-pointer font-medium">What else you'd write by hand</summary>
-          <ul className="mt-2 list-disc space-y-1 pl-5 leading-6 text-foreground/85">
-            <li>The stage: trimming, upper-casing, the <Code>||</Code> and <Code>^^</Code> rules and the MD5 for every hashkey and hashdiff.</li>
-            <li>Ghost records, so joins to an unknown or missing key still find a row.</li>
-            <li>The <Code>sat_v1</Code> view that works out each version's end date.</li>
-            <li>The table definitions, and a first-run path that creates them.</li>
-            <li>All of this again for every hub, link and satellite, kept consistent by hand.</li>
-          </ul>
-        </details>
-      </Section>
-
-      <Section title="Run it">
+      <Section
+        title="Run it"
+        lead="Watch dbt build the stage and vault models in dependency order."
+        keyPoint="The dbt project graph is the run order: stage models feed hubs, links and satellites."
+      >
         <div className="grid items-start gap-6 lg:grid-cols-2">
           <div>
             <P>

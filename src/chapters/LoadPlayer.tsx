@@ -72,42 +72,47 @@ function Player() {
           <Button size="sm" onClick={() => setPlaying(!playing)}>
             {playing ? <Pause /> : <Play />} {playing ? 'Pause' : 'Play'}
           </Button>
-          <Button size="sm" variant="outline" onClick={advance}>
-            <SkipForward /> Step
-          </Button>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label="Restart"
-            onClick={() => {
-              setBatch(0)
-              setPhase(0)
-              setPlaying(false)
-            }}
-          >
-            <RotateCcw />
-          </Button>
-        </div>
-        <div className="ml-auto flex flex-wrap gap-4 text-sm">
-          <label htmlFor="lp-late" className="inline-flex items-center gap-2">
-            <Switch id="lp-late" checked={late} onCheckedChange={setLate} /> Late-arriving row
-          </label>
-          <label htmlFor="lp-ghosts" className="inline-flex items-center gap-2">
-            <Switch id="lp-ghosts" checked={showGhosts} onCheckedChange={setShowGhosts} /> Ghost records
-          </label>
         </div>
       </div>
 
-      <div className="mt-5 flex gap-1">
-        {PHASES.map((p, i) => (
-          <button key={p} onClick={() => setPhase(i)} className="flex-1 text-left">
-            <div className="h-1 overflow-hidden rounded-full bg-muted">
-              <motion.div className="h-full bg-sky-400" animate={{ width: i <= phase ? '100%' : '0%' }} transition={{ duration: 0.4 }} />
-            </div>
-            <div className={cn('mt-1 text-[11px]', i === phase ? 'text-foreground' : 'text-muted-foreground')}>{p}</div>
-          </button>
-        ))}
-      </div>
+      <details className="mt-4 rounded-lg border px-4 py-3">
+        <summary className="cursor-pointer text-sm font-medium">More options</summary>
+        <div className="mt-3 space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button size="sm" variant="outline" onClick={advance}>
+              <SkipForward /> Step
+            </Button>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              aria-label="Restart"
+              onClick={() => {
+                setBatch(0)
+                setPhase(0)
+                setPlaying(false)
+              }}
+            >
+              <RotateCcw />
+            </Button>
+            <label htmlFor="lp-late" className="inline-flex items-center gap-2 text-sm">
+              <Switch id="lp-late" checked={late} onCheckedChange={setLate} /> Late-arriving row
+            </label>
+            <label htmlFor="lp-ghosts" className="inline-flex items-center gap-2 text-sm">
+              <Switch id="lp-ghosts" checked={showGhosts} onCheckedChange={setShowGhosts} /> Ghost records
+            </label>
+          </div>
+          <div className="flex gap-1">
+            {PHASES.map((p, i) => (
+              <button key={p} onClick={() => setPhase(i)} className="flex-1 text-left">
+                <div className="h-1 overflow-hidden rounded-full bg-muted">
+                  <motion.div className="h-full bg-sky-400" animate={{ width: i <= phase ? '100%' : '0%' }} transition={{ duration: 0.4 }} />
+                </div>
+                <div className={cn('mt-1 text-[11px]', i === phase ? 'text-foreground' : 'text-muted-foreground')}>{p}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </details>
 
       <div className="mt-5 grid gap-4">
         <div className="min-w-0 space-y-4">
@@ -172,18 +177,25 @@ export default function LoadPlayer() {
   return (
     <Chapter>
       <ChapterHeader
-        n={5}
         title="Loading, batch by batch"
         lead="Three daily full loads of the same sources. Play them and watch what dbt inserts, and what it deliberately skips."
       />
-      <Section>
+      <Section
+        title="Play the batches"
+        lead="Use the batch buttons or Play to watch source rows move through staging and the vault."
+        keyPoint="Staging calculates the hashes first; hubs and links insert keys, while satellites compare hashdiffs."
+      >
         <P>
           Green rows are new in this run. Underneath each table you can see what the macro skipped and why. Turn on <Code>Late-arriving row</Code> to see a record that
           arrives with an old <Code>ldts</Code> get rejected by the high-water mark.
         </P>
         <Player />
       </Section>
-      <Section title="The rules you just watched">
+      <Section
+        title="The rules you just watched"
+        lead="Track which rows each batch inserts, skips or keeps as ghosts."
+        keyPoint="Raw-vault hubs and links stay insert-only; satellite versions are added when the payload changes."
+      >
         <div className="grid gap-4 md:grid-cols-2">
           <Callout kind="info" title="Hubs and links: insert if unknown">
             A key that already exists is skipped, however many times it is delivered. Chiara's move to Germany doesn't update the old link; it adds a second one.

@@ -5,7 +5,7 @@ test('every chapter opens from the home page with no errors', async ({ page }) =
   const errors = await open(page, '')
   for (const r of ROUTES.slice(1)) {
     await page.locator(`a[href="#/${r.slug}"]`).filter({ visible: true }).first().click()
-    await expect(page.locator('main h1')).toHaveText(r.title)
+    await expect(page.locator('main h1').first()).toHaveText(r.title)
   }
   expect(errors).toEqual([])
 })
@@ -21,11 +21,12 @@ test('theme choice survives a reload', async ({ page }) => {
 
 test('modelling: Next and Back walk the steps', async ({ page }) => {
   await open(page, 'modelling')
-  const step = page.getByText(/^Step \S+ · /)
+  const group = page.getByRole('heading', { name: 'Step through the hubs' }).locator('xpath=..')
+  const step = group.getByText(/^Step \S+ · /)
   const first = await step.textContent()
-  await page.getByRole('button', { name: 'Next' }).click()
+  await group.getByRole('button', { name: 'Next' }).click()
   await expect(step).not.toHaveText(first ?? '')
-  await page.getByRole('button', { name: 'Back' }).click()
+  await group.getByRole('button', { name: 'Back' }).click()
   await expect(step).toHaveText(first ?? '')
 })
 
@@ -47,21 +48,22 @@ test('hash lab: all-NULL input gives the zero key', async ({ page }) => {
 test('load player: Step advances the phase, batches switch', async ({ page }) => {
   await open(page, 'load-player')
   const phase = page.getByRole('button', { name: 'Stage hashes' })
+  await page.getByText('More options').click()
   await page.getByRole('button', { name: 'Step' }).click()
   await expect(phase.locator('div').nth(2)).toHaveClass(/text-foreground/)
   await page.getByRole('button', { name: /Batch 2/ }).click()
   await expect(page.getByRole('button', { name: /Batch 2/ })).toHaveClass(/border-sky-500/)
 })
 
-test('satellites: tapping a bar shows its interval, tabs switch', async ({ page }, info) => {
+test('satellites: a bar shows its interval and the other flavours are separate pages', async ({ page }, info) => {
   await open(page, 'satellite-flavours')
   const bar = page.getByRole('button', { name: /Alice, valid from 2024-01-01/ })
   if (info.project.name === 'mobile') await bar.tap()
   else await bar.click()
   await expect(bar).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByText(/ldts 2024-01-01 06:00:00/)).toBeVisible()
-  await page.getByRole('tab', { name: 'Multi-active' }).click()
-  await expect(page.getByRole('tab', { name: 'Multi-active' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByRole('heading', { name: 'Multi-active satellites', exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'customer_phone_ma_s' })).toBeVisible()
 })
 
 test('lineage: clicking a node selects it', async ({ page }) => {

@@ -1,5 +1,7 @@
 # Plan: make the guide work for ADHD readers, plus a UX audit
 
+Remaining phases are folded into [`docs/plans/guide-plan.md`](guide-plan.md).
+
 Repo: `peterampazzo/the-dbt-datavault-modern-guide`. Live site: https://the-dbt-datavault-modern-guide.pages.dev
 
 ## 1. Goal and who we design for

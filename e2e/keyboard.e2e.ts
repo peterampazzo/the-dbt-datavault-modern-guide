@@ -6,12 +6,14 @@ test.describe('keyboard', () => {
     test(`${r.title}: every control is reachable with Tab and shows focus`, async ({ page }, info) => {
       test.skip(info.project.name === 'mobile', 'keyboard pass runs on desktop')
       await open(page, r.slug)
-      const expected = await page.evaluate(
-        () =>
-          [...document.querySelectorAll<HTMLElement>('main a[href], main button:not(:disabled), main input:not(:disabled), main [role="slider"], main [role="switch"], main [role="tab"][aria-selected="true"]')].filter(
-            (e) => e.getClientRects().length && e.tabIndex >= 0 && !e.closest('.react-flow__controls'),
-          ).length,
-      )
+      const expected = await page.evaluate(() => {
+        const controls = [...document.querySelectorAll<HTMLElement>('main a[href], main button:not(:disabled), main input:not(:disabled), main [role="slider"], main [role="switch"], main [role="tab"][aria-selected="true"], main summary, main [role="region"][tabindex]')].filter(
+          (e) => e.getClientRects().length && e.tabIndex >= 0 && !e.closest('.react-flow__controls') && (!e.closest('details:not([open])') || e.matches('summary')),
+        )
+        const radios = controls.filter((element) => element instanceof HTMLInputElement && element.type === 'radio')
+        const radioGroups = new Set(radios.map((radio) => (radio as HTMLInputElement).name))
+        return controls.length - radios.length + radioGroups.size
+      })
       const seen = new Set<string>()
       const noRing: string[] = []
       for (let i = 0; i < expected + 40; i++) {

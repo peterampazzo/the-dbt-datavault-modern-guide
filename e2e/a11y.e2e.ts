@@ -20,3 +20,13 @@ for (const theme of ['dark', 'light'] as const) {
     }
   })
 }
+
+test('desktop sidebar passes axe with the practitioner path active', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'The desktop sidebar is not shown on mobile.')
+  await page.addInitScript(() => localStorage.setItem('reading-path', 'dv-practitioner'))
+  await open(page, 'hash-lab')
+  await page.waitForTimeout(800)
+  const { violations } = await new AxeBuilder({ page }).withTags(WCAG).analyze()
+  const summary = violations.map((v) => `${v.impact} ${v.id}: ${v.help} (${v.nodes.length}×, e.g. ${v.nodes[0].target.join(' ')})`)
+  expect(summary).toEqual([])
+})

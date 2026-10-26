@@ -4,6 +4,7 @@ export const ROUTES = [
   { slug: '', title: 'Home' },
   { slug: 'what-is-data-vault', title: 'What is Data Vault' },
   { slug: 'modelling', title: 'Modelling three datasets' },
+  { slug: 'dv-names', title: "Data Vault in this guide's names" },
   { slug: 'dbt', title: 'Building it with dbt' },
   { slug: 'hash-lab', title: 'Hash lab' },
   { slug: 'load-player', title: 'Loading, batch by batch' },
@@ -21,7 +22,7 @@ export async function open(page: Page, slug: string, { paged = false } = {}) {
     if (m.type() === 'error') errors.push(m.text())
   })
   await page.goto(`/#/${slug}`)
-  await expect(page.locator('main h1')).toBeVisible()
+  await expect(page.locator('main h1').first()).toBeVisible()
   return errors
 }
 

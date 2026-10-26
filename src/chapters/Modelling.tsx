@@ -1,5 +1,5 @@
 import { Chapter } from '@/components/Chapter'
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router'
@@ -97,9 +97,9 @@ const TONE: Record<NodeType, { border: string; text: string; stroke: string }> =
   sat: { border: 'border-amber-500/70', text: 'text-amber-700 dark:text-amber-400', stroke: 'stroke-amber-400/70' },
 }
 const KIND_CHIP: Record<Kind, string> = {
-  bk: 'border-sky-500/60 bg-sky-500/15 text-sky-600 dark:text-sky-300',
+  bk: 'border-sky-500/60 bg-sky-500/15 text-sky-700 dark:text-sky-300',
   fk: 'border-emerald-500/60 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
-  attr: 'border-amber-500/60 bg-amber-500/15 text-amber-700 dark:text-amber-200',
+  attr: 'border-amber-500/60 bg-amber-500/15 text-amber-800 dark:text-amber-200',
 }
 
 interface Step {
@@ -390,7 +390,7 @@ function VaultCanvas({ step, split, hover, setHover }: { step: number; split: bo
                   {c}
                 </div>
               ))}
-              <div className="text-muted-foreground/60">+ ldts, rsrc</div>
+              <div className="text-muted-foreground">+ ldts, rsrc</div>
             </div>
           </motion.div>
         ))}
@@ -402,65 +402,53 @@ function VaultCanvas({ step, split, hover, setHover }: { step: number; split: bo
   )
 }
 
-function Stepper() {
-  const [step, setStep] = usePersistentState('modelling.step', 0)
+type StepGroup = 'Hubs' | 'Links' | 'Satellites'
+
+function Stepper({ group }: { group: StepGroup }) {
+  const steps = STEPS.flatMap((step, index) => (step.group === group ? [index] : []))
+  const [selected, setSelected] = usePersistentState(`modelling.step.${group.toLowerCase()}`, 0)
+  const position = Math.min(selected, steps.length - 1)
+  const step = steps[position]
   const [split, setSplit] = useState(false)
   const [hover, setHover] = useState<Hover>(null)
-  const go = useCallback((d: number) => setStep((s) => Math.min(STEPS.length - 1, Math.max(0, s + d))), [])
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return
-      if (e.key === 'ArrowRight') go(1)
-      if (e.key === 'ArrowLeft') go(-1)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [go])
+  const go = (direction: number) => setSelected((current) => Math.min(steps.length - 1, Math.max(0, current + direction)))
 
   const s = STEPS[step]
-  const groups = ['Hubs', 'Links', 'Satellites'] as const
 
   return (
     <div className="rounded-2xl border bg-card/30 p-4 md:p-6">
       <div className="mb-5 flex flex-wrap items-center gap-2">
-        {groups.map((g, gi) => (
-          <div key={g} className="flex items-center gap-1">
-            <span className={cn('mr-1 text-xs font-medium', ['text-sky-700 dark:text-sky-400', 'text-emerald-700 dark:text-emerald-400', 'text-amber-700 dark:text-amber-400'][gi])}>
-              {gi + 1}. {g}
-            </span>
-            {STEPS.map((st, i) =>
-              st.group === g ? (
-                <button
-                  key={st.code}
-                  onClick={() => setStep(i)}
-                  className={cn(
-                    'rounded-md px-1.5 py-0.5 font-mono text-[11px] transition-colors',
-                    i === step ? 'bg-foreground text-background' : i < step ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted',
-                  )}
-                >
-                  {st.code}
-                </button>
-              ) : null,
-            )}
-            {gi < 2 && <span className="mx-1 text-muted-foreground">·</span>}
-          </div>
-        ))}
+        <div className="flex items-center gap-1">
+          <span className="mr-1 text-xs font-medium text-sky-700 dark:text-sky-400">{group}</span>
+          {steps.map((i, localIndex) => (
+            <button
+              key={STEPS[i].code}
+              aria-pressed={localIndex === position}
+              onClick={() => setSelected(localIndex)}
+              className={cn(
+                'rounded-md px-1.5 py-0.5 font-mono text-[11px] transition-colors',
+                localIndex === position ? 'bg-foreground text-background' : localIndex < position ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted',
+              )}
+            >
+              {STEPS[i].code}
+            </button>
+          ))}
+        </div>
         <div className="ml-auto flex items-center gap-1">
-          <Button size="icon-sm" variant="ghost" aria-label="Restart" onClick={() => setStep(0)}>
+          <Button size="icon-sm" variant="ghost" aria-label={`Restart ${group.toLowerCase()} steps`} onClick={() => setSelected(0)}>
             <RotateCcw />
           </Button>
-          <Button size="sm" variant="outline" onClick={() => go(-1)} disabled={step === 0}>
+          <Button size="sm" variant="outline" onClick={() => go(-1)} disabled={position === 0}>
             <ChevronLeft /> Back
           </Button>
-          <Button size="sm" onClick={() => go(1)} disabled={step === STEPS.length - 1}>
+          <Button size="sm" onClick={() => go(1)} disabled={position === steps.length - 1}>
             Next <ChevronRight />
           </Button>
         </div>
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mb-5 min-h-[6.5rem]">
+          <motion.div key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mb-5 min-h-[6.5rem]">
           <div className="font-mono text-xs text-muted-foreground">
             Step {s.code} · {s.group}
           </div>
@@ -507,16 +495,39 @@ export default function Modelling() {
   return (
     <Chapter>
       <ChapterHeader
-        n={2}
         title="Modelling three datasets"
         lead="Modelling a Data Vault is closer to business analysis than to source analysis. Follow the nine steps of the method and watch customer, nation and orders turn into hubs, links and satellites."
       />
-      <Section>
-        <Stepper />
-        <p className="mt-2 text-xs text-muted-foreground">Tip: use ← and → to step. Hover over columns and tables to trace them.</p>
+      <Section
+        title="Step through the hubs"
+        lead="The first group of method steps identifies the business concepts and their stable keys."
+        keyPoint="A hub holds a business key and its hashkey, load date and record source—not descriptive attributes."
+      >
+        <Stepper group="Hubs" />
+        <p className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each business key.</p>
+      </Section>
+      <Section
+        title="Step through the links"
+        lead="The next group finds natural relationships among the customer, nation and order keys."
+        keyPoint="A link records a relationship as a new combination of participating hub keys."
+      >
+        <Stepper group="Links" />
+        <p className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each relationship.</p>
+      </Section>
+      <Section
+        title="Step through the satellites"
+        lead="The final group assigns descriptive context and applies the guide’s satellite split criteria."
+        keyPoint="Satellites attach to one hub or link and keep new versions when their payload changes."
+      >
+        <Stepper group="Satellites" />
+        <p className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each payload.</p>
       </Section>
 
-      <Section title="What to take away">
+      <Section
+        title="What to take away"
+        lead="Use the nine modelling steps to map customer, nation and orders to hubs, links and satellites."
+        keyPoint="Treat keys and relationships as business decisions; new sources and changing context can be added without rewriting history."
+      >
         <div className="grid gap-4 md:grid-cols-3">
           <Callout kind="info" title="Keys are a business decision">
             The hardest step is 1.2. A good hub key means the same thing across the enterprise and survives a system replacement. When sources disagree (e.g. a{' '}
@@ -531,7 +542,7 @@ export default function Modelling() {
           </Callout>
         </div>
         <P>
-          Ready to build it? <Link to="/dbt" className="text-sky-700 dark:text-sky-400 underline underline-offset-4">Chapter 3</Link> turns every box on this canvas into a
+          Ready to build it? <Link to="/dbt" className="text-sky-700 dark:text-sky-400 underline underline-offset-4">The dbt chapter</Link> turns every box on this canvas into a
           datavault4dbt model.
         </P>
       </Section>

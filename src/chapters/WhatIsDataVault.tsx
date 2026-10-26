@@ -2,7 +2,7 @@ import { Chapter } from '@/components/Chapter'
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Boxes, GitBranch, Layers, Scale, Workflow } from 'lucide-react'
-import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
+import { ChapterHeader, Section, P, Callout, Code, RecapExtras } from '@/components/Prose'
 import { Decomposition } from '@/components/Decomposition'
 import { cn } from '@/lib/utils'
 
@@ -137,12 +137,15 @@ export default function WhatIsDataVault() {
   return (
     <Chapter>
       <ChapterHeader
-        n={1}
         title="What is Data Vault"
         lead="A modelling pattern for enterprise warehouses that splits every concept into its keys (hubs), its relationships (links) and its context and history (satellites), so the warehouse can keep absorbing change."
       />
 
-      <Section title="Built for a warehouse that never stops changing">
+      <Section
+        title="Built for a warehouse that never stops changing"
+        lead="See how new sources, attributes, rules and deliveries add to a vault without rewriting its existing rows."
+        keyPoint="New sources, attributes, rules and deliveries should add to the vault without rewriting its existing rows."
+      >
         <P>
           An enterprise warehouse is not a project with an end date. It is an ongoing programme that keeps absorbing four kinds of change. Data Vault was designed
           (by Dan Linstedt, and refined by the community since) so that each of these changes is <em>additive</em>: you add tables, you don't rework old ones.
@@ -158,7 +161,11 @@ export default function WhatIsDataVault() {
         </div>
       </Section>
 
-      <Section title="Unified decomposition">
+      <Section
+        title="Unified decomposition"
+        lead="Watch one customer row separate into identity, relationship and changing context."
+        keyPoint="Hubs, links and satellites keep separate grains, then come together around shared keys."
+      >
         <div className="grid items-start gap-8 lg:grid-cols-2">
           <div>
             <P>
@@ -190,7 +197,11 @@ export default function WhatIsDataVault() {
         </Callout>
       </Section>
 
-      <Section title="The three building blocks">
+      <Section
+        title="The three building blocks"
+        lead="Compare what hubs, links and satellites store and the rules each follows."
+        keyPoint="A hub stores identity, a link stores a relationship, and a satellite stores descriptive history."
+      >
         <div className="grid gap-4 md:grid-cols-3">
           {BLOCKS.map((b) => (
             <motion.div key={b.name} whileHover={{ y: -4 }} className={cn('rounded-2xl border bg-gradient-to-b to-transparent p-5', b.tone)}>
@@ -214,11 +225,22 @@ export default function WhatIsDataVault() {
         </P>
       </Section>
 
-      <Section title="Where it sits">
+      <Section
+        title="Where it sits"
+        lead="The layer diagram places the Data Vault between landed data and reporting models."
+        keyPoint="The raw vault integrates source history; the business vault adds rules and query helpers."
+      >
         <P>
           Data Vault is the integration layer between landing and reporting. In a lakehouse medallion architecture it is the <strong>Silver</strong> layer. Click a layer:
         </P>
         <Architecture />
+      </Section>
+
+      <Section
+        title="What each layer does"
+        lead="Trace customer, nation and orders from staging through the raw vault to marts."
+        keyPoint="Stage prepares source rows, the raw vault preserves them, and marts shape them for questions."
+      >
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
             ['Hubs', 'make key management easy', 'text-sky-700 dark:text-sky-400'],
@@ -233,7 +255,11 @@ export default function WhatIsDataVault() {
         </div>
       </Section>
 
-      <Section title="Data Vault vs a traditional warehouse">
+      <Section
+        title="Data Vault vs a traditional warehouse"
+        lead="Compare how Data Vault handles history, change and reporting with a more traditional warehouse design."
+        keyPoint="Data Vault feeds reporting marts; its history is retained so those marts can be rebuilt as needs change."
+      >
         <div tabIndex={0} className="overflow-x-auto rounded-xl border outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left">
@@ -262,8 +288,10 @@ export default function WhatIsDataVault() {
         </Callout>
       </Section>
 
-      <Section title="Further reading">
-        <ul className="space-y-1.5 text-sm">
+      <RecapExtras>
+        <section aria-labelledby="further-reading-heading" className="max-w-3xl">
+          <h2 id="further-reading-heading" className="mb-3 text-lg font-semibold">Further reading</h2>
+          <ul className="space-y-1.5 text-sm">
           {[
             ['Hans Hultgren — Introductory Guide to Data Vault Modeling (Genesee Academy, 2019)', 'http://dvstandards.com/wp-content/uploads/2021/02/data_vault_modeling_guide_2019_v3.pdf'],
             ['Databricks — What is a Data Vault?', 'https://www.databricks.com/blog/what-is-data-vault'],
@@ -276,8 +304,9 @@ export default function WhatIsDataVault() {
               </a>
             </li>
           ))}
-        </ul>
-      </Section>
+          </ul>
+        </section>
+      </RecapExtras>
     </Chapter>
   )
 }

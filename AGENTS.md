@@ -22,7 +22,7 @@ Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs th
 
 ## Layout
 
-- `src/chapters/`: one file per chapter, registered in `src/chapters/index.ts` (order = navigation order). Each chapter wraps its content in `<Chapter>` (`src/components/Chapter.tsx`): every `<Section>` is one page at `/#/<chapter>/<section-id>`, and `ChapterHeader` shows on the first page. Keep `ChapterHeader` and `Section` as direct children of `<Chapter>`. The "Show as one page" switch (`src/lib/reading.ts`) renders them all as one scroll. e2e helpers open routes as one page unless `{ paged: true }`.
+- `src/chapters/`: one file per chapter, registered in `src/chapters/index.ts` (order = navigation order). Each chapter wraps its content in `<Chapter>` (`src/components/Chapter.tsx`): the chapter root is a generated cover, every `<Section>` is one page at `/#/<chapter>/<section-id>`, and `/#/<chapter>/recap` is the generated recap. Keep `ChapterHeader`, `Section` and optional `RecapExtras` as direct children of `<Chapter>`. The "Show as one page" switch (`src/lib/reading.ts`) renders the cover, sections and recap as one scroll. e2e helpers open routes as one page unless `{ paged: true }`.
 - `src/components/`: shared UI (`CodeBlock` Shiki, `DataTable`, `Prose`, `Decomposition`, `Layout`). `src/components/ui/` is shadcn (Base UI).
 - `src/lib/dv/hash.ts`: datavault4dbt-compatible hashing.
 - `src/lib/dv/dataset.ts`: the three-batch fictional TPC-H-style dataset and its `STORY`.
@@ -48,6 +48,7 @@ Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs th
    - about 4 primary controls per interactive;
    - each chapter has an optional, never-blocking quick check.
    Run `pnpm e2e` and the manual steps in `docs/knowledge/ux-audit.md` before UX-facing PRs.
+10. **Scope.** Every page must teach Data Vault modelling, or how dbt builds, loads, tests or protects the vault. Platform detail belongs only where it changes a Data Vault decision. Tool setup, platform operations, general dbt topics with no Data Vault angle, and company-specific material stay out; link out instead.
 
 ## Knowledge base
 
@@ -57,4 +58,5 @@ Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs th
 - `docs/knowledge/sources.md`: the reference material and what each one is used for (Data Vault, and learning design/accessibility).
 - `docs/knowledge/learning-design.md`: rules for ADHD-friendly, cognitively accessible chapters, with success criteria S1–S7.
 - `docs/plans/adhd-ux-plan.md`: the agreed ADHD/UX roadmap (phases, per-chapter changes, decisions).
+- `docs/plans/guide-plan.md`: the agreed guide structure, scope and PR sequence.
 - `docs/knowledge/ux-audit.md`: how to audit the UI (automated scan, code greps, the referenced review skills), severity scale, latest findings.

@@ -3,11 +3,14 @@ import { motion } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
 import { CHAPTERS } from '@/chapters'
 import { Decomposition } from '@/components/Decomposition'
+import { Button } from '@/components/ui/button'
 import { resetProgress, useProgress } from '@/lib/progress'
+import { getFirstPathChapter, setReadingPath, useReadingPath, type ReadingPath } from '@/lib/reading'
 
 const blurbs: Record<string, string> = {
   'what-is-data-vault': 'Hubs, links and satellites, unified decomposition, and where the vault sits between sources and marts.',
   modelling: 'Customers, nations and orders, modelled step by step with the nine-step Data Vault method.',
+  'dv-names': 'A quick map from familiar Data Vault terms to the exact names used in this guide.',
   dbt: 'The same model as datavault4dbt code: stage YAML, then one macro call per hub, link and satellite.',
   'hash-lab': 'Type a business key and watch it get trimmed, upper-cased, concatenated and hashed.',
   'load-player': 'Play three daily loads and watch rows flow, or get skipped, as the vault grows insert-only.',
@@ -16,8 +19,15 @@ const blurbs: Record<string, string> = {
   'dbt-project': 'The full lineage graph from seed to mart. Click any node to read its model.',
 }
 
+const paths: { id: ReadingPath; title: string; description: string }[] = [
+  { id: 'full', title: 'New to Data Vault and dbt', description: 'Build the foundations, then follow the complete guide.' },
+  { id: 'dv-practitioner', title: 'I know Data Vault, new to dbt', description: 'Start with this guide’s names, then build and load with dbt.' },
+  { id: 'browse', title: 'Just browsing', description: 'Pick any chapter and read in any order.' },
+]
+
 export function Home() {
   const { last } = useProgress()
+  const readingPath = useReadingPath()
   const lastChapter = last && CHAPTERS.find((c) => c.slug === last.slug)
   const resume = lastChapter ? { chapter: lastChapter, section: last.section, sectionTitle: last.sectionTitle } : null
   return (
@@ -65,6 +75,32 @@ export function Home() {
           </motion.div>
         </div>
         <Decomposition auto />
+      </section>
+
+      <section aria-labelledby="start-here-heading" className="mt-12">
+        <h2 id="start-here-heading" className="mb-4 text-2xl font-semibold">Start here</h2>
+        <div className="grid gap-3 lg:grid-cols-3">
+          {paths.map((path) => (
+            <div key={path.id} className="rounded-xl border bg-card/50 p-4">
+              <Button
+                variant={readingPath === path.id ? 'default' : 'outline'}
+                aria-pressed={readingPath === path.id}
+                onClick={() => setReadingPath(path.id)}
+              >
+                {path.title}
+              </Button>
+              <p className="mt-3 min-h-10 text-sm text-muted-foreground">{path.description}</p>
+              <Link
+                to={`/${getFirstPathChapter(path.id)}`}
+                aria-label={`Start this path: ${path.title}`}
+                onClick={() => setReadingPath(path.id)}
+                className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-sky-700 hover:underline dark:text-sky-400"
+              >
+                Start this path <ArrowRight aria-hidden className="size-4" />
+              </Link>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="mt-16 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

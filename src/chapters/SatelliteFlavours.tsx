@@ -4,7 +4,6 @@ import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Code } from '@/components/Prose'
 import { DataTable } from '@/components/DataTable'
 import { CodeBlock } from '@/components/CodeBlock'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BEGIN, END, isGhost, satV1, simulate, type Row } from '@/lib/dv/engine'
 import { BATCHES } from '@/lib/dv/dataset'
 import { MODEL } from '@/lib/dv/models'
@@ -82,55 +81,67 @@ export default function SatelliteFlavours() {
   return (
     <Chapter>
       <ChapterHeader
-        n={6}
         title="Satellite flavours"
         lead="The standard satellite stores versions. Real data needs a few variations: end dates, several active rows, relationship validity, and simple observation tracking."
       />
-      <Section>
-        <Tabs defaultValue="v1">
-          <TabsList className="mb-6 max-w-full flex-wrap justify-start group-data-horizontal/tabs:h-auto [&>*]:h-7">
-            <TabsTrigger value="v1">v0 vs v1</TabsTrigger>
-            <TabsTrigger value="ma">Multi-active</TabsTrigger>
-            <TabsTrigger value="es">Effectivity</TabsTrigger>
-            <TabsTrigger value="rts">Record tracking</TabsTrigger>
-          </TabsList>
-          <TabsContent value="v1" className="space-y-4">
-            <P>
-              <Code>sat_v0</Code> is the physical, insert-only table: just <Code>ldts</Code>. <Code>sat_v1</Code> is a view that uses <Code>LEAD()</Code> to derive{' '}
-              <Code>ledts</Code> (the next version's ldts minus one microsecond, or {END} when open) and an <Code>is_current</Code> flag. History becomes a set of intervals.
-            </P>
-            <Timeline rows={v1} />
-            <DataTable title="customer_n_s_v1" tone="sat" rows={v1} hideGhosts columns={['hk_customer_h', 'c_name', 'c_address', 'ldts', 'ledts', 'is_current']} />
-            <CodeBlock title="customer_n_s_v1.sql" code={MODEL.customer_n_s_v1.code} />
-          </TabsContent>
-          <TabsContent value="ma" className="space-y-4">
-            <P>
-              One customer can have a home, mobile and work phone <em>at the same time</em>. A multi-active satellite keys rows by parent + ldts + <Code>phone_type</Code>,
-              and hashes the whole set together: when Alice adds a work phone, all three of her rows get a new version.
-            </P>
-            <DataTable title="customer_phone_ma_s" tone="sat" rows={last.customer_phone_ma_s} hideGhosts />
-            <CodeBlock title="customer_phone_ma_s.sql" code={MODEL.customer_phone_ma_s.code} />
-          </TabsContent>
-          <TabsContent value="es" className="space-y-4">
-            <P>
-              Links are insert-only, so they can't tell you that a relationship <em>ended</em>. An effectivity satellite tracks <Code>is_active</Code> per link: when Chiara
-              moves, her Italy link flips to inactive and the new Germany link starts active. Daniel's links go inactive while he's missing and come back on day three.
-            </P>
-            <DataTable title="customer_nation_es" tone="sat" rows={last.customer_nation_es} hideGhosts />
-            <CodeBlock title="customer_nation_es.sql" code={MODEL.customer_nation_es.code} />
-          </TabsContent>
-          <TabsContent value="rts" className="space-y-4">
-            <P>
-              A record-tracking satellite has no payload. It just logs every load and source in which a key appeared. That's how you see that Daniel was absent on day two,
-              or that Farah first showed up through an order.
-            </P>
-            <DataTable title="customer_rts" tone="sat" rows={last.customer_rts} hideGhosts maxHeight="max-h-96" />
-            <CodeBlock title="customer_rts.sql" code={MODEL.customer_rts.code} />
-          </TabsContent>
-        </Tabs>
+      <Section
+        title="Compare satellite flavours"
+        lead="Compare the standard satellite's load-date history with the end dates derived for reporting."
+        keyPoint="The raw satellite stays insert-only; its v1 view derives validity intervals from successive load dates."
+      >
+        <P>
+          <Code>sat_v0</Code> is the physical, insert-only table: just <Code>ldts</Code>. <Code>sat_v1</Code> is a view that uses <Code>LEAD()</Code> to derive{' '}
+          <Code>ledts</Code> (the next version's ldts minus one microsecond, or {END} when open) and an <Code>is_current</Code> flag. History becomes a set of intervals.
+        </P>
+        <Timeline rows={v1} />
+        <DataTable title="customer_n_s_v1" tone="sat" rows={v1} hideGhosts columns={['hk_customer_h', 'c_name', 'c_address', 'ldts', 'ledts', 'is_current']} />
         <p className="mt-6 text-xs text-muted-foreground">
           Ghost rows use ldts {BEGIN} (unknown) and {END}. Names shown for readability: {Object.values(NAMES).join(', ')}.
         </p>
+      </Section>
+      <Section
+        title="How a v1 satellite derives intervals"
+        lead="Read the view model that turns a sequence of load dates into validity intervals."
+        keyPoint="sat_v1 derives end dates; the raw satellite remains insert-only."
+      >
+        <P>
+          The view uses <Code>LEAD()</Code> to find the next version's <Code>ldts</Code>, subtracts one microsecond for <Code>ledts</Code>, and marks the open row as current.
+        </P>
+        <CodeBlock title="customer_n_s_v1.sql" code={MODEL.customer_n_s_v1.code} />
+      </Section>
+      <Section
+        title="Multi-active satellites"
+        lead="One customer can have several phone types at the same time."
+        keyPoint="The multi-active key keeps concurrently valid phone rows distinct."
+      >
+        <P>
+          A multi-active satellite keys rows by parent + <Code>phone_type</Code>, and hashes the whole set together: when Alice adds a work phone, all three of her rows get a new version.
+        </P>
+        <DataTable title="customer_phone_ma_s" tone="sat" rows={last.customer_phone_ma_s} hideGhosts />
+        <CodeBlock title="customer_phone_ma_s.sql" code={MODEL.customer_phone_ma_s.code} />
+      </Section>
+      <Section
+        title="Effectivity satellites"
+        lead="An effectivity satellite records whether a link is active over time."
+        keyPoint="Use it to record relationship activity without updating the insert-only link."
+      >
+        <P>
+          Links are insert-only, so they can't tell you that a relationship <em>ended</em>. An effectivity satellite tracks <Code>is_active</Code> per link: when Chiara
+          moves, her Italy link flips to inactive and the new Germany link starts active. Daniel's links go inactive while he's missing and come back on day three.
+        </P>
+        <DataTable title="customer_nation_es" tone="sat" rows={last.customer_nation_es} hideGhosts />
+        <CodeBlock title="customer_nation_es.sql" code={MODEL.customer_nation_es.code} />
+      </Section>
+      <Section
+        title="Record-tracking satellites"
+        lead="A record-tracking satellite logs when and from where a key was observed."
+        keyPoint="It records provenance of appearance, not descriptive attribute history."
+      >
+        <P>
+          A record-tracking satellite has no payload. It logs every load and source in which a key appeared, such as Daniel's absence on day two or Farah's first appearance through an order.
+        </P>
+        <DataTable title="customer_rts" tone="sat" rows={last.customer_rts} hideGhosts maxHeight="max-h-96" />
+        <CodeBlock title="customer_rts.sql" code={MODEL.customer_rts.code} />
       </Section>
     </Chapter>
   )
