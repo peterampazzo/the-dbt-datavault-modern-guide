@@ -65,28 +65,28 @@ interface VNode {
 }
 
 const nodesFor = (split: boolean): VNode[] => [
-  { id: 'nation_h', type: 'hub', x: 14, y: 50, cols: ['hk_nation_h', 'n_nationkey'] },
-  { id: 'customer_h', type: 'hub', x: 50, y: 50, cols: ['hk_customer_h', 'c_custkey'] },
-  { id: 'order_h', type: 'hub', x: 86, y: 50, cols: ['hk_order_h', 'o_orderkey'] },
-  { id: 'customer_nation_l', type: 'link', x: 32, y: 14, cols: ['hk_customer_nation_l', 'hk_customer_h', 'hk_nation_h'], parents: ['customer_h', 'nation_h'] },
+  { id: 'nation_h', type: 'hub', x: 14, y: 46, cols: ['hk_nation_h', 'n_nationkey'] },
+  { id: 'customer_h', type: 'hub', x: 50, y: 46, cols: ['hk_customer_h', 'c_custkey'] },
+  { id: 'order_h', type: 'hub', x: 86, y: 46, cols: ['hk_order_h', 'o_orderkey'] },
+  { id: 'customer_nation_l', type: 'link', x: 30, y: 30, cols: ['hk_customer_nation_l', 'hk_customer_h', 'hk_nation_h'], parents: ['customer_h', 'nation_h'] },
   {
     id: 'order_customer_nh_l',
     type: 'link',
-    x: 68,
-    y: 14,
+    x: 70,
+    y: 30,
     cols: ['hk_order_customer_nh_l', 'hk_order_h', 'hk_customer_h', 'o_orderdate', 'o_totalprice'],
     parents: ['order_h', 'customer_h'],
   },
-  { id: 'nation_n_s', type: 'sat', x: 14, y: 86, cols: ['hk_nation_h', 'hd_nation_n_s', 'n_name', 'n_region'], parents: ['nation_h'] },
+  { id: 'nation_n_s', type: 'sat', x: 14, y: 64, cols: ['hk_nation_h', 'hd_nation_n_s', 'n_name', 'n_region'], parents: ['nation_h'] },
   {
     id: 'customer_n_s',
     type: 'sat',
     x: split ? 40 : 50,
-    y: 86,
+    y: 64,
     cols: ['hk_customer_h', 'hd_customer_n_s', 'c_name', 'c_address', 'c_mktsegment', ...(split ? [] : ['c_acctbal']), 'c_comment'],
     parents: ['customer_h'],
   },
-  ...(split ? [{ id: 'customer_balance_s', type: 'sat' as const, x: 63, y: 86, cols: ['hk_customer_h', 'hd_customer_balance_s', 'c_acctbal'], parents: ['customer_h'] }] : []),
+  ...(split ? [{ id: 'customer_balance_s', type: 'sat' as const, x: 63, y: 64, cols: ['hk_customer_h', 'hd_customer_balance_s', 'c_acctbal'], parents: ['customer_h'] }] : []),
 ]
 
 const TONE: Record<NodeType, { border: string; text: string; stroke: string }> = {
@@ -375,7 +375,8 @@ function VaultCanvas({ step, split, hover, setHover }: { step: number; split: bo
             onMouseLeave={() => setHover(null)}
             style={{ left: `${n.x}%`, top: `${n.y}%` }}
             className={cn(
-              'absolute w-44 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 bg-card p-2 shadow-xl',
+              'absolute w-44 -translate-x-1/2 rounded-xl border-2 bg-card p-2 shadow-xl',
+              n.type === 'hub' ? '-translate-y-1/2' : n.type === 'link' ? '-translate-y-full' : '',
               TONE[n.type].border,
               lit(n.id) && 'ring-4 ring-foreground/20',
             )}
