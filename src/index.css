@@ -119,6 +119,9 @@
 }
 
 @layer base {
+  .grid > * {
+    min-width: 0;
+  }
   * {
     @apply border-border outline-ring/50;
     }

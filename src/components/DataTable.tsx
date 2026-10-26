@@ -78,15 +78,14 @@ export function DataTable({
                 return (
                   <motion.tr
                     key={k}
-                    layout
                     initial={{ opacity: 0, x: -24, backgroundColor: 'rgba(16,185,129,0.35)' }}
                     animate={{
                       opacity: 1,
                       x: 0,
                       backgroundColor: isFresh ? 'rgba(16,185,129,0.14)' : highlightRow?.(r) ? 'rgba(56,189,248,0.14)' : 'rgba(0,0,0,0)',
                     }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.45 }}
+                    exit={{ opacity: 0, transition: { duration: 0 } }}
+                    transition={{ duration: 0.35 }}
                     className={cn('border-t border-border/60', ghost && 'italic text-muted-foreground')}
                   >
                     {cols.map((c) => (

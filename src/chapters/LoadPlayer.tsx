@@ -49,7 +49,7 @@ function Player() {
   }
 
   return (
-    <div className="rounded-2xl border bg-card/30 p-4 md:p-6">
+    <div className="min-w-0 rounded-2xl border bg-card/30 p-3 md:p-6">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex gap-1">
           {runs.map((r, i) => (
@@ -107,8 +107,8 @@ function Player() {
         ))}
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_1.4fr]">
-        <div className="space-y-4">
+      <div className="mt-5 grid gap-4">
+        <div className="min-w-0 space-y-4">
           <AnimatePresence mode="wait">
             <motion.div key={batch} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-xl border bg-card/60 p-4">
               <div className="font-medium">{STORY[batch].title}</div>
@@ -142,8 +142,8 @@ function Player() {
             )}
           </AnimatePresence>
         </div>
-        <div className="grid content-start gap-4">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+        <div className="grid min-w-0 content-start gap-4 lg:grid-cols-2">
+          <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-muted-foreground lg:col-span-2">
             high-water mark before this run:
             <span className="rounded bg-muted px-2 py-0.5 text-foreground">{prev ? (prev.tables.customer_h.filter((r) => !r.__ghost).map((r) => String(r.ldts)).sort().at(-1) ?? '—') : '— (first run)'}</span>
           </div>
