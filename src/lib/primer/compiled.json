@@ -1,0 +1,145 @@
+{
+  "dbtVersion": "1.11.16",
+  "adapterVersion": "1.11.0",
+  "steps": [
+    {
+      "id": "models-ref-source",
+      "label": "4.3 · Source rows",
+      "setupSql": [
+        "DROP SCHEMA IF EXISTS primer.landing CASCADE;",
+        "DROP VIEW IF EXISTS primer.main.stg_customer;",
+        "DROP TABLE IF EXISTS primer.main.customer_by_segment;",
+        "DROP TABLE IF EXISTS primer.main.customer_balance;",
+        "DROP TABLE IF EXISTS primer.main.stg_customer_incremental;",
+        "\nCREATE SCHEMA IF NOT EXISTS landing",
+        "\nCREATE TABLE IF NOT EXISTS landing.customer (\n  c_custkey INTEGER, c_name VARCHAR, c_address VARCHAR, c_nationkey INTEGER,\n  c_mktsegment VARCHAR, c_acctbal DECIMAL(12,2), c_comment VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.nation (\n  n_nationkey INTEGER, n_name VARCHAR, n_region VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.phone (\n  c_custkey INTEGER, phone_type VARCHAR, phone_number VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.orders (\n  o_orderkey INTEGER, o_custkey INTEGER, o_orderdate DATE, o_totalprice DECIMAL(12,2), ldts TIMESTAMP\n)",
+        "INSERT INTO landing.customer (c_custkey, c_name, c_address, c_nationkey, c_mktsegment, c_acctbal, c_comment, ldts) VALUES\n  (1, 'Alice Martin', '12 Rue Lafayette', 4, 'BUILDING', 1200.5, 'prefers email', '2024-01-01 06:00:00'),\n  (2, 'Bruno Costa', 'Av. Paulista 900', 1, 'AUTOMOBILE', 830, '', '2024-01-01 06:00:00'),\n  (3, 'Chiara Rossi', 'Via Roma 3', 6, 'MACHINERY', 2400, 'key account', '2024-01-01 06:00:00'),\n  (4, 'Daniel Weber', 'Hauptstr. 7', 2, 'HOUSEHOLD', 150.25, '', '2024-01-01 06:00:00'),\n  (5, 'Emi Tanaka', '2-1 Shibuya', 3, 'FURNITURE', 990, 'night deliveries', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.nation (n_nationkey, n_name, n_region, ldts) VALUES\n  (1, 'Brazil', 'America', '2024-01-01 06:00:00'),\n  (2, 'Germany', 'Europe', '2024-01-01 06:00:00'),\n  (3, 'Japan', 'Asia', '2024-01-01 06:00:00'),\n  (4, 'France', 'Europe', '2024-01-01 06:00:00'),\n  (5, 'Canada', 'America', '2024-01-01 06:00:00'),\n  (6, 'Italy', 'Europe', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.phone (c_custkey, phone_type, phone_number, ldts) VALUES\n  (1, 'home', '+33 1 40 00 00 01', '2024-01-01 06:00:00'),\n  (1, 'mobile', '+33 6 12 34 56 78', '2024-01-01 06:00:00'),\n  (2, 'mobile', '+55 11 9 8765 4321', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.orders (o_orderkey, o_custkey, o_orderdate, o_totalprice, ldts) VALUES\n  (101, 1, '2023-12-30', 250, '2024-01-01 06:00:00'),\n  (102, 3, '2023-12-31', 1800, '2024-01-01 06:00:00'),\n  (103, 5, '2023-12-31', 95.9, '2024-01-01 06:00:00');"
+      ],
+      "dbtSql": [
+        "CREATE OR REPLACE VIEW primer.main.stg_customer AS\nselect\n    cast(c_custkey as integer) as c_custkey,\n    trim(c_name) as c_name,\n    trim(c_address) as c_address,\n    cast(c_acctbal as decimal(12, 2)) as c_acctbal,\n    c_mktsegment,\n    c_comment\nfrom \"primer\".\"landing\".\"customer\";",
+        "CREATE OR REPLACE TABLE primer.main.customer_by_segment AS\nselect\n    c_mktsegment,\n    count(*) as customer_count,\n    sum(c_acctbal) as total_account_balance\nfrom \"primer\".\"main\".\"stg_customer\"\ngroup by c_mktsegment;",
+        "CREATE OR REPLACE TABLE primer.main.customer_balance AS\nselect\n    c_custkey,\n    \ncast(c_acctbal as decimal(12, 2))\n as account_balance\nfrom \"primer\".\"main\".\"stg_customer\";"
+      ],
+      "checkSql": "SELECT c_custkey, c_name, c_mktsegment FROM primer.landing.customer ORDER BY c_custkey LIMIT 3"
+    },
+    {
+      "id": "models-ref-stg",
+      "label": "4.3 · Staging model",
+      "setupSql": [],
+      "dbtSql": [],
+      "checkSql": "SELECT c_custkey, c_name, c_address, c_acctbal FROM primer.main.stg_customer ORDER BY c_custkey LIMIT 3"
+    },
+    {
+      "id": "models-ref-mart",
+      "label": "4.3 · ref() mart",
+      "setupSql": [],
+      "dbtSql": [],
+      "checkSql": "SELECT c_mktsegment, customer_count, total_account_balance FROM primer.main.customer_by_segment ORDER BY c_mktsegment"
+    },
+    {
+      "id": "incremental-batch-1",
+      "label": "Batch 1 · dbt build",
+      "setupSql": [
+        "DROP SCHEMA IF EXISTS primer.landing CASCADE;",
+        "DROP VIEW IF EXISTS primer.main.stg_customer;",
+        "DROP TABLE IF EXISTS primer.main.customer_by_segment;",
+        "DROP TABLE IF EXISTS primer.main.customer_balance;",
+        "DROP TABLE IF EXISTS primer.main.stg_customer_incremental;",
+        "\nCREATE SCHEMA IF NOT EXISTS landing",
+        "\nCREATE TABLE IF NOT EXISTS landing.customer (\n  c_custkey INTEGER, c_name VARCHAR, c_address VARCHAR, c_nationkey INTEGER,\n  c_mktsegment VARCHAR, c_acctbal DECIMAL(12,2), c_comment VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.nation (\n  n_nationkey INTEGER, n_name VARCHAR, n_region VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.phone (\n  c_custkey INTEGER, phone_type VARCHAR, phone_number VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.orders (\n  o_orderkey INTEGER, o_custkey INTEGER, o_orderdate DATE, o_totalprice DECIMAL(12,2), ldts TIMESTAMP\n)",
+        "INSERT INTO landing.customer (c_custkey, c_name, c_address, c_nationkey, c_mktsegment, c_acctbal, c_comment, ldts) VALUES\n  (1, 'Alice Martin', '12 Rue Lafayette', 4, 'BUILDING', 1200.5, 'prefers email', '2024-01-01 06:00:00'),\n  (2, 'Bruno Costa', 'Av. Paulista 900', 1, 'AUTOMOBILE', 830, '', '2024-01-01 06:00:00'),\n  (3, 'Chiara Rossi', 'Via Roma 3', 6, 'MACHINERY', 2400, 'key account', '2024-01-01 06:00:00'),\n  (4, 'Daniel Weber', 'Hauptstr. 7', 2, 'HOUSEHOLD', 150.25, '', '2024-01-01 06:00:00'),\n  (5, 'Emi Tanaka', '2-1 Shibuya', 3, 'FURNITURE', 990, 'night deliveries', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.nation (n_nationkey, n_name, n_region, ldts) VALUES\n  (1, 'Brazil', 'America', '2024-01-01 06:00:00'),\n  (2, 'Germany', 'Europe', '2024-01-01 06:00:00'),\n  (3, 'Japan', 'Asia', '2024-01-01 06:00:00'),\n  (4, 'France', 'Europe', '2024-01-01 06:00:00'),\n  (5, 'Canada', 'America', '2024-01-01 06:00:00'),\n  (6, 'Italy', 'Europe', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.phone (c_custkey, phone_type, phone_number, ldts) VALUES\n  (1, 'home', '+33 1 40 00 00 01', '2024-01-01 06:00:00'),\n  (1, 'mobile', '+33 6 12 34 56 78', '2024-01-01 06:00:00'),\n  (2, 'mobile', '+55 11 9 8765 4321', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.orders (o_orderkey, o_custkey, o_orderdate, o_totalprice, ldts) VALUES\n  (101, 1, '2023-12-30', 250, '2024-01-01 06:00:00'),\n  (102, 3, '2023-12-31', 1800, '2024-01-01 06:00:00'),\n  (103, 5, '2023-12-31', 95.9, '2024-01-01 06:00:00');"
+      ],
+      "dbtSql": [
+        "CREATE OR REPLACE TABLE primer.main.stg_customer_incremental AS\nselect c_custkey, c_name, c_acctbal, ldts\nfrom \"primer\".\"landing\".\"customer\";"
+      ],
+      "checkSql": "SELECT (SELECT count(*) FROM primer.landing.customer) AS landing_rows, (SELECT count(*) FROM primer.main.stg_customer_incremental) AS target_rows"
+    },
+    {
+      "id": "incremental-batch-2",
+      "label": "Batch 2 · incremental run",
+      "setupSql": [
+        "INSERT INTO landing.customer (c_custkey, c_name, c_address, c_nationkey, c_mktsegment, c_acctbal, c_comment, ldts) VALUES\n  (1, 'Alice Martin', '12 Rue Lafayette', 4, 'BUILDING', 1200.5, 'prefers email', '2024-01-02 06:00:00'),\n  (2, 'Bruno Costa', 'Rua Augusta 15', 1, 'AUTOMOBILE', 830, '', '2024-01-02 06:00:00'),\n  (3, 'Chiara Rossi', 'Via Roma 3', 2, 'MACHINERY', 2400, 'key account', '2024-01-02 06:00:00'),\n  (5, 'Emi Tanaka', '2-1 Shibuya', 3, 'FURNITURE', 990, 'night deliveries', '2024-01-02 06:00:00'),\n  (6, 'Farah Khan', '88 King St W', 5, 'BUILDING', 3100, '', '2024-01-02 06:00:00');",
+        "INSERT INTO landing.nation (n_nationkey, n_name, n_region, ldts) VALUES\n  (1, 'Brazil', 'America', '2024-01-02 06:00:00'),\n  (2, 'Germany', 'Europe', '2024-01-02 06:00:00'),\n  (3, 'Japan', 'Asia', '2024-01-02 06:00:00'),\n  (4, 'France', 'Europe', '2024-01-02 06:00:00'),\n  (5, 'Canada', 'America', '2024-01-02 06:00:00'),\n  (6, 'Italy', 'Europe', '2024-01-02 06:00:00');",
+        "INSERT INTO landing.phone (c_custkey, phone_type, phone_number, ldts) VALUES\n  (1, 'home', '+33 1 40 00 00 01', '2024-01-02 06:00:00'),\n  (1, 'mobile', '+33 6 12 34 56 78', '2024-01-02 06:00:00'),\n  (1, 'work', '+33 1 55 55 55 55', '2024-01-02 06:00:00'),\n  (2, 'mobile', '+55 11 9 8765 4321', '2024-01-02 06:00:00');",
+        "INSERT INTO landing.orders (o_orderkey, o_custkey, o_orderdate, o_totalprice, ldts) VALUES\n  (104, 6, '2024-01-01', 420, '2024-01-02 06:00:00'),\n  (105, 1, '2024-01-01', 60, '2024-01-02 06:00:00');"
+      ],
+      "dbtSql": [
+        "INSERT INTO primer.main.stg_customer_incremental\nselect c_custkey, c_name, c_acctbal, ldts\nfrom \"primer\".\"landing\".\"customer\"\n\nwhere ldts > (select max(ldts) from \"primer\".\"main\".\"stg_customer_incremental\");"
+      ],
+      "checkSql": "SELECT (SELECT count(*) FROM primer.landing.customer) AS landing_rows, (SELECT count(*) FROM primer.main.stg_customer_incremental) AS target_rows"
+    },
+    {
+      "id": "incremental-batch-3",
+      "label": "Landing truncated · batch 3 arrives",
+      "setupSql": [
+        "DELETE FROM primer.landing.customer;",
+        "DELETE FROM primer.landing.nation;",
+        "DELETE FROM primer.landing.phone;",
+        "DELETE FROM primer.landing.orders;",
+        "INSERT INTO landing.customer (c_custkey, c_name, c_address, c_nationkey, c_mktsegment, c_acctbal, c_comment, ldts) VALUES\n  (1, 'Alice Martin', '12 Rue Lafayette', 4, 'MACHINERY', 1200.5, 'prefers email', '2024-01-03 06:00:00'),\n  (2, 'Bruno Costa', 'Rua Augusta 15', 1, 'AUTOMOBILE', 830, '', '2024-01-03 06:00:00'),\n  (3, 'Chiara Rossi', 'Via Roma 3', 2, 'MACHINERY', 2400, 'key account', '2024-01-03 06:00:00'),\n  (4, 'Daniel Weber', 'Hauptstr. 7', 2, 'HOUSEHOLD', 150.25, '', '2024-01-03 06:00:00'),\n  (5, 'Emi Tanaka', '2-1 Shibuya', 3, 'FURNITURE', 990, 'night deliveries   ', '2024-01-03 06:00:00'),\n  (6, 'Farah Khan', '88 King St W', 5, 'BUILDING', 3100, '', '2024-01-03 06:00:00'),\n  (7, 'Gabriel Silva', 'Rua Oscar Freire 2', 1, 'AUTOMOBILE', 640, '', '2024-01-03 06:00:00');",
+        "INSERT INTO landing.nation (n_nationkey, n_name, n_region, ldts) VALUES\n  (1, 'Brazil', 'America', '2024-01-03 06:00:00'),\n  (2, 'Deutschland', 'Europe', '2024-01-03 06:00:00'),\n  (3, 'Japan', 'Asia', '2024-01-03 06:00:00'),\n  (4, 'France', 'Europe', '2024-01-03 06:00:00'),\n  (5, 'Canada', 'America', '2024-01-03 06:00:00'),\n  (6, 'Italy', 'Europe', '2024-01-03 06:00:00');",
+        "INSERT INTO landing.phone (c_custkey, phone_type, phone_number, ldts) VALUES\n  (1, 'home', '+33 1 40 00 00 01', '2024-01-03 06:00:00'),\n  (1, 'mobile', '+33 6 12 34 56 78', '2024-01-03 06:00:00'),\n  (1, 'work', '+33 1 55 55 55 55', '2024-01-03 06:00:00'),\n  (2, 'mobile', '+55 11 9 1111 2222', '2024-01-03 06:00:00');",
+        "INSERT INTO landing.orders (o_orderkey, o_custkey, o_orderdate, o_totalprice, ldts) VALUES\n  (106, 7, '2024-01-02', 310, '2024-01-03 06:00:00');"
+      ],
+      "dbtSql": [
+        "INSERT INTO primer.main.stg_customer_incremental\nselect c_custkey, c_name, c_acctbal, ldts\nfrom \"primer\".\"landing\".\"customer\"\n\nwhere ldts > (select max(ldts) from \"primer\".\"main\".\"stg_customer_incremental\");"
+      ],
+      "checkSql": "SELECT (SELECT count(*) FROM primer.landing.customer) AS landing_rows, (SELECT count(*) FROM primer.main.stg_customer_incremental) AS target_rows"
+    },
+    {
+      "id": "incremental-full-refresh",
+      "label": "--full-refresh",
+      "setupSql": [],
+      "dbtSql": [
+        "CREATE OR REPLACE TABLE primer.main.stg_customer_incremental AS\nselect c_custkey, c_name, c_acctbal, ldts\nfrom \"primer\".\"landing\".\"customer\";"
+      ],
+      "checkSql": "SELECT (SELECT count(*) FROM primer.landing.customer) AS landing_rows, (SELECT count(*) FROM primer.main.stg_customer_incremental) AS target_rows"
+    },
+    {
+      "id": "unique-fails",
+      "label": "4.7 · Duplicate fails unique",
+      "setupSql": [
+        "DROP SCHEMA IF EXISTS primer.landing CASCADE;",
+        "DROP VIEW IF EXISTS primer.main.stg_customer;",
+        "DROP TABLE IF EXISTS primer.main.customer_by_segment;",
+        "DROP TABLE IF EXISTS primer.main.customer_balance;",
+        "DROP TABLE IF EXISTS primer.main.stg_customer_incremental;",
+        "\nCREATE SCHEMA IF NOT EXISTS landing",
+        "\nCREATE TABLE IF NOT EXISTS landing.customer (\n  c_custkey INTEGER, c_name VARCHAR, c_address VARCHAR, c_nationkey INTEGER,\n  c_mktsegment VARCHAR, c_acctbal DECIMAL(12,2), c_comment VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.nation (\n  n_nationkey INTEGER, n_name VARCHAR, n_region VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.phone (\n  c_custkey INTEGER, phone_type VARCHAR, phone_number VARCHAR, ldts TIMESTAMP\n)",
+        "\nCREATE TABLE IF NOT EXISTS landing.orders (\n  o_orderkey INTEGER, o_custkey INTEGER, o_orderdate DATE, o_totalprice DECIMAL(12,2), ldts TIMESTAMP\n)",
+        "INSERT INTO landing.customer (c_custkey, c_name, c_address, c_nationkey, c_mktsegment, c_acctbal, c_comment, ldts) VALUES\n  (1, 'Alice Martin', '12 Rue Lafayette', 4, 'BUILDING', 1200.5, 'prefers email', '2024-01-01 06:00:00'),\n  (2, 'Bruno Costa', 'Av. Paulista 900', 1, 'AUTOMOBILE', 830, '', '2024-01-01 06:00:00'),\n  (3, 'Chiara Rossi', 'Via Roma 3', 6, 'MACHINERY', 2400, 'key account', '2024-01-01 06:00:00'),\n  (4, 'Daniel Weber', 'Hauptstr. 7', 2, 'HOUSEHOLD', 150.25, '', '2024-01-01 06:00:00'),\n  (5, 'Emi Tanaka', '2-1 Shibuya', 3, 'FURNITURE', 990, 'night deliveries', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.nation (n_nationkey, n_name, n_region, ldts) VALUES\n  (1, 'Brazil', 'America', '2024-01-01 06:00:00'),\n  (2, 'Germany', 'Europe', '2024-01-01 06:00:00'),\n  (3, 'Japan', 'Asia', '2024-01-01 06:00:00'),\n  (4, 'France', 'Europe', '2024-01-01 06:00:00'),\n  (5, 'Canada', 'America', '2024-01-01 06:00:00'),\n  (6, 'Italy', 'Europe', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.phone (c_custkey, phone_type, phone_number, ldts) VALUES\n  (1, 'home', '+33 1 40 00 00 01', '2024-01-01 06:00:00'),\n  (1, 'mobile', '+33 6 12 34 56 78', '2024-01-01 06:00:00'),\n  (2, 'mobile', '+55 11 9 8765 4321', '2024-01-01 06:00:00');",
+        "INSERT INTO landing.orders (o_orderkey, o_custkey, o_orderdate, o_totalprice, ldts) VALUES\n  (101, 1, '2023-12-30', 250, '2024-01-01 06:00:00'),\n  (102, 3, '2023-12-31', 1800, '2024-01-01 06:00:00'),\n  (103, 5, '2023-12-31', 95.9, '2024-01-01 06:00:00');",
+        "INSERT INTO landing.customer (c_custkey, c_name, c_address, c_nationkey, c_mktsegment, c_acctbal, c_comment, ldts) VALUES\n  (1, 'Alice Martin', '12 Rue Lafayette', 4, 'BUILDING', 1200.5, 'prefers email', '2024-01-01 06:00:00');"
+      ],
+      "dbtSql": [
+        "CREATE OR REPLACE VIEW primer.main.stg_customer AS\nselect\n    cast(c_custkey as integer) as c_custkey,\n    trim(c_name) as c_name,\n    trim(c_address) as c_address,\n    cast(c_acctbal as decimal(12, 2)) as c_acctbal,\n    c_mktsegment,\n    c_comment\nfrom \"primer\".\"landing\".\"customer\";"
+      ],
+      "checkSql": "select\n    c_custkey as unique_field,\n    count(*) as n_records\n\nfrom \"primer\".\"main\".\"stg_customer\"\nwhere c_custkey is not null\ngroup by c_custkey\nhaving count(*) > 1"
+    },
+    {
+      "id": "unique-passes",
+      "label": "4.7 · Remove duplicate · passes",
+      "setupSql": [
+        "DELETE FROM primer.landing.customer WHERE c_custkey = 1 AND rowid = (SELECT max(rowid) FROM primer.landing.customer WHERE c_custkey = 1);"
+      ],
+      "dbtSql": [],
+      "checkSql": "select\n    c_custkey as unique_field,\n    count(*) as n_records\n\nfrom \"primer\".\"main\".\"stg_customer\"\nwhere c_custkey is not null\ngroup by c_custkey\nhaving count(*) > 1"
+    }
+  ]
+}

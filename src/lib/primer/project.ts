@@ -1,5 +1,11 @@
-import { BATCHES, CUSTOMER_EMAIL, CUSTOMERS } from '../dv/dataset'
-import { hd } from '../dv/hash'
+import { emailUnitTestExpectedRows, emailUnitTestGivenRows } from './email-hashdiffs'
+import stgCustomerCode from '../../../primer-dbt/models/staging/stg_customer.sql?raw'
+import customerBySegmentCode from '../../../primer-dbt/models/marts/customer_by_segment.sql?raw'
+import customerIncrementalCode from '../../../primer-dbt/models/staging/stg_customer_incremental.sql?raw'
+import roundAmountMacroCode from '../../../primer-dbt/macros/round_amount.sql?raw'
+import customerBalanceCode from '../../../primer-dbt/models/marts/customer_balance.sql?raw'
+import schemaTestsCode from '../../../primer-dbt/models/staging/schema.yml?raw'
+import sourcesCode from '../../../primer-dbt/models/staging/sources.yml?raw'
 
 export type PrimerLang = 'sql' | 'yaml' | 'bash'
 
@@ -10,86 +16,24 @@ export interface PrimerFile {
   lang: PrimerLang
 }
 
-const EMAIL_HASHDIFF_COLUMNS = ['c_name', 'c_address', 'c_mktsegment', 'c_acctbal', 'c_comment', 'c_email'] as const
-
-function emailVersionRow(batchIndex: number) {
-  const customer = CUSTOMERS[batchIndex].find((row) => row.c_custkey === 2)
-  if (!customer) throw new Error(`Customer 2 is missing from delivery ${batchIndex + 1}`)
-
-  return {
-    ...customer,
-    c_email: CUSTOMER_EMAIL[batchIndex][2],
-    ldts: BATCHES[batchIndex],
-    rsrc: 'crm/customer',
-  }
-}
-
-const EMAIL_VERSION_ROWS = [1, 2].map(emailVersionRow)
-type EmailHashdiffColumn = (typeof EMAIL_HASHDIFF_COLUMNS)[number]
-
-const emailHashdiff = (row: (typeof EMAIL_VERSION_ROWS)[number], columns: readonly EmailHashdiffColumn[]) =>
-  hd(...columns.map((column) => row[column]))
-
-export const EMAIL_HASHDIFFS = EMAIL_VERSION_ROWS.map((row) => ({
-  c_custkey: row.c_custkey,
-  ldts: row.ldts,
-  expected: emailHashdiff(row, EMAIL_HASHDIFF_COLUMNS),
-  actualWithoutEmail: emailHashdiff(row, EMAIL_HASHDIFF_COLUMNS.slice(0, -1)),
-}))
-
-const yamlString = (value: string) => JSON.stringify(value)
-
-const emailUnitTestGivenRows = EMAIL_VERSION_ROWS.map((row) => `          - c_custkey: ${row.c_custkey}
-            c_name: ${yamlString(row.c_name)}
-            c_address: ${yamlString(row.c_address)}
-            c_nationkey: ${row.c_nationkey}
-            c_mktsegment: ${yamlString(row.c_mktsegment)}
-            c_acctbal: ${row.c_acctbal}
-            c_comment: ${yamlString(row.c_comment)}
-            c_email: ${yamlString(row.c_email)}
-            ldts: ${yamlString(row.ldts)}
-            rsrc: ${yamlString(row.rsrc)}`).join('\n')
-
-const emailUnitTestExpectedRows = EMAIL_HASHDIFFS.map((row) => `        - c_custkey: ${row.c_custkey}
-          ldts: ${yamlString(row.ldts)}
-          hd_customer_n_s: '${row.expected}'`).join('\n')
-
 export const PRIMER = {
   stg_customer: {
     name: 'stg_customer',
     path: 'models/staging/stg_customer.sql',
     lang: 'sql',
-    code: `select
-    cast(c_custkey as integer) as c_custkey,
-    trim(c_name) as c_name,
-    trim(c_address) as c_address,
-    cast(c_acctbal as decimal(12, 2)) as c_acctbal,
-    c_mktsegment,
-    c_comment
-from {{ source('landing', 'customer') }}`,
+    code: stgCustomerCode.trimEnd(),
   },
   customer_by_segment: {
     name: 'customer_by_segment',
     path: 'models/marts/customer_by_segment.sql',
     lang: 'sql',
-    code: `select
-    c_mktsegment,
-    count(*) as customer_count,
-    sum(c_acctbal) as total_account_balance
-from {{ ref('stg_customer') }}
-group by c_mktsegment`,
+    code: customerBySegmentCode.trimEnd(),
   },
   customer_incremental: {
     name: 'customer_incremental',
     path: 'models/staging/stg_customer_incremental.sql',
     lang: 'sql',
-    code: `{{ config(materialized='incremental') }}
-
-select c_custkey, c_name, c_acctbal, ldts
-from {{ source('landing', 'customer') }}
-{% if is_incremental() %}
-where ldts > (select max(ldts) from {{ this }})
-{% endif %}`,
+    code: customerIncrementalCode.trimEnd(),
   },
   compiled_incremental_first: {
     name: 'compiled_incremental_first',
@@ -110,18 +54,13 @@ where ldts > (select max(ldts) from "main"."stg_customer_incremental")`,
     name: 'round_amount',
     path: 'macros/round_amount.sql',
     lang: 'sql',
-    code: `{% macro round_amount(value) %}
-cast({{ value }} as decimal(12, 2))
-{% endmacro %}`,
+    code: roundAmountMacroCode.trimEnd(),
   },
   round_amount_usage: {
     name: 'round_amount_usage',
     path: 'models/marts/customer_balance.sql',
     lang: 'sql',
-    code: `select
-    c_custkey,
-    {{ round_amount('c_acctbal') }} as account_balance
-from {{ ref('stg_customer') }}`,
+    code: customerBalanceCode.trimEnd(),
   },
   compiled_round_amount: {
     name: 'compiled_round_amount',
@@ -136,30 +75,13 @@ from "main"."stg_customer"`,
     name: 'schema_tests',
     path: 'models/staging/schema.yml',
     lang: 'yaml',
-    code: `version: 2
-
-models:
-  - name: stg_customer
-    columns:
-      - name: c_custkey
-        data_tests:
-          - unique
-          - not_null
-      - name: c_name
-        data_tests:
-          - not_null`,
+    code: schemaTestsCode.trimEnd(),
   },
   sources: {
     name: 'sources',
     path: 'models/staging/sources.yml',
     lang: 'yaml',
-    code: `version: 2
-
-sources:
-  - name: landing
-    schema: landing
-    tables:
-      - name: customer`,
+    code: sourcesCode.trimEnd(),
   },
   materialized_view: {
     name: 'materialized_view',

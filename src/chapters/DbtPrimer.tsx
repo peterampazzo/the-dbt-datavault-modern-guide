@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
-import { PrimerResult, type PrimerResultColumn, type PrimerResultRow } from '@/components/PrimerResult'
+import { LivePrimerResult } from '@/components/LivePrimerResult'
+import type { PrimerResultColumn, PrimerResultRow } from '@/components/PrimerResult'
 import { SqlServerNote } from '@/components/SqlServerNote'
 import { Callout, ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { MODEL } from '@/lib/dv/models'
@@ -281,11 +282,13 @@ function ModelsAndRef() {
       </ol>
       <div className="grid gap-4 lg:grid-cols-2">
         <CodeBlock title={file.path} code={file.code} lang={file.lang} />
-        <PrimerResult
+        <LivePrimerResult
           title={`Static result · ${node.label}`}
           columns={result.columns}
           rows={result.rows}
           summary={result.summary}
+          stepIds={['models-ref-source', 'models-ref-stg', 'models-ref-mart']}
+          activeStepId={`models-ref-${selected === 'source' ? 'source' : selected === 'stg_customer' ? 'stg' : 'mart'}`}
         />
       </div>
     </div>
@@ -425,7 +428,7 @@ function IncrementalPlayer() {
       <p className="max-w-3xl text-sm leading-6">{active.explanation}</p>
       <CodeBlock title={PRIMER.customer_incremental.path} code={PRIMER.customer_incremental.code} lang={PRIMER.customer_incremental.lang} highlight={highlight} />
       <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
-        <PrimerResult
+        <LivePrimerResult
           title={`count(*) · ${active.title}`}
           columns={[
             { key: 'relation', label: 'Relation' },
@@ -433,6 +436,8 @@ function IncrementalPlayer() {
           ]}
           rows={rows}
           summary={`Landing rows and target rows are counted from CUSTOMERS and BATCHES in dataset.ts.`}
+          stepIds={['incremental-batch-1', 'incremental-batch-2', 'incremental-batch-3', 'incremental-full-refresh']}
+          activeStepId={['incremental-batch-1', 'incremental-batch-2', 'incremental-batch-3', 'incremental-full-refresh'][step]}
         />
         <div className="flex gap-2">
           <button type="button" onClick={() => setStep((current) => Math.max(0, current - 1))} disabled={step === 0} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-50">
@@ -486,7 +491,7 @@ group by c_custkey
 having count(*) > 1`}
         lang="sql"
       />
-      <PrimerResult
+      <LivePrimerResult
         title={passes ? 'Failing rows · none' : 'Failing rows · duplicate business key'}
         columns={[
           { key: 'c_custkey', label: 'c_custkey' },
@@ -499,6 +504,8 @@ having count(*) > 1`}
           row_count: counts.get(row.c_custkey) ?? 0,
         }))}
         summary="The duplicate input row is added to a copy of the first customer delivery; the result is computed in TypeScript."
+        stepIds={['unique-fails', 'unique-passes']}
+        activeStepId={duplicate ? 'unique-fails' : 'unique-passes'}
       />
       <P>
         <Code>dbt docs generate</Code> builds project documentation and lineage. Explore the guide’s{' '}

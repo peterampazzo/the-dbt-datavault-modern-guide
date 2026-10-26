@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { EMAIL_HASHDIFFS } from './project'
+import { EMAIL_HASHDIFFS } from './email-hashdiffs'
 
 it('includes c_email in the expected hashdiff but not in the failing stage hashdiff', () => {
   expect(EMAIL_HASHDIFFS).toHaveLength(2)

@@ -1,0 +1,8 @@
+guide:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: primer.duckdb
+      schema: main
+      threads: 1

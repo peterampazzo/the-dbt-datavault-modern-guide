@@ -112,7 +112,7 @@ A single page with a two-column table (your term → this guide's term → where
 
 ### 4 · dbt primer (new)
 
-Every example uses our data. Every page ends with an "In SQL Server you'd…" line so R3 readers can connect each idea to what they already do. Live SQL panels run real `dbt-duckdb` compiled SQL in DuckDB-WASM (section 7).
+Every example uses our data. Every page ends with an "In SQL Server you'd…" line so R3 readers can connect each idea to what they already do. Live SQL panels run real `dbt-duckdb` compiled SQL in DuckDB-WASM in the plain-dbt primer only (section 7).
 
 | Page | Show | Teach |
 |---|---|---|
@@ -215,15 +215,16 @@ A tickable list, saved locally:
 
 ## 7. Live SQL with DuckDB (primer only)
 
-- **Scope:** the dbt primer (chapter 4) and chapter 13. *Not* the vault chapters, because datavault4dbt has no DuckDB support. They keep the simulation and the real datavault4dbt model code.
+- **Scope:** only plain-dbt primer pages 4.3, 4.6 and 4.7. Chapter 13 and all Data Vault/datavault4dbt chapters remain DuckDB-free.
 - **How:**
   - A tiny plain-dbt project in `primer-dbt/` (`dbt-duckdb`) is compiled at build time by `pnpm primer:compile`.
-  - The compiled SQL and seed CSVs go into `src/lib/primer/compiled.json`.
-  - The browser runs those statements in `@duckdb/duckdb-wasm`. It's loaded only when a page with a live panel opens, behind a "Run live" button, never automatically.
+  - `src/lib/primer/compiled.json` contains captured `target/run` and `target/compiled` SQL plus landing setup SQL generated from `dataset.ts`.
+- The browser replays those statements in `@duckdb/duckdb-wasm`. It's loaded only after a reader activates a live panel, never automatically. Large WASM assets load from jsDelivr because they exceed the Pages per-file limit.
   - CI checks that `compiled.json` is up to date.
+- **D2 status:** The compiler, generated-SQL correctness test, and lazy live panels are implemented for pages 4.3, 4.6 and 4.7 only.
 - **UI:** a preloaded query, Run, Reset, and a results table. Keyboard-accessible, and no empty box to start from.
 - **Fallback:** if WebAssembly fails, the panel shows the precomputed results and a note.
-- **Cost:** several MB, downloaded only on demand. The size is measured in that PR; the gate is no change to the normal-page bundle.
+- **Cost:** DuckDB's raw WASM builds are 33–38 MiB; the EH bundle transfers 6,764,975 bytes with Brotli from jsDelivr (about 6.8 MB). Downloads remain on demand, and the lazy chunk must not increase the normal-page bundle.
 
 ---
 
@@ -234,7 +235,7 @@ A tickable list, saved locally:
 | **#10** | Paged reader (in review) | — | Merged |
 | **B** | Cover/recap pages, Parts I–IV in the sidebar, page splits (section 5), dbt chapter reorder, chapter 3 bridge, reading paths on Home, scope rule in `AGENTS.md`, this plan in `docs/plans/` | #10 | Every page ≤ 1.5 screens on desktop; paths change Previous/Next; e2e + axe pass on every page in both modes |
 | **C** | Chapter 11 Replay lab + chapter 12 One lake; engine `replay`/`fullRefresh`; `migration.md` part 1 | B | Each loss preset gives the expected diff (unit tests); the lab works by keyboard; ≤ 4 primary controls |
-| **D** | Chapter 4 dbt primer + chapter 13 Working the modern way; `primer-dbt/`; DuckDB-WASM panels | B | Live panels run on desktop + mobile; precomputed fallback; no growth in the main bundle |
+| **D** | Chapter 4 dbt primer + chapter 13 Working the modern way; `primer-dbt/`; DuckDB-WASM panels only on primer pages 4.3, 4.6 and 4.7 | B | Build-time dbt replay; lazy live panels with static fallback; no DuckDB in chapter 13 or vault chapters |
 | **E** | Chapter 14 legacy patterns, chapter 15 hash parity, dialect switch on By hand | C | Hash vectors for both encodings; dialect switch remembered |
 | **F** | Chapter 16 business vault, chapter 17 checklist, `migration.md` part 2 | E | Unit tests for precedence and computed sat |
 | **G** | Glossary popovers (with a "SQL Server name" line), quick checks on every recap, polish (impeccable craft floor), About page | F | The ADHD plan's success criteria S1–S7 all pass |

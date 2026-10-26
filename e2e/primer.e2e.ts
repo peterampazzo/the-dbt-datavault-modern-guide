@@ -1,7 +1,7 @@
 import { AxeBuilder } from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { CUSTOMERS } from '../src/lib/dv/dataset'
-import { EMAIL_HASHDIFFS } from '../src/lib/primer/project'
+import { EMAIL_HASHDIFFS } from '../src/lib/primer/email-hashdiffs'
 import { open } from './helpers'
 
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
@@ -37,6 +37,72 @@ test('4.6 counts follow the four incremental and full-refresh steps', async ({ p
   await countRows('Landing truncated, batch 3 arrives', batchThree, firstAndSecond + batchThree)
   await next.click()
   await countRows('Run --full-refresh', batchThree, batchThree)
+})
+
+test('primer pages request no DuckDB assets before a reader starts a live panel', async ({ page }) => {
+  const requests: string[] = []
+  page.on('request', (request) => {
+    if (/duckdb|jsdelivr/i.test(request.url())) requests.push(request.url())
+  })
+  for (const route of ['models-and-ref', 'incremental-and-full-refresh', 'tests-and-docs']) {
+    await open(page, `dbt-primer/${route}`)
+    expect(requests).toEqual([])
+  }
+})
+
+test('4.6 live playback follows the static steps and stays accessible on mobile', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page, 'dbt-primer/incremental-and-full-refresh')
+  await page.getByRole('region', { name: 'count(*) · Batch 1 · first run' })
+    .locator('xpath=..')
+    .getByRole('button', { name: /Run it live in DuckDB/ }).click()
+  const live = page.getByRole('region', { name: 'Live DuckDB result' })
+  await expect(live).toBeVisible({ timeout: 60_000 })
+  const checkLiveCounts = async (landing: number, target: number) => {
+    const table = live.getByRole('region', { name: 'Query results' }).getByRole('table')
+    await expect(table.getByRole('row', { name: `${landing} ${target}` })).toBeVisible()
+  }
+
+  await checkLiveCounts(5, 5)
+  const next = page.getByRole('button', { name: 'Next', exact: true })
+  await next.click()
+  await checkLiveCounts(10, 10)
+  await next.click()
+  await checkLiveCounts(7, 17)
+  await next.click()
+  await checkLiveCounts(7, 7)
+
+  await page.setViewportSize({ width: 375, height: 812 })
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0)
+  const { violations } = await new AxeBuilder({ page }).withTags(WCAG).analyze()
+  expect(violations.map((violation) => violation.id)).toEqual([])
+})
+
+test('4.7 live unique test goes red with a duplicate and green after it is removed', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page, 'dbt-primer/tests-and-docs')
+  await page.getByRole('region', { name: 'Failing rows · none' })
+    .locator('xpath=..')
+    .getByRole('button', { name: /Run it live in DuckDB/ }).click()
+  const live = page.getByRole('region', { name: 'Live DuckDB result' })
+  await expect(live).toBeVisible({ timeout: 60_000 })
+  const liveRows = live.getByRole('region', { name: 'Query results' })
+  await expect(liveRows).toContainText('0 rows returned')
+  await page.getByRole('button', { name: 'Add duplicate customer' }).click()
+  await expect(liveRows).toContainText('1 rows returned')
+  await page.getByRole('button', { name: 'Remove duplicate customer' }).click()
+  await expect(liveRows).toContainText('0 rows returned')
+})
+
+test('DuckDB load failure leaves the static result visible', async ({ page }) => {
+  test.setTimeout(120_000)
+  await page.route('https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.32.0/**', (route) => route.abort())
+  await open(page, 'dbt-primer/models-and-ref')
+  const panel = page.getByRole('region', { name: 'Static result · landing.customer' }).locator('xpath=..')
+  await panel
+    .getByRole('button', { name: /Run it live in DuckDB/ }).click()
+  await expect(panel.getByRole('status')).toContainText('DuckDB could not run this panel', { timeout: 60_000 })
+  await expect(page.getByRole('region', { name: 'Static result · landing.customer' })).toBeVisible()
 })
 
 test('4.7 unique test toggles from pass to fail and back', async ({ page }) => {

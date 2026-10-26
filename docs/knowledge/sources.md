@@ -33,6 +33,7 @@ When adding content, cite the source in the chapter's further-reading section.
 | [Microsoft Fabric OneLake shortcuts](https://learn.microsoft.com/en-us/fabric/onelake/onelake-shortcuts) | Connecting OneLake to data stored in another location. |
 | [Databricks Unity Catalog external locations](https://docs.databricks.com/aws/en/connect/unity-catalog/cloud-storage/external-locations) | Governing access to cloud storage paths. |
 | [datavault4dbt release notes](https://github.com/ScalefreeCOM/datavault4dbt/releases) | Checking package support and adapter changes before upgrading or switching engines. |
+| [DuckDB-WASM documentation](https://duckdb.org/docs/stable/clients/wasm/overview.html) and [jsDelivr](https://www.jsdelivr.com/) | Running the primer's captured plain-dbt SQL on demand; the browser loads its large WASM files from jsDelivr. |
 
 ## Learning design and accessibility
 

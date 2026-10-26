@@ -3,7 +3,8 @@ import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
 import { ChapterHeader, Code, Section } from '@/components/Prose'
 import { SNIPPETS } from '@/lib/dv/models'
-import { EMAIL_HASHDIFFS, PRIMER } from '@/lib/primer/project'
+import { EMAIL_HASHDIFFS } from '@/lib/primer/email-hashdiffs'
+import { PRIMER } from '@/lib/primer/project'
 import { cn } from '@/lib/utils'
 
 const CHANGE_STEPS = [

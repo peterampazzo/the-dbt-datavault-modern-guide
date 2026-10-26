@@ -39,7 +39,7 @@ Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs th
 5. **Show, then explain.** Every concept gets a visual or an interaction (Motion animation, stepper, toggle, slider) with short prose next to it. Keep the prose plain and brief.
 6. **Model code is the single source.** Chapters pull SQL/YAML from `models.ts` (`MODEL[name].code`) rather than duplicating it.
 7. Keep the routing hash-based (`HashRouter`) so static hosting works without rewrites.
-8. Keep a future DuckDB-WASM playground possible: chapters shouldn't depend on engine internals beyond the exported functions.
+8. DuckDB-WASM is allowed only in the plain-dbt primer; never add it to Data Vault or datavault4dbt chapters. `src/lib/primer/compiled.json` is generated: never hand-edit it; run `pnpm primer:compile`.
 9. **Follow the learning design rules** in `docs/knowledge/learning-design.md`. The guide must work for interrupted, attention-variable readers (ADHD). The non-negotiables:
    - content is visible by default;
    - no motion that starts by itself and loops without a pause;
