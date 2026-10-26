@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { CodeBlock } from '@/components/CodeBlock'
+import { HandVsDbt } from '@/components/HandVsDbt'
 import { Switch } from '@/components/ui/switch'
 import { MODEL, LAYER_META, type DbtModel } from '@/lib/dv/models'
 import { cn } from '@/lib/utils'
@@ -48,7 +49,9 @@ function ModelExplorer() {
   const m = MODEL[name]
   const notes = useMemo(() => annotations(m), [m])
   const active = notes.find((n) => n.k === key)
-  useEffect(() => setKey(null), [name])
+  useEffect(() => {
+    setKey(null)
+  }, [name])
 
   return (
     <div className="grid gap-4 lg:grid-cols-[13rem_1fr_18rem]">
@@ -97,7 +100,7 @@ function ModelExplorer() {
               key === n.k ? 'border-sky-500/60 bg-sky-500/10' : 'hover:bg-muted/50',
             )}
           >
-            <div className="font-mono font-medium text-sky-400">{n.k.replace(/[:.]$/, '')}</div>
+            <div className="font-mono font-medium text-sky-700 dark:text-sky-400">{n.k.replace(/[:.]$/, '')}</div>
             <AnimatePresence initial={false}>
               {key === n.k && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
@@ -163,20 +166,20 @@ const TERMINAL = [
   ['$ dbt deps', ''],
   ['Installing datavault4dbt', 'text-muted-foreground'],
   ['$ dbt seed', ''],
-  ['OK loaded seed file raw_customer ......... [OK]', 'text-emerald-400'],
-  ['OK loaded seed file raw_nation ........... [OK]', 'text-emerald-400'],
-  ['OK loaded seed file raw_orders ........... [OK]', 'text-emerald-400'],
+  ['OK loaded seed file raw_customer ......... [OK]', 'text-emerald-700 dark:text-emerald-400'],
+  ['OK loaded seed file raw_nation ........... [OK]', 'text-emerald-700 dark:text-emerald-400'],
+  ['OK loaded seed file raw_orders ........... [OK]', 'text-emerald-700 dark:text-emerald-400'],
   ['$ dbt build --select +customer_n_s +nation_n_s +order_customer_nh_l', ''],
   ['OK created view model stg_customer ....... [OK]', 'text-slate-300'],
   ['OK created view model stg_nation ......... [OK]', 'text-slate-300'],
   ['OK created view model stg_orders ......... [OK]', 'text-slate-300'],
-  ['OK created incremental model customer_h .. [OK]', 'text-sky-400'],
-  ['OK created incremental model nation_h .... [OK]', 'text-sky-400'],
-  ['OK created incremental model order_h ..... [OK]', 'text-sky-400'],
-  ['OK created incremental model customer_nation_l  [OK]', 'text-emerald-400'],
-  ['OK created incremental model order_customer_nh_l [OK]', 'text-emerald-400'],
-  ['OK created incremental model customer_n_s  [OK]', 'text-amber-400'],
-  ['OK created incremental model nation_n_s .. [OK]', 'text-amber-400'],
+  ['OK created incremental model customer_h .. [OK]', 'text-sky-700 dark:text-sky-400'],
+  ['OK created incremental model nation_h .... [OK]', 'text-sky-700 dark:text-sky-400'],
+  ['OK created incremental model order_h ..... [OK]', 'text-sky-700 dark:text-sky-400'],
+  ['OK created incremental model customer_nation_l  [OK]', 'text-emerald-700 dark:text-emerald-400'],
+  ['OK created incremental model order_customer_nh_l [OK]', 'text-emerald-700 dark:text-emerald-400'],
+  ['OK created incremental model customer_n_s  [OK]', 'text-amber-700 dark:text-amber-400'],
+  ['OK created incremental model nation_n_s .. [OK]', 'text-amber-700 dark:text-amber-400'],
   ['Completed successfully. PASS=13 WARN=0 ERROR=0', 'text-foreground font-semibold'],
 ]
 
@@ -194,7 +197,7 @@ function Terminal() {
   }
   return (
     <div className="overflow-hidden rounded-xl border bg-zinc-950 font-mono text-[12px] leading-6 text-zinc-200">
-      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2 text-xs text-zinc-500">
+      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2 text-xs text-zinc-400">
         terminal
         <button onClick={start} className="rounded px-2 py-0.5 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-50">
           {run === 0 ? '▶ Run dbt build' : '↻ Run again'}
@@ -206,7 +209,7 @@ function Terminal() {
             {l}
           </motion.div>
         ))}
-        {run === 0 && <div className="text-zinc-500">Press Run dbt build to watch dbt load the vault in dependency order.</div>}
+        {run === 0 && <div className="text-zinc-400">Press Run dbt build to watch dbt load the vault in dependency order.</div>}
         {run > 0 && n < TERMINAL.length && <span className="inline-block h-4 w-2 bg-zinc-300 motion-safe:animate-pulse" />}
       </div>
     </div>
@@ -238,7 +241,7 @@ export default function BuildWithDbt() {
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <div>
             <P>
-              <a href="https://github.com/ScalefreeCOM/datavault4dbt" className="text-sky-400 hover:underline" target="_blank" rel="noreferrer">
+              <a href="https://github.com/ScalefreeCOM/datavault4dbt" className="text-sky-700 dark:text-sky-400 underline underline-offset-4" target="_blank" rel="noreferrer">
                 datavault4dbt
               </a>{' '}
               is a dbt package by Scalefree with one macro per Data Vault entity type: <Code>stage</Code>, <Code>hub</Code>, <Code>link</Code>, <Code>nh_link</Code>,{' '}
@@ -282,6 +285,24 @@ export default function BuildWithDbt() {
           </div>
           <CompiledHub />
         </div>
+      </Section>
+
+      <Section title="By hand vs with dbt">
+        <P>
+          The same loads, written by hand and declared with datavault4dbt. Pick an entity, then a part, to see which hand-written lines each declaration
+          replaces.
+        </P>
+        <HandVsDbt />
+        <details className="mt-4 max-w-3xl rounded-lg border px-4 py-3 text-sm">
+          <summary className="cursor-pointer font-medium">What else you'd write by hand</summary>
+          <ul className="mt-2 list-disc space-y-1 pl-5 leading-6 text-foreground/85">
+            <li>The stage: trimming, upper-casing, the <Code>||</Code> and <Code>^^</Code> rules and the MD5 for every hashkey and hashdiff.</li>
+            <li>Ghost records, so joins to an unknown or missing key still find a row.</li>
+            <li>The <Code>sat_v1</Code> view that works out each version's end date.</li>
+            <li>The table definitions, and a first-run path that creates them.</li>
+            <li>All of this again for every hub, link and satellite, kept consistent by hand.</li>
+          </ul>
+        </details>
       </Section>
 
       <Section title="Run it">

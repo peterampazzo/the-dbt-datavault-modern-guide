@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { DataTable } from '@/components/DataTable'
@@ -6,11 +6,12 @@ import { CodeBlock } from '@/components/CodeBlock'
 import { Slider } from '@/components/ui/slider'
 import { pit, simulate, SNAPSHOTS, UNKNOWN_KEY } from '@/lib/dv/engine'
 import { MODEL } from '@/lib/dv/models'
+import { usePersistentState } from '@/lib/progress'
 
 export default function Pit() {
   const tables = useMemo(() => simulate()[2].tables, [])
   const all = useMemo(() => pit(tables), [tables])
-  const [i, setI] = useState(1)
+  const [i, setI] = usePersistentState('pit.snapshot', 1)
   const sdts = SNAPSHOTS[i]
   const rows = all.filter((r) => r.sdts === sdts)
   const pointers = new Set(rows.map((r) => `${r.customer_n_s_hk}|${r.customer_n_s_ldts}`))
@@ -27,7 +28,7 @@ export default function Pit() {
         <div className="rounded-2xl border bg-card/30 p-5">
           <div className="mb-6 flex flex-wrap items-center gap-6">
             <div className="w-full max-w-md">
-              <Slider value={[i]} min={0} max={SNAPSHOTS.length - 1} step={1} onValueChange={(v) => setI(Array.isArray(v) ? v[0] : (v as number))} />
+              <Slider aria-label="Snapshot date" value={[i]} min={0} max={SNAPSHOTS.length - 1} step={1} onValueChange={(v) => setI(Array.isArray(v) ? v[0] : (v as number))} />
               <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
                 {SNAPSHOTS.map((s) => (
                   <span key={s}>{s.slice(5, 10)}</span>
@@ -35,7 +36,7 @@ export default function Pit() {
               </div>
             </div>
             <motion.div key={sdts} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="font-mono text-sm">
-              sdts = <span className="text-violet-400">{sdts}</span>
+              sdts = <span className="text-violet-700 dark:text-violet-400">{sdts}</span>
             </motion.div>
           </div>
           <DataTable

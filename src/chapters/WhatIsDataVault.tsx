@@ -16,21 +16,21 @@ const BLOCKS = [
   {
     name: 'Hub',
     tone: 'border-sky-500/50 from-sky-500/10',
-    text: 'text-sky-400',
+    text: 'text-sky-700 dark:text-sky-400',
     what: 'The list of unique business keys for one core business concept: customer, product, order.',
     rules: ['Business key + hashkey + ldts + rsrc', 'No descriptive attributes', 'No foreign keys', 'Inserted once, the first time a key is seen'],
   },
   {
     name: 'Link',
     tone: 'border-emerald-500/50 from-emerald-500/10',
-    text: 'text-emerald-400',
+    text: 'text-emerald-700 dark:text-emerald-400',
     what: 'A unique relationship between two or more hubs, such as customer–nation or order–customer.',
     rules: ['Hashkeys of the hubs it connects', 'No descriptive attributes', 'Many-to-many by design', 'Inserted once per new combination'],
   },
   {
     name: 'Satellite',
     tone: 'border-amber-500/50 from-amber-500/10',
-    text: 'text-amber-400',
+    text: 'text-amber-700 dark:text-amber-400',
     what: 'All the context and history of exactly one hub or link: names, addresses, statuses.',
     rules: ['Keyed by parent hashkey + ldts', 'New row only when the hashdiff changes', 'Split by source, rate of change or sensitivity', 'Never attached to another satellite'],
   },
@@ -101,7 +101,7 @@ function Architecture() {
             onClick={() => setActive(l.id)}
             className={cn(
               'relative z-10 flex flex-col items-center gap-2 rounded-xl border bg-card px-2 py-4 text-center transition-all',
-              active === l.id ? 'scale-105 border-foreground/40 shadow-lg' : 'opacity-70 hover:opacity-100',
+              active === l.id ? 'scale-105 border-foreground/40 shadow-lg' : 'hover:border-foreground/30',
             )}
           >
             <span className={cn('size-3 rounded-full', l.color)} />
@@ -149,7 +149,7 @@ export default function WhatIsDataVault() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {CHANGES.map(({ icon: Icon, title, text }) => (
             <div key={title} className="rounded-xl border bg-card/50 p-4">
-              <Icon className="mb-3 size-5 text-sky-400" />
+              <Icon className="mb-3 size-5 text-sky-700 dark:text-sky-400" />
               <div className="font-medium">{title}</div>
               <p className="mt-1 text-sm text-muted-foreground">{text}</p>
             </div>
@@ -166,13 +166,13 @@ export default function WhatIsDataVault() {
             </P>
             <ul className="mb-4 max-w-xl space-y-2 text-sm">
               <li>
-                <span className="font-mono text-sky-400">c_custkey</span>: the identity never changes, so it goes into a <strong>hub</strong>.
+                <span className="font-mono text-sky-700 dark:text-sky-400">c_custkey</span>: the identity never changes, so it goes into a <strong>hub</strong>.
               </li>
               <li>
-                <span className="font-mono text-emerald-400">c_nationkey</span>: the relationship can change, so it goes into a <strong>link</strong>.
+                <span className="font-mono text-emerald-700 dark:text-emerald-400">c_nationkey</span>: the relationship can change, so it goes into a <strong>link</strong>.
               </li>
               <li>
-                <span className="font-mono text-amber-400">c_name, c_address, …</span>: the context changes all the time, so it goes into a <strong>satellite</strong> with full history.
+                <span className="font-mono text-amber-700 dark:text-amber-400">c_name, c_address, …</span>: the context changes all the time, so it goes into a <strong>satellite</strong> with full history.
               </li>
             </ul>
             <P>
@@ -220,9 +220,9 @@ export default function WhatIsDataVault() {
         <Architecture />
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
-            ['Hubs', 'make key management easy', 'text-sky-400'],
-            ['Satellites', 'make loading dimensions easy', 'text-amber-400'],
-            ['Links', 'make loading facts easy', 'text-emerald-400'],
+            ['Hubs', 'make key management easy', 'text-sky-700 dark:text-sky-400'],
+            ['Satellites', 'make loading dimensions easy', 'text-amber-700 dark:text-amber-400'],
+            ['Links', 'make loading facts easy', 'text-emerald-700 dark:text-emerald-400'],
           ].map(([a, b, c]) => (
             <div key={a} className="flex items-center gap-2 rounded-lg border bg-card/40 px-4 py-3 text-sm">
               <Layers className={cn('size-4', c)} />
@@ -233,12 +233,14 @@ export default function WhatIsDataVault() {
       </Section>
 
       <Section title="Data Vault vs a traditional warehouse">
-        <div className="overflow-x-auto rounded-xl border">
+        <div tabIndex={0} className="overflow-x-auto rounded-xl border outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left">
               <tr>
-                <th className="px-4 py-2.5 font-medium"></th>
-                <th className="px-4 py-2.5 font-medium text-sky-400">Data Vault</th>
+                <th className="px-4 py-2.5 font-medium">
+                  <span className="sr-only">Aspect</span>
+                </th>
+                <th className="px-4 py-2.5 font-medium text-sky-700 dark:text-sky-400">Data Vault</th>
                 <th className="px-4 py-2.5 font-medium text-muted-foreground">Traditional warehouse</th>
               </tr>
             </thead>
@@ -268,7 +270,7 @@ export default function WhatIsDataVault() {
             ['datavault4dbt wiki', 'https://github.com/ScalefreeCOM/datavault4dbt/wiki'],
           ].map(([t, u]) => (
             <li key={u}>
-              <a href={u} target="_blank" rel="noreferrer" className="text-sky-400 underline-offset-4 hover:underline">
+              <a href={u} target="_blank" rel="noreferrer" className="text-sky-700 dark:text-sky-400 underline underline-offset-4">
                 {t}
               </a>
             </li>

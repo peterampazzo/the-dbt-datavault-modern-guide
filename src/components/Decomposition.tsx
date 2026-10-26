@@ -16,9 +16,9 @@ const COLS: { name: string; kind: Kind }[] = [
 ]
 
 const chip: Record<Kind, string> = {
-  bk: 'border-sky-500/50 bg-sky-500/15 text-sky-300',
-  fk: 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300',
-  attr: 'border-amber-500/50 bg-amber-500/15 text-amber-200',
+  bk: 'border-sky-500/50 bg-sky-500/15 text-sky-800 dark:text-sky-300',
+  fk: 'border-emerald-500/50 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300',
+  attr: 'border-amber-500/50 bg-amber-500/15 text-amber-800 dark:text-amber-200',
   meta: 'border-border bg-muted/60 text-muted-foreground',
 }
 
@@ -27,7 +27,7 @@ function Col({ name, kind, id }: { name: string; kind: Kind; id: string }) {
     <motion.div
       layoutId={`${id}-${name}`}
       transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-      className={cn('rounded-md border px-2 py-1 font-mono text-[11px] break-all light:text-foreground', chip[kind])}
+      className={cn('rounded-md border px-2 py-1 font-mono text-[11px] break-all', chip[kind])}
     >
       {name}
     </motion.div>
@@ -91,19 +91,19 @@ export function Decomposition({ auto = false, className }: { auto?: boolean; cla
             </Box>
           ) : (
             <div className="grid w-full grid-cols-2 gap-3 sm:gap-5">
-              <Box title="customer_h" tone="border-sky-500/60 text-sky-400">
+              <Box title="customer_h" tone="border-sky-500/60 text-sky-700 dark:text-sky-400">
                 <AnimatePresence>
                   <Meta cols={['hk_customer_h']} />
                 </AnimatePresence>
                 {col('c_custkey')}
                 <Meta cols={['ldts', 'rsrc']} />
               </Box>
-              <Box title="customer_nation_l" tone="border-emerald-500/60 text-emerald-400">
+              <Box title="customer_nation_l" tone="border-emerald-500/60 text-emerald-700 dark:text-emerald-400">
                 <Meta cols={['hk_customer_nation_l', 'hk_customer_h']} />
                 {col('c_nationkey')}
                 <Meta cols={['ldts', 'rsrc']} />
               </Box>
-              <Box title="customer_n_s" tone="border-amber-500/60 text-amber-400" className="col-span-2">
+              <Box title="customer_n_s" tone="border-amber-500/60 text-amber-700 dark:text-amber-400" className="col-span-2">
                 <Meta cols={['hk_customer_h', 'ldts', 'hd_customer_n_s']} />
                 <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">{COLS.filter((c) => c.kind === 'attr').map((c) => col(c.name))}</div>
               </Box>

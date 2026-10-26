@@ -132,7 +132,7 @@ Already working: show-then-explain, a single dataset story, steppers with keyboa
 5. **1c.** Glossary and quick checks.
 6. **P2.** Polish and the final audit pass.
 
-Each PR passes `pnpm lint`, `test` and `build`, plus the Playwright scripts for S1, S2 and S4, which live in `scripts/ux-check.mjs` (`pnpm ux:check`). No screen recordings.
+Each PR passes `pnpm lint`, `test` and `build`, plus the Playwright suite in `e2e/` (`pnpm e2e`, which includes axe WCAG 2.2 AA scans). Each new feature adds its own e2e test; S4 (resume) gets one with the orientation PR. No screen recordings.
 
 ## 6. Documenting the sources (in the repo)
 

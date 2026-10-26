@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
 import { CHAPTERS } from '@/chapters'
 import { Decomposition } from '@/components/Decomposition'
+import { resetProgress, useProgress } from '@/lib/progress'
 
 const blurbs: Record<string, string> = {
   'what-is-data-vault': 'Hubs, links and satellites, unified decomposition, and where the vault sits between sources and marts.',
@@ -16,6 +17,9 @@ const blurbs: Record<string, string> = {
 }
 
 export function Home() {
+  const { last } = useProgress()
+  const lastChapter = last && CHAPTERS.find((c) => c.slug === last.slug)
+  const resume = lastChapter ? { chapter: lastChapter, section: last.section, sectionTitle: last.sectionTitle } : null
   return (
     <div>
       <section className="grid items-center gap-10 py-6 lg:grid-cols-[1.1fr_1fr]">
@@ -36,13 +40,28 @@ export function Home() {
             We take three ordinary datasets (customers, nations and orders), model them as a Data Vault, then build that vault with dbt.
             Every diagram is clickable and every code sample is real datavault4dbt.
           </motion.p>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="mt-8 flex gap-3">
-            <Link to={`/${CHAPTERS[0].slug}`} className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90">
-              Start reading <ArrowRight className="size-4" />
-            </Link>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="mt-8 flex flex-wrap items-center gap-3">
+            {resume ? (
+              <Link
+                to={`/${resume.chapter.slug}${resume.section ? `?s=${resume.section}` : ''}`}
+                className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90"
+              >
+                Continue: {resume.chapter.title}
+                {resume.sectionTitle ? `, ${resume.sectionTitle}` : ''} <ArrowRight className="size-4" />
+              </Link>
+            ) : (
+              <Link to={`/${CHAPTERS[0].slug}`} className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90">
+                Start reading <ArrowRight className="size-4" />
+              </Link>
+            )}
             <Link to="/modelling" className="inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium hover:bg-muted">
               Jump to the modelling
             </Link>
+            {resume && (
+              <button type="button" onClick={resetProgress} className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
+                Start over
+              </button>
+            )}
           </motion.div>
         </div>
         <Decomposition auto />

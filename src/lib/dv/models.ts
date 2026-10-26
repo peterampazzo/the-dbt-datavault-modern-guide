@@ -437,7 +437,7 @@ LEFT JOIN {{ ref('customer_phone_ma_s') }} ph
 export const MODEL = Object.fromEntries(MODELS.map((m) => [m.name, m])) as Record<string, DbtModel>
 
 export const LAYER_META: Record<Layer, { label: string; color: string; ring: string; text: string }> = {
-  seed: { label: 'Seed / landing', color: 'bg-zinc-500', ring: 'ring-zinc-400/50', text: 'text-zinc-400' },
+  seed: { label: 'Seed / landing', color: 'bg-zinc-500', ring: 'ring-zinc-400/50', text: 'text-zinc-600 dark:text-zinc-400' },
   stage: { label: 'Stage', color: 'bg-slate-500', ring: 'ring-slate-400/50', text: 'text-slate-300' },
   hub: { label: 'Hub', color: 'bg-sky-500', ring: 'ring-sky-400/50', text: 'text-sky-400' },
   link: { label: 'Link', color: 'bg-emerald-500', ring: 'ring-emerald-400/50', text: 'text-emerald-400' },

@@ -63,7 +63,7 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
           {title}
         </div>
       )}
-      <pre className="overflow-x-auto py-3 font-mono">
+      <pre tabIndex={0} className="overflow-x-auto py-3 font-mono outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
         {lines.map((line, i) => {
           const n = i + 1
           const on = hl.has(n)
@@ -71,8 +71,6 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
             <motion.div
               key={i}
               onClick={onLineClick ? () => onLineClick(n) : undefined}
-              animate={{ opacity: hl.size && !on ? 0.45 : 1 }}
-              transition={{ duration: 0.25 }}
               className={cn(
                 'relative flex pr-4',
                 on && 'bg-sky-500/10',
@@ -80,7 +78,7 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
               )}
             >
               {on && <motion.span layoutId={undefined} className="absolute inset-y-0 left-0 w-0.5 bg-sky-400" />}
-              <span className="w-10 shrink-0 select-none pr-3 text-right text-muted-foreground/50">{n}</span>
+              <span className={cn('w-10 shrink-0 select-none pr-3 text-right', on ? 'text-foreground/80' : 'text-muted-foreground')}>{n}</span>
               <span className="whitespace-pre">
                 {line.map((t, j) => (
                   <span key={j} className="shiki-token" style={t.htmlStyle as React.CSSProperties}>

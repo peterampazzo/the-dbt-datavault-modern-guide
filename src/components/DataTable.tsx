@@ -6,12 +6,12 @@ import { cn } from '@/lib/utils'
 export type Tone = 'hub' | 'link' | 'sat' | 'stage' | 'bv' | 'seed'
 
 const toneHeader: Record<Tone, string> = {
-  hub: 'text-sky-400',
-  link: 'text-emerald-400',
-  sat: 'text-amber-400',
+  hub: 'text-sky-700 dark:text-sky-400',
+  link: 'text-emerald-700 dark:text-emerald-400',
+  sat: 'text-amber-700 dark:text-amber-400',
   stage: 'text-slate-300',
-  bv: 'text-violet-400',
-  seed: 'text-zinc-400',
+  bv: 'text-violet-700 dark:text-violet-400',
+  seed: 'text-zinc-600 dark:text-zinc-400',
 }
 
 function fmt(v: Cell) {
@@ -58,7 +58,7 @@ export function DataTable({
         <span className={cn('font-mono text-xs font-semibold', toneHeader[tone])}>{title}</span>
         <span className="text-xs tabular-nums text-muted-foreground">{visible.length} rows</span>
       </div>
-      <div className={cn('overflow-auto', maxHeight)}>
+      <div tabIndex={0} role="region" aria-label={title} className={cn('overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-ring/50', maxHeight)}>
         <table className="w-full border-collapse font-mono text-[11.5px]">
           <thead className="sticky top-0 z-10 bg-card">
             <tr>
