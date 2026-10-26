@@ -1,12 +1,14 @@
 import { Chapter } from '@/components/Chapter'
 import { useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import { ChevronLeft, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { CUSTOMERS, NATIONS, ORDERS } from '@/lib/dv/dataset'
+import { DataTable } from '@/components/DataTable'
+import { CUSTOMER_KEY_COLUMNS, profileCustomerKey, type CustomerKeyColumn } from '@/lib/dv/key-profile'
 import { cn } from '@/lib/utils'
 import { usePersistentState } from '@/lib/progress'
 
@@ -127,8 +129,9 @@ const STEPS: Step[] = [
     title: 'Identify the core business concepts',
     body: (
       <>
-        Ask the business which <em>things</em> they talk about: <strong>Customer</strong>, <strong>Nation</strong> and <strong>Order</strong>. Don't sort them into facts and
-        dimensions. An order is an event, but it is still a core concept with its own key, so it gets a hub too.
+        List the things the business talks about: <strong>Customer</strong>, <strong>Nation</strong> and <strong>Order</strong>. Often nobody can hand you this list; then
+        finding it is the modeller’s job: read the processes and reports people use, and look at the data. The next page profiles a customer feed to help you start. Don’t
+        sort them into facts and dimensions. An order is an event, but it is still a core concept with its own key, so it gets a hub too.
       </>
     ),
   },
@@ -139,7 +142,10 @@ const STEPS: Step[] = [
     body: (
       <>
         Each concept needs a key that the business recognises and that would survive replacing the source system: <Code>c_custkey</Code>, <Code>n_nationkey</Code>,{' '}
-        <Code>o_orderkey</Code>. Look for keys used across the enterprise, not just the primary keys of one application.
+        <Code>o_orderkey</Code>. Look for keys used across the enterprise, not just the primary keys of one application.{' '}
+        <Link to="/modelling/find-the-business-key-yourself" className="text-sky-700 underline underline-offset-4 dark:text-sky-400">
+          Try the customer key finder.
+        </Link>
       </>
     ),
   },
@@ -254,7 +260,9 @@ function SourceCard({
   setHover: (h: Hover) => void
 }) {
   const r = reveal(step)
-  const shown = (k: Kind) => (k === 'bk' ? r.bk : k === 'fk' ? r.fk : r.attr)
+  const previous = reveal(Math.max(0, step - 1))
+  const isShown = (kind: Kind, state: ReturnType<typeof reveal>) => (kind === 'bk' ? state.bk : kind === 'fk' ? state.fk : state.attr)
+  const shown = (kind: Kind) => isShown(kind, r)
   return (
     <div className="rounded-xl border bg-card/60">
       <div className="flex items-center justify-between border-b px-3 py-2">
@@ -271,6 +279,7 @@ function SourceCard({
         {src.cols.map((c) => {
           const targets = c.targets(split)
           const lit = hover?.kind === 'node' ? targets.includes(hover.id) : hover?.kind === 'col' && hover.id === `${src.id}.${c.name}`
+          const isNew = shown(c.kind) && !isShown(c.kind, previous)
           return (
             <motion.span
               key={c.name}
@@ -282,9 +291,11 @@ function SourceCard({
                 'cursor-default rounded-md border px-1.5 py-0.5 font-mono text-[11px] transition-colors duration-500',
                 shown(c.kind) ? KIND_CHIP[c.kind] : 'border-border text-muted-foreground',
                 lit && 'ring-2 ring-foreground/60',
+                isNew && 'ring-2 ring-offset-1 ring-sky-500/70',
               )}
             >
               {c.name}
+              {isNew && <span className="ml-1 rounded bg-sky-100 px-1 font-sans text-[9px] font-semibold text-sky-900 dark:bg-sky-950 dark:text-sky-100">new</span>}
             </motion.span>
           )
         })}
@@ -314,8 +325,22 @@ function VaultCanvas({ step, split, hover, setHover }: { step: number; split: bo
   const r = reveal(step)
   const nodes = nodesFor(split)
   const byId = Object.fromEntries(nodes.map((n) => [n.id, n]))
-  const visible = (n: VNode) => (n.type === 'hub' ? r.hubs : n.type === 'link' ? r.links : r.sats)
+  const nodeIsVisible = (node: VNode, state: ReturnType<typeof reveal>) =>
+    node.type === 'hub' ? state.hubs : node.type === 'link' ? state.links : state.sats
+  const visible = (n: VNode) => nodeIsVisible(n, r)
+  const visibleNodes = nodes.filter(visible)
+  const previous = reveal(Math.max(0, step - 1))
+  const newNodes = new Set(visibleNodes.filter((node) => !nodeIsVisible(node, previous)).map((node) => node.id))
   const lit = (id: string) => (hover?.kind === 'col' ? hover.targets.includes(id) : hover?.kind === 'node' && hover.id === id)
+
+  if (visibleNodes.length === 0) {
+    const firstHubStep = STEPS.find((candidate) => candidate.title === 'Model the hubs')!.code
+    return (
+      <div className="flex h-24 items-center justify-center rounded-xl border bg-card/60 px-4 text-center text-sm text-muted-foreground">
+        Hubs appear here from step {firstHubStep}.
+      </div>
+    )
+  }
 
   return (
     <div className="relative h-[34rem] min-w-[44rem] rounded-2xl border bg-[radial-gradient(circle_at_1px_1px,var(--border)_1px,transparent_0)] bg-[size:20px_20px]">
@@ -365,7 +390,7 @@ function VaultCanvas({ step, split, hover, setHover }: { step: number; split: bo
         </AnimatePresence>
       </svg>
       <AnimatePresence>
-        {nodes.filter(visible).map((n, i) => (
+        {visibleNodes.map((n, i) => (
           <motion.div
             key={n.id}
             layout
@@ -381,9 +406,13 @@ function VaultCanvas({ step, split, hover, setHover }: { step: number; split: bo
               n.type === 'hub' ? '-translate-y-1/2' : n.type === 'link' ? '-translate-y-full' : '',
               TONE[n.type].border,
               lit(n.id) && 'ring-4 ring-foreground/20',
+              newNodes.has(n.id) && 'ring-2 ring-offset-2 ring-sky-500/70',
             )}
           >
-            <div className={cn('mb-1 font-mono text-[11px] font-semibold', TONE[n.type].text)}>{n.id}</div>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <span className={cn('font-mono text-[11px] font-semibold', TONE[n.type].text)}>{n.id}</span>
+              {newNodes.has(n.id) && <span className="rounded bg-sky-100 px-1 font-sans text-[9px] font-semibold text-sky-900 dark:bg-sky-950 dark:text-sky-100">new</span>}
+            </div>
             <div className="space-y-0.5 font-mono text-[10px]">
               {n.cols.map((c) => (
                 <div key={c} className={cn(c.startsWith('hk_') || c.startsWith('hd_') ? 'text-muted-foreground' : 'text-foreground')}>
@@ -395,9 +424,92 @@ function VaultCanvas({ step, split, hover, setHover }: { step: number; split: bo
           </motion.div>
         ))}
       </AnimatePresence>
-      {!r.hubs && (
-        <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">The vault is empty. Step through the method →</div>
+    </div>
+  )
+}
+
+function KeyFinder() {
+  const [column, setColumn] = useState<CustomerKeyColumn>('c_custkey')
+  const profile = profileCustomerKey(column)
+  const uniqueDetail = profile.duplicateRowsByBatch
+    .map((duplicates, index) => (duplicates === 0 ? `Batch ${index + 1}: none` : `${duplicates} duplicate${duplicates === 1 ? '' : 's'} in batch ${index + 1}`))
+    .join(' · ')
+  const changedDetail =
+    column === 'c_custkey'
+      ? '— it’s the identifier the other checks match on; confirm with the system owner that numbers are never reused'
+      : `${profile.changedCustomerCount} customer${profile.changedCustomerCount === 1 ? '' : 's'} changed this value between deliveries`
+  const feedback: Record<CustomerKeyColumn, string> = {
+    c_custkey: `Unique in every batch, never empty, and all ${profile.orderKeysFound} distinct orders.o_custkey values occur here. It is the strongest candidate in this sample; confirm with the system owner that numbers are never reused.`,
+    c_name: `${profile.distinctValues.length} distinct names; ${profile.changedCustomerCount} returning customers changed names and ${profile.orderKeysFound} of ${profile.orderKeysTotal} order customer keys match. Names are not guaranteed unique across systems or over time.`,
+    c_address: `${profile.distinctValues.length} distinct addresses; ${profile.changedCustomerCount} returning customer changed address and ${profile.orderKeysFound} of ${profile.orderKeysTotal} order customer keys match. Addresses can change as people move.`,
+    c_mktsegment: `${profile.distinctValues.length} distinct segments for ${profile.customerCount} customers; ${profile.changedCustomerCount} customer changed segment and ${profile.orderKeysFound} of ${profile.orderKeysTotal} order customer keys match. A segment describes a group, not one customer.`,
+  }
+
+  return (
+    <div className="space-y-4">
+      <fieldset className="border-0 p-0">
+        <legend className="mb-2 text-sm font-semibold">Pick a customer column to test</legend>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {CUSTOMER_KEY_COLUMNS.map((candidate) => (
+            <label key={candidate} className="flex cursor-pointer items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm">
+              <input
+                type="radio"
+                name="customer-key-candidate"
+                value={candidate}
+                checked={column === candidate}
+                onChange={() => setColumn(candidate)}
+              />
+              <Code>{candidate}</Code>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <dl aria-live="polite" data-testid="key-profile" className="grid gap-3 rounded-xl border bg-card/60 p-4 sm:grid-cols-2">
+        <div>
+          <dt className="font-medium">Unique within every batch</dt>
+          <dd className="mt-1 text-sm text-muted-foreground">{uniqueDetail}</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Never empty</dt>
+          <dd className="mt-1 text-sm text-muted-foreground">{profile.emptyValues === 0 ? '✓ no empty values' : `${profile.emptyValues} empty values`}</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Stable for the same customer</dt>
+          <dd className="mt-1 text-sm text-muted-foreground">{changedDetail}</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Used by another feed</dt>
+          <dd className="mt-1 text-sm text-muted-foreground">
+            {profile.orderKeysFound} of {profile.orderKeysTotal} distinct <Code>orders.o_custkey</Code> values found
+          </dd>
+        </div>
+      </dl>
+      <output aria-live="polite" data-testid="key-profile-feedback" className="block rounded-xl border bg-muted/30 p-4 text-sm leading-6">
+        {feedback[column]}
+      </output>
+      <p className="text-sm leading-6">
+        A good business key is what the business uses to identify a thing (for example, a customer number on invoices): unique, stable and shared across systems, not an
+        internal ID only one database understands.
+      </p>
+      <div className="grid min-w-0 items-start gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,1.2fr)]">
+        <div className="rounded-xl border bg-card/60 p-4">
+          <h3 className="font-semibold">What your hub would look like</h3>
+          <p className="mt-2 text-sm leading-6">
+            {profile.hubRows.length} hub rows for {profile.customerCount} customers.{' '}
+            {profile.orderKeysFound === profile.orderKeysTotal ? 'Orders can link to this hub.' : `${profile.orderKeysFound} of ${profile.orderKeysTotal} distinct order customer keys can link.`}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <DataTable title={`Candidate hub rows · ${column}`} tone="hub" rows={profile.hubRows} columns={[column, 'hk_customer_h']} maxHeight="max-h-52" />
+        </div>
+      </div>
+      {column !== 'c_custkey' && (
+        <Callout kind="tip" title="Got it wrong? Nothing is lost.">
+          Keep every delivery in persistent staging, change the key in the model and run <Code>dbt build --full-refresh</Code>. dbt can rebuild hubs, links and satellites
+          from the retained deliveries. With truncated landing, the same rebuild would be lossy. <Link to="/replay" className="text-sky-700 underline underline-offset-4 dark:text-sky-400">See the Replay lab.</Link>
+        </Callout>
       )}
+      <p className="font-medium">You don’t have to get the model right the first time: keep raw deliveries, keep the model as code, change your mind, rebuild.</p>
     </div>
   )
 }
@@ -418,40 +530,38 @@ function Stepper({ group }: { group: StepGroup }) {
   return (
     <div className="rounded-2xl border bg-card/30 p-4 md:p-6">
       <div className="mb-5 flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1">
-          <span className="mr-1 text-xs font-medium text-sky-700 dark:text-sky-400">{group}</span>
-          {steps.map((i, localIndex) => (
-            <button
-              key={STEPS[i].code}
-              aria-pressed={localIndex === position}
-              onClick={() => setSelected(localIndex)}
-              className={cn(
-                'rounded-md px-1.5 py-0.5 font-mono text-[11px] transition-colors',
-                localIndex === position ? 'bg-foreground text-background' : localIndex < position ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted',
-              )}
-            >
-              {STEPS[i].code}
-            </button>
-          ))}
-        </div>
+        <div className="font-medium">Step {position + 1} of {steps.length} · {group}</div>
+        <label className="flex w-full min-w-0 flex-wrap items-center gap-2 text-sm sm:w-auto">
+          <span className="sr-only">Jump to step</span>
+          <select
+            aria-label="Jump to step"
+            value={position}
+            onChange={(event) => setSelected(Number(event.target.value))}
+            className="w-full min-w-0 max-w-full rounded-md border bg-background px-2 py-1.5 text-sm sm:w-auto"
+          >
+            {steps.map((index, localIndex) => (
+              <option key={STEPS[index].code} value={localIndex}>{STEPS[index].code} · {STEPS[index].title}</option>
+            ))}
+          </select>
+        </label>
         <div className="ml-auto flex items-center gap-1">
-          <Button size="icon-sm" variant="ghost" aria-label={`Restart ${group.toLowerCase()} steps`} onClick={() => setSelected(0)}>
-            <RotateCcw />
-          </Button>
+          {position > 0 && (
+            <Button size="icon-sm" variant="ghost" aria-label={`Restart ${group.toLowerCase()} steps`} onClick={() => setSelected(0)}>
+              <RotateCcw />
+            </Button>
+          )}
           <Button size="sm" variant="outline" onClick={() => go(-1)} disabled={position === 0}>
             <ChevronLeft /> Back
           </Button>
           <Button size="sm" onClick={() => go(1)} disabled={position === steps.length - 1}>
-            Next <ChevronRight />
+            Next →
           </Button>
         </div>
       </div>
 
       <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mb-5 min-h-[6.5rem]">
-          <div className="font-mono text-xs text-muted-foreground">
-            Step {s.code} · {s.group}
-          </div>
+          <div className="font-mono text-xs text-muted-foreground">Step {s.code} · {s.group}</div>
           <div className="mt-1 text-xl font-semibold">{s.title}</div>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-foreground/80">{s.body}</p>
           {step >= 8 && (
@@ -505,6 +615,13 @@ export default function Modelling() {
       >
         <Stepper group="Hubs" />
         <p className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each business key.</p>
+      </Section>
+      <Section
+        title="Find the business key yourself"
+        lead="Profile customer columns across all three deliveries, then check whether orders use the same candidate."
+        keyPoint="A useful key is unique, stable and shared across the feeds; retained source history lets you correct a bad choice."
+      >
+        <KeyFinder />
       </Section>
       <Section
         title="Step through the links"

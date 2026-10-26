@@ -24,7 +24,7 @@ test('modelling: Next and Back walk the steps', async ({ page }) => {
   const group = page.getByRole('heading', { name: 'Step through the hubs' }).locator('xpath=..')
   const step = group.getByText(/^Step \S+ · /)
   const first = await step.textContent()
-  await group.getByRole('button', { name: 'Next' }).click()
+  await group.getByRole('button', { name: 'Next →' }).click()
   await expect(step).not.toHaveText(first ?? '')
   await group.getByRole('button', { name: 'Back' }).click()
   await expect(step).toHaveText(first ?? '')
@@ -45,14 +45,14 @@ test('hash lab: all-NULL input gives the zero key', async ({ page }) => {
   await expect(page.getByText('00000000000000000000000000000000').first()).toBeVisible()
 })
 
-test('load player: Step advances the phase, batches switch', async ({ page }) => {
+test('load player: Next step advances the phase, batches switch', async ({ page }) => {
   await open(page, 'load-player')
   const phase = page.getByRole('button', { name: 'Stage hashes' })
-  await page.getByText('More options').click()
-  await page.getByRole('button', { name: 'Step' }).click()
-  await expect(phase.locator('div').nth(2)).toHaveClass(/text-foreground/)
-  await page.getByRole('button', { name: /Batch 2/ }).click()
-  await expect(page.getByRole('button', { name: /Batch 2/ })).toHaveClass(/border-sky-500/)
+  await page.getByRole('button', { name: 'Next step' }).click()
+  await expect(phase).toHaveAttribute('aria-pressed', 'true')
+  const batchTwo = page.getByRole('tab', { name: /Batch 2/ })
+  await batchTwo.click()
+  await expect(batchTwo).toHaveAttribute('aria-selected', 'true')
 })
 
 test('satellites: a bar shows its interval and the other flavours are separate pages', async ({ page }, info) => {

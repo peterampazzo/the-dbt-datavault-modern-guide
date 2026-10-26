@@ -82,19 +82,20 @@ export default function OneLake() {
       </Section>
       <Section
         title="The layers"
-        lead="Follow the source copy through staging and vault models to the reporting layer."
-        keyPoint="Only bronze / persistent staging is source data; every later layer is derived."
+        lead="Follow customer, nation and orders from source systems through retained deliveries and derived models to reporting."
+        keyPoint="Landing and persistent staging preserve source data; stage, vault and mart models are derived and rebuildable."
       >
         <p className="mb-4 max-w-full whitespace-normal font-mono text-xs text-foreground">
-          bronze / persistent staging → dv_stage → raw_vault → business_vault → gold
+          sources → landing + persistent staging (Bronze) → dv_stage (Silver) → raw_vault (Silver) → business_vault (Silver) → marts (Gold)
         </p>
-        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            ['bronze / persistent staging', 'Source data, stored as received.'],
-            ['dv_stage', 'Prepared rows and hashes.'],
-            ['raw_vault', 'Hubs, links and history.'],
-            ['business_vault', 'PITs and business rules.'],
-            ['gold', 'Reporting-ready outputs.'],
+            ['Sources', 'Customer, nation and orders from their source systems.'],
+            ['Landing + persistent staging (Bronze)', 'Every delivery retained as received.'],
+            ['Stage · dv_stage (Silver)', 'Views add hashes, ldts and rsrc; no business rules.'],
+            ['Raw vault (Silver)', 'Hubs, links and satellites integrated by business key.'],
+            ['Business vault (Silver)', 'PITs, bridges and derived business rules.'],
+            ['Marts (Gold)', 'Dimensions, facts and reporting views.'],
           ].map(([name, detail], index) => (
             <li key={name} className="rounded-xl border bg-card p-3">
               <span className="mb-2 block text-xs font-semibold text-foreground">Layer {index + 1}</span>

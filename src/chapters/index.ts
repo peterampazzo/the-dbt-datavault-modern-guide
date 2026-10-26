@@ -32,9 +32,9 @@ export const CHAPTERS = [
     part: 1,
     audience: 'skim-if-dv',
     summary: [
-      'Data Vault splits a warehouse into hubs (business keys), links (relationships) and satellites (descriptive history).',
-      'New sources and changes arrive as new rows and new tables, not by rewriting what is already there.',
-      'It sits between staging and the marts; the business vault adds PITs and bridges to make it easy to query.',
+      'Follow customer, nation and orders from external source systems through landing and the vault to reports.',
+      'Data Vault integrates sources by business key using hubs, links and satellites.',
+      'Bronze keeps deliveries; stage and vault models are Silver; marts are Gold.',
     ],
     recap: [
       'A hub holds a business key, a link holds a relationship, and a satellite holds descriptive history for one hub or link.',

@@ -86,3 +86,7 @@ Each rule gives Do, Don't, Why and Source.
 15. **Craft floor.**
     - Don't: eyebrow labels above headings, gradient text, thick left-border callouts, uppercase tracked micro-labels, or monospace as decoration.
     - Why: these are pbakaus/impeccable craft-floor bans.
+16. **Keep interaction results near their controls.**
+    - Do: show the result within one screen of the control that changes it, so the reader can see cause and effect without searching.
+    - Don't: put the updated table, message or diagram far below a long interactive.
+    - Why: immediate feedback reduces working-memory demands and makes the next action clear.

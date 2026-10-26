@@ -460,6 +460,29 @@ FROM row_hashes`,
     raw_vault:
       +full_refresh: false`,
   },
+  dbt_project_layer_schemas: {
+    name: 'dbt_project_layer_schemas',
+    code: `models:
+  guide:
+    dv_stage:
+      +schema: dv_stage
+    raw_vault:
+      +schema: raw_vault
+    business_vault:
+      +schema: business_vault
+    marts:
+      +schema: marts`,
+  },
+  generate_schema_name: {
+    name: 'generate_schema_name',
+    code: `{% macro generate_schema_name(custom_schema_name, node) -%}
+    {%- if custom_schema_name is none -%}
+        {{ target.schema }}
+    {%- else -%}
+        {{ custom_schema_name | trim }}
+    {%- endif -%}
+{%- endmacro %}`,
+  },
 }
 
 export const LAYER_META: Record<Layer, { label: string; color: string; ring: string; text: string }> = {
