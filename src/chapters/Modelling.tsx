@@ -90,9 +90,9 @@ const nodesFor = (split: boolean): VNode[] => [
 ]
 
 const TONE: Record<NodeType, { border: string; text: string; stroke: string }> = {
-  hub: { border: 'border-sky-500/70', text: 'text-sky-400', stroke: 'stroke-sky-400/70' },
-  link: { border: 'border-emerald-500/70', text: 'text-emerald-400', stroke: 'stroke-emerald-400/70' },
-  sat: { border: 'border-amber-500/70', text: 'text-amber-400', stroke: 'stroke-amber-400/70' },
+  hub: { border: 'border-sky-500/70', text: 'text-sky-700 dark:text-sky-400', stroke: 'stroke-sky-400/70' },
+  link: { border: 'border-emerald-500/70', text: 'text-emerald-700 dark:text-emerald-400', stroke: 'stroke-emerald-400/70' },
+  sat: { border: 'border-amber-500/70', text: 'text-amber-700 dark:text-amber-400', stroke: 'stroke-amber-400/70' },
 }
 const KIND_CHIP: Record<Kind, string> = {
   bk: 'border-sky-500/60 bg-sky-500/15 text-sky-600 dark:text-sky-300',
@@ -287,7 +287,7 @@ function SourceCard({
           )
         })}
       </div>
-      <div className="overflow-x-auto border-t">
+      <div tabIndex={0} className="overflow-x-auto border-t outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
         <table className="w-full font-mono text-[10.5px] text-muted-foreground">
           <tbody>
             {src.rows.map((row, i) => (
@@ -424,7 +424,7 @@ function Stepper() {
       <div className="mb-5 flex flex-wrap items-center gap-2">
         {groups.map((g, gi) => (
           <div key={g} className="flex items-center gap-1">
-            <span className={cn('mr-1 text-xs font-medium', ['text-sky-400', 'text-emerald-400', 'text-amber-400'][gi])}>
+            <span className={cn('mr-1 text-xs font-medium', ['text-sky-700 dark:text-sky-400', 'text-emerald-700 dark:text-emerald-400', 'text-amber-700 dark:text-amber-400'][gi])}>
               {gi + 1}. {g}
             </span>
             {STEPS.map((st, i) =>
@@ -465,8 +465,8 @@ function Stepper() {
           <div className="mt-1 text-xl font-semibold">{s.title}</div>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-foreground/80">{s.body}</p>
           {step >= 8 && (
-            <label className="mt-3 inline-flex items-center gap-2 text-sm">
-              <Switch checked={split} onCheckedChange={setSplit} /> Split <Code>c_acctbal</Code> into <Code>customer_balance_s</Code> (rate of change)
+            <label htmlFor="m-split" className="mt-3 inline-flex items-center gap-2 text-sm">
+              <Switch id="m-split" checked={split} onCheckedChange={setSplit} /> Split <Code>c_acctbal</Code> into <Code>customer_balance_s</Code> (rate of change)
             </label>
           )}
         </motion.div>
@@ -492,7 +492,7 @@ function Stepper() {
         </div>
         <div className="min-w-0">
           <div className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Raw vault</div>
-          <div className="overflow-x-auto">
+          <div tabIndex={0} className="overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
             <VaultCanvas step={step} split={split} hover={hover} setHover={setHover} />
           </div>
         </div>
@@ -529,7 +529,7 @@ export default function Modelling() {
           </Callout>
         </div>
         <P>
-          Ready to build it? <Link to="/dbt" className="text-sky-400 underline-offset-4 hover:underline">Chapter 3</Link> turns every box on this canvas into a
+          Ready to build it? <Link to="/dbt" className="text-sky-700 dark:text-sky-400 underline underline-offset-4">Chapter 3</Link> turns every box on this canvas into a
           datavault4dbt model.
         </P>
       </Section>

@@ -48,6 +48,7 @@ function Lab() {
             <motion.div key={i.id} layout initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-2">
               <span className="w-24 shrink-0 truncate font-mono text-xs text-muted-foreground">{i.col}</span>
               <input
+                aria-label={`${i.col} value`}
                 value={i.isNull ? '' : i.value}
                 disabled={i.isNull}
                 placeholder={i.isNull ? 'NULL' : ''}
@@ -55,8 +56,9 @@ function Lab() {
                 className="min-w-0 flex-1 rounded-md border bg-background px-2 py-1 font-mono text-sm outline-none focus:ring-2 focus:ring-sky-500/50 disabled:opacity-50"
               />
               <button
+                aria-pressed={i.isNull}
                 onClick={() => set(i.id, { isNull: !i.isNull })}
-                className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', i.isNull ? 'border-amber-500/60 text-amber-400' : 'text-muted-foreground')}
+                className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', i.isNull ? 'border-amber-500/60 text-amber-700 dark:text-amber-400' : 'text-muted-foreground')}
               >
                 NULL
               </button>
@@ -84,7 +86,7 @@ function Lab() {
           ].map(([label, vals]) => (
             <button
               key={label as string}
-              className="block text-sky-400 hover:underline"
+              className="block text-sky-700 dark:text-sky-400 hover:underline"
               onClick={() =>
                 setInputs((xs) => xs.map((x, j) => (vals ? { ...x, value: (vals as string[])[j] ?? x.value, isNull: false } : { ...x, isNull: true })))
               }
@@ -110,9 +112,9 @@ function Lab() {
                   <span className="mr-2 font-mono text-xs text-muted-foreground">{i + 1}</span>
                   {s.label}
                 </span>
-                <span className="text-[11px] text-muted-foreground">{s.detail}</span>
+                <span className="text-[11px] text-foreground/70">{s.detail}</span>
               </div>
-              <motion.div key={s.value} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className={cn('mt-1 break-all font-mono text-[13px]', s.id === 'hash' ? 'text-sky-400' : 'text-foreground/90')}>
+              <motion.div key={s.value} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className={cn('mt-1 break-all font-mono text-[13px]', s.id === 'hash' ? 'text-sky-700 dark:text-sky-400' : 'text-foreground/90')}>
                 {s.value === '' ? <span className="text-muted-foreground">(empty)</span> : s.value.replace(/ /g, '·')}
               </motion.div>
             </motion.li>
@@ -148,18 +150,18 @@ function DiffFlip() {
             />
           </label>
         ))}
-        <button className="text-xs text-sky-400 hover:underline" onClick={() => setP(BASE)}>
+        <button className="text-xs text-sky-700 dark:text-sky-400 hover:underline" onClick={() => setP(BASE)}>
           reset
         </button>
       </div>
       <div className="flex flex-col justify-center gap-3 font-mono text-sm">
         <div className="rounded-xl border px-4 py-3">
           <div className="text-xs text-muted-foreground">latest hd_customer_n_s in the satellite</div>
-          <div className="break-all text-amber-400">{before}</div>
+          <div className="break-all text-amber-700 dark:text-amber-400">{before}</div>
         </div>
         <div className={cn('rounded-xl border px-4 py-3 transition-colors', changed && 'border-emerald-500/60')}>
           <div className="text-xs text-muted-foreground">hashdiff of today's stage row</div>
-          <motion.div key={after} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className={cn('break-all', changed ? 'text-emerald-400' : 'text-amber-400')}>
+          <motion.div key={after} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className={cn('break-all', changed ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400')}>
             {after}
           </motion.div>
         </div>
@@ -169,7 +171,7 @@ function DiffFlip() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className={cn('rounded-xl px-4 py-3 font-sans text-sm', changed ? 'bg-emerald-500/15 text-emerald-300' : 'bg-muted text-muted-foreground')}
+            className={cn('rounded-xl px-4 py-3 font-sans text-sm', changed ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300' : 'bg-muted text-foreground/80')}
           >
             {changed ? 'Hashdiff differs → sat_v0 inserts a new version' : 'Hashdiff identical → nothing to insert'}
           </motion.div>

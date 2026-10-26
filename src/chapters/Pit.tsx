@@ -27,7 +27,7 @@ export default function Pit() {
         <div className="rounded-2xl border bg-card/30 p-5">
           <div className="mb-6 flex flex-wrap items-center gap-6">
             <div className="w-full max-w-md">
-              <Slider value={[i]} min={0} max={SNAPSHOTS.length - 1} step={1} onValueChange={(v) => setI(Array.isArray(v) ? v[0] : (v as number))} />
+              <Slider aria-label="Snapshot date" value={[i]} min={0} max={SNAPSHOTS.length - 1} step={1} onValueChange={(v) => setI(Array.isArray(v) ? v[0] : (v as number))} />
               <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
                 {SNAPSHOTS.map((s) => (
                   <span key={s}>{s.slice(5, 10)}</span>
@@ -35,7 +35,7 @@ export default function Pit() {
               </div>
             </div>
             <motion.div key={sdts} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="font-mono text-sm">
-              sdts = <span className="text-violet-400">{sdts}</span>
+              sdts = <span className="text-violet-700 dark:text-violet-400">{sdts}</span>
             </motion.div>
           </div>
           <DataTable

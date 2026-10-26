@@ -46,7 +46,6 @@ function Timeline({ rows }: { rows: Row[] }) {
                   onFocus={() => setHover(v)}
                   onClick={() => setHover(v)}
                   aria-pressed={hover === v}
-                  aria-label={`${name} version ${i + 1}: valid from ${String(v.ldts)} to ${String(v.ledts)}`}
                   style={{ left: `${(start / 3) * 100}%`, width: `calc(${((end - start) / 3) * 100}% - 4px)`, transformOrigin: 'left' }}
                   className={cn(
                     'absolute inset-y-0 truncate rounded-md border px-2 text-left text-[10px] leading-6 outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60',
@@ -55,6 +54,7 @@ function Timeline({ rows }: { rows: Row[] }) {
                   )}
                 >
                   {v.is_current ? 'current →' : 'v' + (i + 1)}
+                  <span className="sr-only">{`, ${name}, valid from ${String(v.ldts)} to ${String(v.ledts)}`}</span>
                 </motion.button>
               )
             })}

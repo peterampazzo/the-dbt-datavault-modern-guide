@@ -35,7 +35,9 @@ export function Layout() {
   const prev = idx > 0 ? CHAPTERS[idx - 1] : null
   const next = idx >= 0 && idx < CHAPTERS.length - 1 ? CHAPTERS[idx + 1] : idx === -1 ? CHAPTERS[0] : null
 
-  useEffect(() => window.scrollTo({ top: 0 }), [pathname])
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [pathname])
 
   return (
     <div className="min-h-svh bg-background text-foreground">
@@ -44,7 +46,7 @@ export function Layout() {
         <div className="mx-auto flex h-14 max-w-[90rem] items-center gap-3 px-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
             <Logo />
-            <span className="hidden sm:inline">The dbt + Data Vault guide</span>
+            <span className="sr-only sm:not-sr-only">The dbt + Data Vault guide</span>
           </Link>
           <nav className="ml-4 flex flex-1 gap-1 overflow-x-auto lg:hidden">
             {CHAPTERS.map((c, i) => (
@@ -93,7 +95,7 @@ export function Layout() {
                       {isActive && (
                         <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-muted" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
                       )}
-                      <span className="relative font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>
+                      <span className={cn('relative font-mono text-xs', isActive ? 'text-foreground' : 'text-muted-foreground')}>{String(i + 1).padStart(2, '0')}</span>
                       <span className="relative">{c.title}</span>
                     </>
                   )}

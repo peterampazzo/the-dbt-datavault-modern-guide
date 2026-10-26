@@ -87,11 +87,11 @@ function Player() {
           </Button>
         </div>
         <div className="ml-auto flex flex-wrap gap-4 text-sm">
-          <label className="inline-flex items-center gap-2">
-            <Switch checked={late} onCheckedChange={setLate} /> Late-arriving row
+          <label htmlFor="lp-late" className="inline-flex items-center gap-2">
+            <Switch id="lp-late" checked={late} onCheckedChange={setLate} /> Late-arriving row
           </label>
-          <label className="inline-flex items-center gap-2">
-            <Switch checked={showGhosts} onCheckedChange={setShowGhosts} /> Ghost records
+          <label htmlFor="lp-ghosts" className="inline-flex items-center gap-2">
+            <Switch id="lp-ghosts" checked={showGhosts} onCheckedChange={setShowGhosts} /> Ghost records
           </label>
         </div>
       </div>
@@ -116,7 +116,7 @@ function Player() {
                 {STORY[batch].changes.map((c) => (
                   <li key={c}>• {c}</li>
                 ))}
-                {late && batch === 2 && <li className="text-amber-400">• Hana (#8) shows up with ldts {runs[1].ldts}: older than the high-water mark.</li>}
+                {late && batch === 2 && <li className="text-amber-700 dark:text-amber-400">• Hana (#8) shows up with ldts {runs[1].ldts}: older than the high-water mark.</li>}
               </ul>
             </motion.div>
           </AnimatePresence>

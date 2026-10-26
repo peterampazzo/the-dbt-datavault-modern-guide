@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 export function ChapterHeader({ n, title, lead }: { n: number; title: string; lead: ReactNode }) {
   return (
     <header className="mb-10">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-2 font-mono text-sm text-sky-400">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-2 font-mono text-sm text-sky-700 dark:text-sky-400">
         Chapter {n}
       </motion.div>
       <motion.h1

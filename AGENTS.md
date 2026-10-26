@@ -14,7 +14,8 @@ pnpm dev --host 0.0.0.0 --port 5173
 pnpm lint      # oxlint
 pnpm test      # vitest (simulation engine)
 pnpm build     # tsc -b + vite build (BASE_PATH env sets the Pages base)
-pnpm ux:check  # overflow / hidden-content / reduced-motion scan against the dev server (see docs/knowledge/ux-audit.md)
+pnpm e2e       # Playwright suite: chapter flows, keyboard, axe WCAG 2.2 AA, overflow/hidden/motion audit
+pnpm ux:check  # just the audit + WCAG specs (see docs/knowledge/ux-audit.md)
 ```
 
 Run lint, test and build before pushing. CI (`.github/workflows/deploy.yml`) runs the same, and deploys to GitHub Pages on `main`.
@@ -46,7 +47,7 @@ Run lint, test and build before pushing. CI (`.github/workflows/deploy.yml`) run
    - new terms are defined where they are first used;
    - about 4 primary controls per interactive;
    - each chapter has an optional, never-blocking quick check.
-   Run `pnpm ux:check` and the steps in `docs/knowledge/ux-audit.md` before UX-facing PRs.
+   Run `pnpm e2e` and the manual steps in `docs/knowledge/ux-audit.md` before UX-facing PRs.
 
 ## Knowledge base
 

@@ -2,22 +2,28 @@
 
 Run the audit before each UX-facing PR and after any layout or motion change.
 
-## 1. Automated scan
+## 1. Automated tests (Playwright + axe)
 
 ```bash
-pnpm dev --host 0.0.0.0 --port 5173   # in one shell
-pnpm ux:check                         # in another (needs a Chromium; see below)
+pnpm exec playwright install chromium   # once per machine
+pnpm e2e                                # whole suite; builds and serves dist/ on :4173 itself
+pnpm ux:check                           # only the audit + WCAG specs
+BASE_URL=https://the-dbt-datavault-modern-guide.pages.dev pnpm ux:check   # against a deployed site
 ```
 
-`scripts/ux-check.mjs` visits every route at 320px, 390px and 1280px. It runs once with `reducedMotion: 'reduce'` and once without. On each route it reports:
+The suite lives in `e2e/` and runs in two projects, `desktop` (1280×800) and `mobile` (Pixel 7, touch). CI runs it on every PR and uploads `playwright-report/`.
 
-- horizontal overflow (`scrollWidth > clientWidth`): breaks S1;
-- elements that are still `opacity < 0.5` after load, without scrolling: breaks S1;
-- page errors: always a failure.
+| Spec | Checks | Rule / criterion |
+|---|---|---|
+| `audit.e2e.ts` | Each route at 320, 390 and 1280px: no horizontal overflow; nothing left below opacity 0.5 or stuck at `scale(0)` after scrolling through; no page or console errors. | S1, learning-design rule 1 |
+| `audit.e2e.ts` | 5.5s after load, with and without reduced motion: no element still changing transform, opacity or size, and no infinite CSS/WAAPI animation. | S2, WCAG 2.2.2, 2.3.3 |
+| `a11y.e2e.ts` | axe-core with WCAG 2.0/2.1/2.2 A and AA tags on every route, in dark and light themes. Any violation fails. | WCAG 2.2 AA |
+| `keyboard.e2e.ts` | Tab reaches every control, each focused control shows an outline or ring, the PIT slider moves with the arrow keys, and timeline bars are focusable. | WCAG 2.1.1, 2.4.7, S7 |
+| `chapters.e2e.ts` | The main interaction in each chapter works (steppers, terminal, hash lab, load player, timeline tap, lineage click), and the theme survives a reload. | Regression |
 
-It exits with code 1 on any failure.
+`oxlint` also runs the `jsx-a11y` plugin, so missing labels and similar problems fail at lint time.
 
-Browser: set `CHROME_PATH` to a Chrome/Chromium binary, or `CDP_URL` to connect to a running browser (e.g. `http://localhost:9222`). Set `BASE_URL` to audit a deployed build (default `http://localhost:5173`).
+Automated checks find only part of what WCAG covers (often quoted at 30–50%). The manual review below is still required.
 
 ## 2. Code checks
 
@@ -44,7 +50,7 @@ Use the two reference skill sets as checklists. They are referenced here, not in
 | MED | Hurts focus or comprehension (density, jargon, no orientation). Fix in the current UX phase. |
 | LOW | Polish or craft-floor issues. |
 
-## 5. Latest findings (2026-10, before the ADHD pass)
+## 5. Latest findings (2026-10)
 
 | Sev | Finding | Status |
 |---|---|---|
@@ -57,4 +63,7 @@ Use the two reference skill sets as checklists. They are referenced here, not in
 | MED | The load player shows about 11 controls at once. | Planned (progressive disclosure) |
 | MED | Jargon used before it is defined (`ldts`, HWM, hashdiff). | Planned (glossary) |
 | MED | No self-check. | Planned (quick checks) |
+| HIGH | Clicking from Home into a chapter crashed the app (blank page). `useEffect(() => window.scrollTo(...))` returned the Promise newer Chrome gives back from `scrollTo`, so React called it as a clean-up. Found by the `chapters.e2e.ts` navigation test. | Fixed in the e2e PR |
+| HIGH | axe WCAG 2.2 AA: unlabelled Hash lab inputs and PIT slider, icon-only Home link on phones, code and table scroll areas unreachable by keyboard, timeline bar names not matching their visible text, accent text (`*-400`, chip `*-200/300`) too faint in light theme, dimmed code lines and line numbers below 4.5:1. | Fixed in the e2e PR |
+| MED | Lineage graph nodes had no visible focus and could not be selected from the keyboard; animated edges looped forever. | Fixed in the e2e PR (focus ring, Enter selects, edges static) |
 | LOW | Eyebrow label, gradient text, `border-l-4` callouts, uppercase micro-labels; no `scroll-padding-top`. | Planned (polish) |

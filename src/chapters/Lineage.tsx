@@ -43,7 +43,12 @@ function walk(start: string, next: (n: string) => string[]) {
   const stack = [start]
   while (stack.length) {
     const n = stack.pop()!
-    for (const x of next(n)) if (!seen.has(x)) (seen.add(x), stack.push(x))
+    for (const x of next(n)) {
+      if (!seen.has(x)) {
+        seen.add(x)
+        stack.push(x)
+      }
+    }
   }
   return seen
 }
@@ -78,7 +83,7 @@ export default function Lineage() {
             id: `${d}-${m.name}`,
             source: d,
             target: m.name,
-            animated: on,
+            animated: false,
             style: { opacity: on ? 0.9 : 0.15, strokeWidth: on ? 1.6 : 1 },
           }
         }),
@@ -95,7 +100,16 @@ export default function Lineage() {
         lead="Everything from the previous chapters as one dbt DAG: seeds, stages, raw vault, business vault and a mart. Click a node to trace its upstream and downstream models."
       />
       <Section>
-        <div className="h-[34rem] overflow-hidden rounded-2xl border bg-card/30">
+        <div
+          className="h-[34rem] overflow-hidden rounded-2xl border bg-card/30"
+          onKeyDown={(e) => {
+            const node = (e.target as HTMLElement).closest<HTMLElement>('.react-flow__node')
+            if (node?.dataset.id && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault()
+              setSel(node.dataset.id)
+            }
+          }}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -104,6 +118,7 @@ export default function Lineage() {
             fitView
             colorMode={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
             nodesDraggable={false}
+            edgesFocusable={false}
             proOptions={{ hideAttribution: true }}
             minZoom={0.3}
           >
