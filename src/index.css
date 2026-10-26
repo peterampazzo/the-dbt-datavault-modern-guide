@@ -128,3 +128,19 @@
     @apply font-sans;
     }
 }
+@import "@fontsource-variable/jetbrains-mono";
+
+@theme inline {
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
+.dark .shiki-token {
+  color: var(--shiki-dark) !important;
+}
+.shiki-token {
+  color: var(--shiki-light);
+}
+
+html {
+  scroll-behavior: smooth;
+}
