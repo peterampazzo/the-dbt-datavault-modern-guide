@@ -69,3 +69,14 @@ test('lineage: clicking a node selects it', async ({ page }) => {
   await page.locator('.react-flow__node', { hasText: 'customer_pit' }).first().click()
   await expect(page.locator('main .font-mono.text-lg')).toHaveText('customer_pit')
 })
+
+test('dbt: hand-written vs datavault4dbt comparison', async ({ page }) => {
+  await open(page, 'dbt')
+  const box = page.getByTestId('hand-vs-dbt')
+  await box.getByRole('button', { name: 'Satellite' }).click()
+  await expect(box.getByText('c_email')).toHaveCount(0)
+  await box.getByRole('switch').click()
+  await expect(box.getByText(/c_email/).first()).toBeVisible()
+  await box.getByRole('button', { name: 'Link' }).click()
+  await expect(box.getByText(/hk_customer_nation_l/).first()).toBeVisible()
+})
