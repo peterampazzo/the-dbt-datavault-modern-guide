@@ -1,32 +1,24 @@
-# React + TypeScript + Vite
+# The dbt + Data Vault modern guide
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+An interactive guide to Data Vault modelling and building it with dbt and [datavault4dbt](https://github.com/ScalefreeCOM/datavault4dbt).
 
-Currently, two official plugins are available:
+Three small datasets (customers, nations, orders) are modelled step by step into hubs, links and satellites, then built as dbt models. Hashing, batch loading, satellite variants, PITs and the dbt lineage are all interactive. The loading demos run on a TypeScript simulation of the datavault4dbt defaults (MD5, `||`, `^^`, trimmed and upper-cased hashkeys), covered by unit tests.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Develop
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+pnpm install
+pnpm dev      # http://localhost:5173
+pnpm test     # vitest
+pnpm lint     # oxlint
+pnpm build    # type-check + production build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Stack: Vite, React 19, TypeScript, Tailwind CSS v4, shadcn/ui (Base UI), Motion, React Flow, Shiki.
+
+## Sources
+
+- Hans Hultgren, *Introductory Guide to Data Vault Modeling* (Genesee Academy, 2019)
+- Databricks, *What is a Data Vault?*
+- OvalEdge, *Data Vault architecture*
+- datavault4dbt wiki
