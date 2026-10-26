@@ -135,7 +135,7 @@ function stagePhone(source: Row[]): Row[] {
   const rows: Row[] = []
   for (const group of groups.values()) {
     const sorted = [...group].sort((a, b) => String(a.phone_type).localeCompare(String(b.phone_type)))
-    const setHash = hd(sorted.map((r) => `${standardiseAttribute(r.phone_type)}||${standardiseAttribute(r.phone_number)}`).join('||'))
+    const setHash = hd(sorted.map((r) => `${standardiseAttribute(r.phone_type as string)}||${standardiseAttribute(r.phone_number as string)}`).join('||'))
     for (const r of sorted) {
       rows.push({ ...r, hk_customer_h: hk(r.c_custkey as number), hd_customer_phone_ma_s: setHash })
     }
