@@ -14,11 +14,11 @@ test('Start here remembers the practitioner path and updates next links and side
   await expect(page.getByRole('button', { name: 'I know Data Vault, new to dbt' })).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('link', { name: 'Start this path: I know Data Vault, new to dbt' }).click()
 
-  await expect(page.getByText(/Chapter 3 of 9/)).toBeVisible()
+  await expect(page.getByText(/Chapter 3 of 11/)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Part 1: The method' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Part 2: Building it with dbt' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Part 3: Going further' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: /Part 4:/ })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Part 4: Running it for real' })).toBeVisible()
   const sidebar = page.locator('aside')
   const refresher = sidebar.getByRole('link', { name: /What is Data Vault.*refresher/ })
   await expect(refresher).toHaveClass(/text-muted-foreground/)
@@ -33,6 +33,10 @@ test('Start here remembers the practitioner path and updates next links and side
   await expect(page.getByRole('navigation', { name: 'Pages' }).getByRole('link', { name: /Building it with dbt/ })).toBeVisible()
   await page.goto('/#/hash-lab/recap')
   await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next chapter: Loading, batch by batch' })).toBeVisible()
+  await page.goto('/#/load-player/recap')
+  await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next chapter: Replay: one history, two shapes' })).toBeVisible()
+  await page.goto('/#/replay/recap')
+  await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next chapter: One lake, any engine' })).toBeVisible()
 })
 
 test('every paged chapter surface stays within the 1200px height target at 1280×800', async ({ page }, info) => {

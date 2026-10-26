@@ -436,6 +436,39 @@ LEFT JOIN {{ ref('customer_phone_ma_s') }} ph
 
 export const MODEL = Object.fromEntries(MODELS.map((m) => [m.name, m])) as Record<string, DbtModel>
 
+MODEL.vault_fingerprint = {
+  name: 'vault_fingerprint',
+  layer: 'bv',
+  materialized: 'view',
+  deps: ['customer_n_s'],
+  description: 'Spark SQL pattern for comparing a raw-vault table by row count and a stable hash of row hashes.',
+  code: `WITH row_hashes AS (
+    SELECT sha2(concat_ws('||',
+        coalesce(CAST(hk_customer_h AS STRING), '∅'),
+        coalesce(CAST(hd_customer_n_s AS STRING), '∅'),
+        coalesce(CAST(ldts AS STRING), '∅'),
+        coalesce(CAST(rsrc AS STRING), '∅')
+    ), 256) AS row_hash
+    FROM raw_vault.customer_n_s
+)
+SELECT
+    count(*) AS row_count,
+    sha2(concat_ws('||', sort_array(collect_list(row_hash))), 256) AS table_hash
+FROM row_hashes`,
+}
+
+MODEL.dbt_project_raw_vault = {
+  name: 'dbt_project_raw_vault',
+  layer: 'bv',
+  materialized: 'view',
+  deps: [],
+  description: 'dbt_project.yml guard for raw-vault models during broad full-refresh commands.',
+  code: `models:
+  guide:
+    raw_vault:
+      +full_refresh: false`,
+}
+
 export const LAYER_META: Record<Layer, { label: string; color: string; ring: string; text: string }> = {
   seed: { label: 'Seed / landing', color: 'bg-zinc-500', ring: 'ring-zinc-400/50', text: 'text-zinc-600 dark:text-zinc-400' },
   stage: { label: 'Stage', color: 'bg-slate-500', ring: 'ring-slate-400/50', text: 'text-slate-300' },

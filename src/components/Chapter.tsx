@@ -179,11 +179,11 @@ export function Chapter({ children }: { children: ReactNode }) {
       {extras.length > 0 && <div className="mt-8">{extras}</div>}
       <div className="mt-10 border-t pt-5">
         {nextChapter ? (
-          <Link to={`/${nextChapter.slug}`} className="inline-flex items-center gap-2 font-medium text-sky-700 hover:underline dark:text-sky-400">
+          <Link to={`/${nextChapter.slug}`} className="inline-flex items-center gap-2 font-medium text-foreground hover:underline">
             Next chapter: {nextChapter.title} <ArrowRight aria-hidden className="size-4" />
           </Link>
         ) : (
-          <Link to="/" className="inline-flex items-center gap-2 font-medium text-sky-700 hover:underline dark:text-sky-400">
+          <Link to="/" className="inline-flex items-center gap-2 font-medium text-foreground hover:underline">
             Back to home <ArrowRight aria-hidden className="size-4" />
           </Link>
         )}

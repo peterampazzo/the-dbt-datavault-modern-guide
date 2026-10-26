@@ -1,4 +1,4 @@
-import { BATCHES, CUSTOMERS, LATE_CUSTOMER, NATIONS, ORDERS, PHONES } from './dataset'
+import { BATCHES, CUSTOMER_EMAIL, CUSTOMERS, LATE_CUSTOMER, NATIONS, ORDERS, PHONES } from './dataset'
 import { ERROR_KEY, hd, hk, standardiseAttribute, ZERO_KEY } from './hash'
 
 /**
@@ -62,6 +62,72 @@ export interface BatchRun {
 
 export interface SimOptions {
   lateArrival?: boolean
+  change?: ReplayChange
+  legacyAcctbalCast?: boolean
+  batchIndexes?: readonly number[]
+}
+
+export type ReplayChange = 'none' | 'new-column' | 'cast-fix'
+
+export interface ReplayOptions {
+  landing: 'truncate' | 'persistent'
+  change: ReplayChange
+  fullRefresh: boolean
+}
+
+export type ReplayTableName =
+  | 'customer_h'
+  | 'nation_h'
+  | 'order_h'
+  | 'customer_nation_l'
+  | 'order_customer_nh_l'
+  | 'customer_n_s'
+  | 'nation_n_s'
+
+export type ReplayCellStatus = 'match' | 'wrong' | 'missing' | 'extra'
+export type ReplayRowStatus = 'match' | 'missing' | 'extra'
+
+export interface ReplayRowDiff {
+  key: string
+  status: ReplayRowStatus
+  truth?: Row
+  rebuilt?: Row
+  cells: Record<string, ReplayCellStatus>
+}
+
+export interface ReplayTableDiff {
+  rowsTruth: number
+  rowsRebuilt: number
+  missingRows: number
+  wrongCells: number
+  missingCells: number
+  rows: ReplayRowDiff[]
+}
+
+export type ReplayResult = {
+  truth: Record<TableName, Row[]>
+  rebuilt: Record<TableName, Row[]>
+  diff: Record<ReplayTableName, ReplayTableDiff>
+}
+
+export const REPLAY_TABLES: readonly ReplayTableName[] = [
+  'customer_h',
+  'nation_h',
+  'order_h',
+  'customer_nation_l',
+  'order_customer_nh_l',
+  'customer_n_s',
+  'nation_n_s',
+]
+
+const replayKeys: Record<ReplayTableName, string[]> = {
+  customer_h: ['hk_customer_h'],
+  nation_h: ['hk_nation_h'],
+  order_h: ['hk_order_h'],
+  customer_nation_l: ['hk_customer_nation_l'],
+  order_customer_nh_l: ['hk_order_customer_nh_l'],
+  customer_n_s: ['hk_customer_h', 'ldts'],
+  nation_n_s: ['hk_nation_h', 'ldts'],
 }
 
 const ghostRow = (kind: Ghost, columns: Record<string, 'string' | 'number' | 'hash'>): Row => {
@@ -88,14 +154,15 @@ function withGhosts(rows: Row[], columns: Record<string, 'string' | 'number' | '
 export const CUSTOMER_PAYLOAD = ['c_name', 'c_address', 'c_mktsegment', 'c_acctbal', 'c_comment'] as const
 
 export function stageCustomer(source: Row[]): Row[] {
+  const payload: readonly string[] = source.some((r) => r.c_email !== undefined) ? [...CUSTOMER_PAYLOAD, 'c_email'] : CUSTOMER_PAYLOAD
   const rows = source.map((r) => ({
     ...r,
     hk_customer_h: hk(r.c_custkey as number),
     hk_nation_h: hk(r.c_nationkey as number),
     hk_customer_nation_l: hk(r.c_custkey as number, r.c_nationkey as number),
-    hd_customer_n_s: hd(...CUSTOMER_PAYLOAD.map((c) => r[c] as string | number)),
+    hd_customer_n_s: hd(...payload.map((c) => r[c] as string | number)),
   }))
-  return withGhosts(rows, {
+  const columns: Record<string, 'string' | 'number' | 'hash'> = {
     c_custkey: 'number',
     c_name: 'string',
     c_address: 'string',
@@ -107,7 +174,9 @@ export function stageCustomer(source: Row[]): Row[] {
     hk_nation_h: 'hash',
     hk_customer_nation_l: 'hash',
     hd_customer_n_s: 'hash',
-  })
+  }
+  if (payload.includes('c_email')) columns.c_email = 'string'
+  return withGhosts(rows, columns)
 }
 
 function stageNation(source: Row[]): Row[] {
@@ -323,10 +392,19 @@ const emptyTables = (): Record<TableName, Row[]> => ({
 export function sourceFor(index: number, opts: SimOptions = {}): BatchRun['source'] {
   const ldts = BATCHES[index]
   const stamp = (rsrc: string) => (r: object): Row => ({ ...(r as Row), ldts, rsrc })
-  const customer = CUSTOMERS[index].map(stamp('crm/customer'))
+  const customer = CUSTOMERS[index].map(stamp('crm/customer')).map((row) => {
+    const withCast = opts.legacyAcctbalCast ? { ...row, c_acctbal: Math.trunc(row.c_acctbal as number) } : row
+    if (opts.change !== 'new-column') return withCast
+    return { ...withCast, c_email: CUSTOMER_EMAIL[index][withCast.c_custkey as number] }
+  })
   if (opts.lateArrival && index === 2) {
     const { ldts: lateLdts, ...rest } = LATE_CUSTOMER
-    customer.push({ ...rest, ldts: lateLdts, rsrc: 'crm/customer' })
+    customer.push({
+      ...rest,
+      ...(opts.change === 'new-column' ? { c_email: CUSTOMER_EMAIL[1][8] } : {}),
+      ldts: lateLdts,
+      rsrc: 'crm/customer',
+    })
   }
   return {
     customer,
@@ -339,7 +417,9 @@ export function sourceFor(index: number, opts: SimOptions = {}): BatchRun['sourc
 export function simulate(opts: SimOptions = {}): BatchRun[] {
   let tables = emptyTables()
   const runs: BatchRun[] = []
-  BATCHES.forEach((ldts, index) => {
+  const batchIndexes = opts.batchIndexes ?? BATCHES.map((_, index) => index)
+  for (const index of batchIndexes) {
+    const ldts = BATCHES[index]
     const source = sourceFor(index, opts)
     const stage: BatchRun['stage'] = {
       stg_customer: stageCustomer(source.customer),
@@ -347,6 +427,8 @@ export function simulate(opts: SimOptions = {}): BatchRun[] {
       stg_customer_phone: stagePhone(source.phone),
       stg_orders: stageOrders(source.orders),
     }
+    const customerPayload: readonly string[] =
+      opts.change === 'new-column' ? [...CUSTOMER_PAYLOAD, 'c_email'] : CUSTOMER_PAYLOAD
     const results = {
       customer_h: loadKeys(tables.customer_h, [...stage.stg_customer, ...stage.stg_orders.filter((r) => !isGhost(r))], 'hk_customer_h', [
         'hk_customer_h',
@@ -377,7 +459,7 @@ export function simulate(opts: SimOptions = {}): BatchRun[] {
         'hd_customer_n_s',
         'ldts',
         'rsrc',
-        ...CUSTOMER_PAYLOAD,
+        ...customerPayload,
       ]),
       nation_n_s: loadSat(tables.nation_n_s, stage.stg_nation, 'hk_nation_h', 'hd_nation_n_s', [
         'hk_nation_h',
@@ -411,8 +493,83 @@ export function simulate(opts: SimOptions = {}): BatchRun[] {
       decisions: Object.fromEntries(Object.entries(results).map(([k, v]) => [k, v.decisions])) as BatchRun['decisions'],
       hwm: Object.fromEntries(Object.entries(results).map(([k, v]) => [k, v.hwm])) as BatchRun['hwm'],
     })
-  })
+  }
   return runs
+}
+
+function replayRowKey(table: ReplayTableName, row: Row) {
+  return replayKeys[table].map((column) => String(row[column] ?? '')).join('|')
+}
+
+function replayTableDiff(table: ReplayTableName, truth: Row[], rebuilt: Row[]): ReplayTableDiff {
+  const truthRows = truth.filter((row) => !isGhost(row))
+  const rebuiltRows = rebuilt.filter((row) => !isGhost(row))
+  const truthByKey = new Map(truthRows.map((row) => [replayRowKey(table, row), row]))
+  const rebuiltByKey = new Map(rebuiltRows.map((row) => [replayRowKey(table, row), row]))
+  const keys = [...new Set([...truthByKey.keys(), ...rebuiltByKey.keys()])]
+  let missingRows = 0
+  let wrongCells = 0
+  let missingCells = 0
+  const rows = keys.map((key): ReplayRowDiff => {
+    const truthRow = truthByKey.get(key)
+    const rebuiltRow = rebuiltByKey.get(key)
+    if (!rebuiltRow && truthRow) {
+      missingRows += 1
+      return {
+        key,
+        status: 'missing',
+        truth: truthRow,
+        cells: Object.fromEntries(Object.keys(truthRow).filter((col) => col !== '__ghost').map((col) => [col, 'missing'])),
+      }
+    }
+    if (!truthRow && rebuiltRow) {
+      return {
+        key,
+        status: 'extra',
+        rebuilt: rebuiltRow,
+        cells: Object.fromEntries(Object.keys(rebuiltRow).filter((col) => col !== '__ghost').map((col) => [col, 'extra'])),
+      }
+    }
+    const cellNames = new Set([...Object.keys(truthRow ?? {}), ...Object.keys(rebuiltRow ?? {})].filter((col) => col !== '__ghost'))
+    const cells: Record<string, ReplayCellStatus> = {}
+    for (const column of cellNames) {
+      const hasTruth = Object.hasOwn(truthRow ?? {}, column)
+      const hasRebuilt = Object.hasOwn(rebuiltRow ?? {}, column)
+      if (!hasRebuilt && hasTruth) {
+        cells[column] = 'missing'
+        missingCells += 1
+      } else if (!hasTruth && hasRebuilt) {
+        cells[column] = 'extra'
+      } else if (truthRow?.[column] !== rebuiltRow?.[column]) {
+        cells[column] = 'wrong'
+        wrongCells += 1
+      } else cells[column] = 'match'
+    }
+    return { key, status: 'match', truth: truthRow, rebuilt: rebuiltRow, cells }
+  })
+  return {
+    rowsTruth: truthRows.length,
+    rowsRebuilt: rebuiltRows.length,
+    missingRows,
+    wrongCells,
+    missingCells,
+    rows,
+  }
+}
+
+export function replay(opts: ReplayOptions): ReplayResult {
+  const truth = simulate({ change: opts.change }).at(-1)!.tables
+  const rebuiltRuns =
+    opts.landing === 'persistent'
+      ? simulate({ change: opts.change })
+      : opts.fullRefresh
+        ? simulate({ change: opts.change, batchIndexes: [BATCHES.length - 1] })
+        : simulate({ legacyAcctbalCast: opts.change === 'cast-fix' })
+  const rebuilt = rebuiltRuns.at(-1)!.tables
+  const diff = Object.fromEntries(
+    REPLAY_TABLES.map((table) => [table, replayTableDiff(table, truth[table], rebuilt[table])]),
+  ) as ReplayResult['diff']
+  return { truth, rebuilt, diff }
 }
 
 // ---------- views and business vault ----------

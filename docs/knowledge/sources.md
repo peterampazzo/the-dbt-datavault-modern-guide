@@ -10,6 +10,17 @@
 
 When adding content, cite the source in the chapter's further-reading section.
 
+## Replay and lakehouse portability
+
+| Source | Use it for |
+|---|---|
+| [dbt `full_refresh` config](https://docs.getdbt.com/reference/resource-configs/full_refresh) | How the resource config overrides the `--full-refresh` flag. |
+| [dbt incremental models](https://docs.getdbt.com/docs/build/incremental-models) | How dbt builds and updates incremental relations. |
+| [Delta Lake time travel](https://docs.delta.io/delta-batch.html#query-an-older-snapshot-of-a-table-time-travel) and [VACUUM](https://docs.delta.io/delta-utility/#vacuum) | Reading older snapshots and removing files no longer referenced by a table. |
+| [Microsoft Fabric OneLake shortcuts](https://learn.microsoft.com/en-us/fabric/onelake/onelake-shortcuts) | Connecting OneLake to data stored in another location. |
+| [Databricks Unity Catalog external locations](https://docs.databricks.com/aws/en/connect/unity-catalog/cloud-storage/external-locations) | Governing access to cloud storage paths. |
+| [datavault4dbt release notes](https://github.com/ScalefreeCOM/datavault4dbt/releases) | Checking package support and adapter changes before upgrading or switching engines. |
+
 ## Learning design and accessibility
 
 These sources back the rules in `learning-design.md` and the audit in `ux-audit.md`.

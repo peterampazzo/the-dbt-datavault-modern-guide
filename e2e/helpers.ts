@@ -11,6 +11,8 @@ export const ROUTES = [
   { slug: 'satellite-flavours', title: 'Satellite flavours' },
   { slug: 'pit', title: 'Business vault: snapshots and PITs' },
   { slug: 'dbt-project', title: 'The whole dbt project' },
+  { slug: 'replay', title: 'Replay: one history, two shapes' },
+  { slug: 'one-lake', title: 'One lake, any engine' },
 ] as const
 
 /** Opens a route, by default as one long page so every section is on screen. */

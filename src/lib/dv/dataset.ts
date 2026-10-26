@@ -107,6 +107,34 @@ export const CUSTOMERS: CustomerRow[][] = [
   ],
 ]
 
+/** Email values for the replay lab's optional c_email model change, keyed by batch and customer key. */
+export const CUSTOMER_EMAIL: Record<number, string>[] = [
+  {
+    1: 'alice@example.test',
+    2: 'bruno@example.test',
+    3: 'chiara@example.test',
+    4: 'daniel@example.test',
+    5: 'emi@example.test',
+  },
+  {
+    1: 'alice@example.test',
+    2: 'bruno@example.test',
+    3: 'chiara@example.test',
+    5: 'emi@example.test',
+    6: 'farah@example.test',
+    8: 'hana@example.test',
+  },
+  {
+    1: 'alice@example.test',
+    2: 'bruno.costa@example.test',
+    3: 'chiara@example.test',
+    4: 'daniel@example.test',
+    5: 'emi@example.test',
+    6: 'farah@example.test',
+    7: 'gabriel@example.test',
+  },
+]
+
 /** A row that shows up a day late, carrying yesterday's load timestamp. */
 export const LATE_CUSTOMER = { ...c(8, 'Hana Sato', '5-3 Ginza', 3, 'HOUSEHOLD', 75), ldts: BATCHES[1] }
 

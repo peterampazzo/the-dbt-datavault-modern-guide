@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { dvHash, hk } from './hash'
-import { END, isGhost, pit, satV1, simulate, UNKNOWN_KEY } from './engine'
+import { END, isGhost, pit, replay, REPLAY_TABLES, satV1, simulate, UNKNOWN_KEY } from './engine'
 import { createHash } from 'node:crypto'
 
 const md5 = (s: string) => createHash('md5').update(s).digest('hex')
@@ -66,5 +66,107 @@ describe('simulate', () => {
     const daniel = p.find((r) => r.c_custkey === 4 && r.sdts === '2024-01-04 07:00:00')!
     expect(daniel.customer_n_s_ldts).toBe('2024-01-01 06:00:00')
     expect(daniel.customer_phone_ma_s_hk).toBe(UNKNOWN_KEY)
+  })
+})
+
+describe('replay', () => {
+  const emptyCounts = Object.fromEntries(
+    REPLAY_TABLES.map((table) => [
+      table,
+      { rowsTruth: 0, rowsRebuilt: 0, missingRows: 0, wrongCells: 0, missingCells: 0 },
+    ]),
+  )
+  const summary = (options: Parameters<typeof replay>[0]) => {
+    const result = replay(options)
+    return Object.fromEntries(
+      REPLAY_TABLES.map((table) => {
+        const { rowsTruth, rowsRebuilt, missingRows, wrongCells, missingCells } = result.diff[table]
+        return [table, { rowsTruth, rowsRebuilt, missingRows, wrongCells, missingCells }]
+      }),
+    )
+  }
+  const expectedTables = {
+    customer_h: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 6, missingCells: 0 },
+    nation_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 6, missingCells: 0 },
+    order_h: { rowsTruth: 6, rowsRebuilt: 1, missingRows: 5, wrongCells: 0, missingCells: 0 },
+    customer_nation_l: { rowsTruth: 8, rowsRebuilt: 7, missingRows: 1, wrongCells: 6, missingCells: 0 },
+    order_customer_nh_l: { rowsTruth: 6, rowsRebuilt: 1, missingRows: 5, wrongCells: 0, missingCells: 0 },
+    nation_n_s: { rowsTruth: 7, rowsRebuilt: 6, missingRows: 6, wrongCells: 0, missingCells: 0 },
+  }
+
+  it('keeps persistent staging identical to truth for every model change and refresh choice', () => {
+    for (const change of ['none', 'new-column', 'cast-fix'] as const) {
+      for (const fullRefresh of [false, true]) {
+        expect(summary({ landing: 'persistent', change, fullRefresh })).toEqual({
+          ...emptyCounts,
+          customer_h: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          nation_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          order_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          customer_nation_l: { rowsTruth: 8, rowsRebuilt: 8, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          order_customer_nh_l: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          customer_n_s: {
+            rowsTruth: change === 'new-column' ? 10 : 9,
+            rowsRebuilt: change === 'new-column' ? 10 : 9,
+            missingRows: 0,
+            wrongCells: 0,
+            missingCells: 0,
+          },
+          nation_n_s: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 0, missingCells: 0 },
+        })
+      }
+    }
+  })
+
+  it('matches the current model when truncated landing has no full refresh', () => {
+    expect(summary({ landing: 'truncate', change: 'none', fullRefresh: false })).toEqual({
+      ...emptyCounts,
+      customer_h: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      nation_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      order_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      customer_nation_l: { rowsTruth: 8, rowsRebuilt: 8, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      order_customer_nh_l: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      customer_n_s: { rowsTruth: 9, rowsRebuilt: 9, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      nation_n_s: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 0, missingCells: 0 },
+    })
+  })
+
+  it('counts the unmapped email and cast-fix losses in the insert-only vault', () => {
+    expect(summary({ landing: 'truncate', change: 'new-column', fullRefresh: false }).customer_n_s).toEqual({
+      rowsTruth: 10,
+      rowsRebuilt: 9,
+      missingRows: 1,
+      wrongCells: 9,
+      missingCells: 9,
+    })
+    expect(summary({ landing: 'truncate', change: 'cast-fix', fullRefresh: false }).customer_n_s).toEqual({
+      rowsTruth: 9,
+      rowsRebuilt: 9,
+      missingRows: 0,
+      wrongCells: 6,
+      missingCells: 0,
+    })
+  })
+
+  it('counts the rows and changed cells after a truncated full refresh', () => {
+    for (const change of ['none', 'new-column', 'cast-fix'] as const) {
+      const result = replay({ landing: 'truncate', change, fullRefresh: true })
+      const emailRows = change === 'new-column' ? 10 : 9
+      expect(
+        Object.fromEntries(
+          REPLAY_TABLES.filter((table) => table !== 'customer_n_s').map((table) => {
+            const { rowsTruth, rowsRebuilt, missingRows, wrongCells, missingCells } = result.diff[table]
+            return [table, { rowsTruth, rowsRebuilt, missingRows, wrongCells, missingCells }]
+          }),
+        ),
+      ).toEqual(expectedTables)
+      expect(result.diff.customer_n_s).toMatchObject({
+        rowsTruth: emailRows,
+        rowsRebuilt: 7,
+        missingRows: 7,
+        wrongCells: 0,
+        missingCells: 0,
+      })
+      expect(result.diff.customer_n_s.rows.filter((row) => row.status === 'missing')).toHaveLength(7)
+    }
   })
 })

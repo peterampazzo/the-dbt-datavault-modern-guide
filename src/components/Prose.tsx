@@ -106,5 +106,5 @@ export function Callout({ kind = 'info', title, children }: { kind?: 'info' | 'w
 }
 
 export function Code({ children }: { children: ReactNode }) {
-  return <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em]">{children}</code>
+  return <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-foreground text-[0.85em]">{children}</code>
 }

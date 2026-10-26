@@ -95,13 +95,13 @@ export function Layout() {
   return (
     <div className="min-h-svh bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 -z-0 bg-[radial-gradient(60rem_30rem_at_80%_-10%,rgba(56,189,248,0.08),transparent),radial-gradient(40rem_30rem_at_-10%_110%,rgba(245,158,11,0.06),transparent)]" />
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-[90rem] items-center gap-3 px-4">
+      <header className="sticky top-0 z-40 overflow-x-hidden border-b bg-background/80 backdrop-blur">
+        <div className="mx-auto flex h-14 w-full max-w-[90rem] items-center gap-3 px-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
             <Logo />
             <span className="sr-only sm:not-sr-only">The dbt + Data Vault guide</span>
           </Link>
-          <nav className="ml-4 flex flex-1 gap-1 overflow-x-auto lg:hidden">
+          <nav className="ml-4 flex w-0 min-w-0 flex-1 gap-1 overflow-x-auto lg:hidden">
             {CHAPTERS.map((c, i) => (
               <NavLink
                 key={c.slug}

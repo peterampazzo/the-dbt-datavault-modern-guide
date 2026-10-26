@@ -20,3 +20,5 @@ Derived: `customer_nation_es` (effectivity), `customer_rts` (record tracking), `
 Optional: a late-arriving customer with an `ldts` below the high-water mark, which gets skipped.
 
 Keep chapter copy consistent with these outcomes. `engine.test.ts` asserts the counts.
+
+The replay lab also exports `CUSTOMER_EMAIL`, keyed by delivery batch and `c_custkey`. It is joined only for the `new-column` replay preset; Bruno's email changes in the third delivery so the added attribute creates a new satellite version without changing the default simulation.

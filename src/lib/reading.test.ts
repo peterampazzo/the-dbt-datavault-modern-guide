@@ -11,13 +11,16 @@ describe('reading paths', () => {
   })
 
   it('orders the practitioner path and exposes adjacent chapters', () => {
-    expect(getPathOrder('dv-practitioner')).toEqual(['dv-names', 'dbt', 'load-player'])
+    expect(getPathOrder('dv-practitioner')).toEqual(['dv-names', 'dbt', 'load-player', 'replay', 'one-lake'])
     expect(getFirstPathChapter('dv-practitioner')).toBe('dv-names')
     expect(getNextPathChapter('dv-names', 'dv-practitioner')).toBe('dbt')
     expect(getNextPathChapter('dbt', 'dv-practitioner')).toBe('load-player')
-    expect(getNextPathChapter('load-player', 'dv-practitioner')).toBeUndefined()
+    expect(getNextPathChapter('load-player', 'dv-practitioner')).toBe('replay')
+    expect(getNextPathChapter('replay', 'dv-practitioner')).toBe('one-lake')
+    expect(getNextPathChapter('one-lake', 'dv-practitioner')).toBeUndefined()
     expect(getPreviousPathChapter('dbt', 'dv-practitioner')).toBe('dv-names')
     expect(getPreviousPathChapter('dv-names', 'dv-practitioner')).toBeUndefined()
+    expect(getPreviousPathChapter('one-lake', 'dv-practitioner')).toBe('replay')
   })
 
   it('uses the default chapter order to navigate refresher chapters', () => {

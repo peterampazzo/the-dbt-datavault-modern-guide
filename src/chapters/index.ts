@@ -321,4 +321,70 @@ export const CHAPTERS = [
     ],
     Component: lazy(() => import('./Lineage')),
   },
+  {
+    slug: 'replay',
+    title: 'Replay: one history, two shapes',
+    short: 'Replay',
+    minutes: 6,
+    part: 4,
+    audience: 'essential',
+    summary: [
+      'Persistent staging preserves the source deliveries; the raw vault is a derived view of them.',
+      'A full refresh can rebuild changed models only from inputs that are still available.',
+      'Compare rebuilt tables with production and guard raw-vault models until replay is safe.',
+    ],
+    recap: [
+      'Persistent staging is append-only evidence of what each source sent and when.',
+      'The raw vault is derived from that evidence, so a changed model needs the source history to rebuild all versions.',
+      'A full refresh does not restore deliveries that were deleted from landing.',
+    ],
+    quiz: [
+      {
+        q: 'What lets a changed model replay the full source history?',
+        options: ['Keep every delivery in persistent staging', 'Run a full refresh after truncating landing', 'Add more columns to the current vault'],
+        answer: 0,
+        why: 'The changed model needs the original deliveries; a refresh cannot recreate deleted source data.',
+      },
+      {
+        q: 'What can --full-refresh rebuild after landing was truncated?',
+        options: ['Every historical delivery', 'Only the data still available to the model', 'The deleted source files'],
+        answer: 1,
+        why: 'A full refresh rebuilds from current inputs; it does not restore unavailable history.',
+      },
+    ],
+    Component: lazy(() => import('./Replay')),
+  },
+  {
+    slug: 'one-lake',
+    title: 'One lake, any engine',
+    short: 'One lake',
+    minutes: 4,
+    part: 4,
+    audience: 'essential',
+    summary: [
+      'Open Delta files can hold source history while different Spark engines read them in place.',
+      'Staging and vault layers are derived from the source copy and can be rebuilt.',
+      'Named engine-specific macros and consistent hash rules help keep dbt models portable.',
+    ],
+    recap: [
+      'Keep source history in open storage; change the compute connection rather than copying the source data.',
+      'Only persistent staging is source data; dv_stage, raw_vault, business_vault and gold are derived.',
+      'Keep engine differences in named macros and vars, and test identical hashkeys on both engines.',
+    ],
+    quiz: [
+      {
+        q: 'Which layer holds the original source data?',
+        options: ['Persistent staging', 'The raw vault', 'Gold'],
+        answer: 0,
+        why: 'Persistent staging preserves the source deliveries; later layers are derived.',
+      },
+      {
+        q: 'Where should engine-specific SQL details go?',
+        options: ['Named macros and vars', 'Every raw-vault model', 'The business keys'],
+        answer: 0,
+        why: 'Named macros and vars isolate engine differences and keep model code portable.',
+      },
+    ],
+    Component: lazy(() => import('./OneLake')),
+  },
 ] as const satisfies readonly ChapterDefinition[]
