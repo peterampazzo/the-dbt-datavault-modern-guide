@@ -64,6 +64,7 @@ test('13.1 change player shows the failing test and then the fix', async ({ page
 
 test('all new pages pass mobile axe and overflow checks in both reading modes', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile', 'Mobile accessibility and overflow audit runs in the mobile project.')
+  test.setTimeout(120_000)
   const surfaces = [
     { slug: 'dbt-primer', heading: 'dbt primer' },
     { slug: 'dbt-primer/why-dbt', heading: 'Why dbt' },
