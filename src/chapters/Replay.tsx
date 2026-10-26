@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { CodeBlock } from '@/components/CodeBlock'
-import { MODEL } from '@/lib/dv/models'
+import { SNIPPETS } from '@/lib/dv/models'
 import { REPLAY_TABLES, replay, short, type ReplayChange, type ReplayRowDiff, type ReplayCellStatus } from '@/lib/dv/engine'
 
 const changes: Record<ReplayChange, string> = {
@@ -325,7 +325,7 @@ function Replay() {
         keyPoint="Matching counts and hashes is evidence that the two shapes contain the same rows."
       >
         <P>Keep production untouched. Build from persistent staging with <Code>dbt build --full-refresh --target dev</Code>, then compare each raw-vault table’s row count and hash-of-hashes with the corresponding production table. A match means one history in two shapes; a mismatch points to missing data, different rules or an unreproducible build.</P>
-        <CodeBlock title="Spark SQL pattern · repeat per table" code={MODEL['vault_fingerprint'].code} />
+        <CodeBlock title="Ad-hoc Spark SQL analysis · repeat per table" code={SNIPPETS.vault_fingerprint.code} />
       </Section>
       <Section
         title="Until you’re replay-safe"
@@ -333,7 +333,7 @@ function Replay() {
         keyPoint="A refresh guard is one control, not a replacement for durable source evidence and backups."
       >
         <P>Set a per-folder dbt guard; it overrides the command-line flag for these models. Check that your adapter honours it.</P>
-        <CodeBlock title="dbt_project.yml" lang="yaml" code={MODEL['dbt_project_raw_vault'].code} />
+        <CodeBlock title="dbt_project.yml" lang="yaml" code={SNIPPETS.dbt_project_raw_vault.code} />
         <ul className="ml-5 list-disc space-y-2 text-sm leading-6">
           <li>Back up production tables, and restrict who can run dbt against production.</li>
           <li>Delta time travel can undo an accident only until <Code>VACUUM</Code>; it is not persistent staging.</li>
