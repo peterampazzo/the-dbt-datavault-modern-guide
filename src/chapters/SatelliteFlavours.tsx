@@ -36,22 +36,26 @@ function Timeline({ rows }: { rows: Row[] }) {
               const start = col(String(v.ldts))
               const end = String(v.ledts) === END ? 3 : start + 1
               return (
-                <motion.div
+                <motion.button
+                  type="button"
                   key={i}
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: i * 0.2 }}
+                  initial={{ scaleX: 0.4, opacity: 0.6 }}
+                  animate={{ scaleX: 1, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: i * 0.15 }}
                   onMouseEnter={() => setHover(v)}
-                  onMouseLeave={() => setHover(null)}
+                  onFocus={() => setHover(v)}
+                  onClick={() => setHover(v)}
+                  aria-pressed={hover === v}
+                  aria-label={`${name} version ${i + 1}: valid from ${String(v.ldts)} to ${String(v.ledts)}`}
                   style={{ left: `${(start / 3) * 100}%`, width: `calc(${((end - start) / 3) * 100}% - 4px)`, transformOrigin: 'left' }}
                   className={cn(
-                    'absolute inset-y-0 cursor-default rounded-md border px-2 text-[10px] leading-6',
+                    'absolute inset-y-0 truncate rounded-md border px-2 text-left text-[10px] leading-6 outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60',
                     v.is_current ? 'border-amber-400/70 bg-amber-500/25' : 'border-zinc-500/50 bg-zinc-500/15',
+                    hover === v && 'ring-2 ring-sky-500/60',
                   )}
                 >
                   {v.is_current ? 'current →' : 'v' + (i + 1)}
-                </motion.div>
+                </motion.button>
               )
             })}
           </div>
@@ -64,7 +68,7 @@ function Timeline({ rows }: { rows: Row[] }) {
             {String(hover.c_mktsegment)}
           </>
         ) : (
-          'Hover a bar to see its validity interval.'
+          'Tap or hover a bar to see its validity interval.'
         )}
       </div>
     </div>
@@ -83,7 +87,7 @@ export default function SatelliteFlavours() {
       />
       <Section>
         <Tabs defaultValue="v1">
-          <TabsList className="mb-6 flex-wrap">
+          <TabsList className="mb-6 max-w-full flex-wrap justify-start group-data-horizontal/tabs:h-auto [&>*]:h-7">
             <TabsTrigger value="v1">v0 vs v1</TabsTrigger>
             <TabsTrigger value="ma">Multi-active</TabsTrigger>
             <TabsTrigger value="es">Effectivity</TabsTrigger>

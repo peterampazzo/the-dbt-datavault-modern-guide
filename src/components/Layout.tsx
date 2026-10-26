@@ -104,19 +104,20 @@ export function Layout() {
           <div className="mt-8 space-y-1.5 px-2 text-xs text-muted-foreground">
             <div className="font-medium uppercase tracking-wider">Legend</div>
             {[
-              ['bg-sky-500', 'Hub'],
-              ['bg-emerald-500', 'Link'],
-              ['bg-amber-500', 'Satellite'],
-              ['bg-violet-500', 'Business vault'],
-            ].map(([c, l]) => (
+              ['bg-sky-500', 'Hub', '_h'],
+              ['bg-emerald-500', 'Link', '_l'],
+              ['bg-amber-500', 'Satellite', '_s'],
+              ['bg-violet-500', 'Business vault', '_pit, _sn'],
+            ].map(([c, l, suffix]) => (
               <div key={l} className="flex items-center gap-2">
                 <span className={cn('size-2.5 rounded-sm', c)} /> {l}
+                <span className="font-mono text-[10px] text-muted-foreground/80">{suffix}</span>
               </div>
             ))}
           </div>
         </aside>
         <main className="relative min-w-0 flex-1 px-4 py-10 md:px-10">
-          <Suspense fallback={<div className="h-96 animate-pulse rounded-xl bg-muted/40" />}>
+          <Suspense fallback={<div className="h-96 rounded-xl motion-safe:animate-pulse bg-muted/40" />}>
             <Outlet />
           </Suspense>
           <div className="mt-16 flex justify-between gap-4 border-t pt-6">

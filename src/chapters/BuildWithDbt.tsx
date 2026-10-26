@@ -184,16 +184,20 @@ function Terminal() {
   const [n, setN] = useState(0)
   const [run, setRun] = useState(0)
   useEffect(() => {
-    setN(0)
+    if (run === 0) return
     const t = setInterval(() => setN((x) => (x >= TERMINAL.length ? x : x + 1)), 260)
     return () => clearInterval(t)
   }, [run])
+  const start = () => {
+    setN(0)
+    setRun((r) => r + 1)
+  }
   return (
     <div className="overflow-hidden rounded-xl border bg-zinc-950 font-mono text-[12px] leading-6 text-zinc-200">
       <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2 text-xs text-zinc-500">
         terminal
-        <button onClick={() => setRun((r) => r + 1)} className="rounded px-2 py-0.5 hover:bg-zinc-800 hover:text-zinc-200">
-          ↻ replay
+        <button onClick={start} className="rounded px-2 py-0.5 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-50">
+          {run === 0 ? '▶ Run dbt build' : '↻ Run again'}
         </button>
       </div>
       <div className="h-[29rem] overflow-hidden px-4 py-3">
@@ -202,7 +206,8 @@ function Terminal() {
             {l}
           </motion.div>
         ))}
-        {n < TERMINAL.length && <span className="inline-block h-4 w-2 animate-pulse bg-zinc-300" />}
+        {run === 0 && <div className="text-zinc-500">Press Run dbt build to watch dbt load the vault in dependency order.</div>}
+        {run > 0 && n < TERMINAL.length && <span className="inline-block h-4 w-2 bg-zinc-300 motion-safe:animate-pulse" />}
       </div>
     </div>
   )

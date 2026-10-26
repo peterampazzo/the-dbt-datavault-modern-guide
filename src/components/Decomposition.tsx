@@ -27,7 +27,7 @@ function Col({ name, kind, id }: { name: string; kind: Kind; id: string }) {
     <motion.div
       layoutId={`${id}-${name}`}
       transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-      className={cn('rounded-md border px-2 py-1 font-mono text-[11px] light:text-foreground', chip[kind])}
+      className={cn('rounded-md border px-2 py-1 font-mono text-[11px] break-all light:text-foreground', chip[kind])}
     >
       {name}
     </motion.div>
@@ -38,7 +38,7 @@ function Meta({ cols }: { cols: string[] }) {
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="flex flex-col gap-1">
       {cols.map((c) => (
-        <div key={c} className={cn('rounded-md border px-2 py-1 font-mono text-[11px]', chip.meta)}>
+        <div key={c} className={cn('rounded-md border px-2 py-1 font-mono text-[11px] break-all', chip.meta)}>
           {c}
         </div>
       ))}
@@ -49,7 +49,7 @@ function Meta({ cols }: { cols: string[] }) {
 function Box({ title, tone, children, className }: { title: string; tone: string; children: React.ReactNode; className?: string }) {
   return (
     <motion.div layout className={cn('flex flex-col gap-1 rounded-xl border-2 bg-card/80 p-2.5 shadow-lg backdrop-blur', tone, className)}>
-      <motion.div layout="position" className="mb-1 font-mono text-xs font-semibold">
+      <motion.div layout="position" className="mb-1 break-all font-mono text-xs font-semibold">
         {title}
       </motion.div>
       {children}
@@ -64,8 +64,8 @@ export function Decomposition({ auto = false, className }: { auto?: boolean; cla
 
   useEffect(() => {
     if (!auto) return
-    const t = setInterval(() => setSplit((s) => !s), 3200)
-    return () => clearInterval(t)
+    const t = setTimeout(() => setSplit(true), 1200)
+    return () => clearTimeout(t)
   }, [auto])
 
   const col = (n: string) => {
@@ -79,11 +79,9 @@ export function Decomposition({ auto = false, className }: { auto?: boolean; cla
         <div className="text-xs text-muted-foreground">
           {split ? 'Data Vault: identity, relationship and context are separated' : 'Classic model: one customer table holds everything'}
         </div>
-        {!auto && (
-          <Button size="sm" variant="outline" onClick={() => setSplit(!split)}>
-            {split ? <Merge /> : <Split />} {split ? 'Recombine' : 'Decompose'}
-          </Button>
-        )}
+        <Button size="sm" variant="outline" onClick={() => setSplit(!split)}>
+          {split ? <Merge /> : <Split />} {split ? 'Recombine' : 'Decompose'}
+        </Button>
       </div>
       <LayoutGroup id={id}>
         <div className="flex min-h-[19rem] items-center justify-center">

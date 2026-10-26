@@ -88,11 +88,11 @@ function Architecture() {
         <div className="absolute inset-x-[10%] top-1/2 h-px bg-border" />
         {[0, 1, 2].map((i) => (
           <motion.span
-            key={i}
+            key={`${active}-${i}`}
             className="absolute top-1/2 size-2 -translate-y-1/2 rounded-full bg-sky-400 shadow-[0_0_12px_2px] shadow-sky-400/60"
             initial={{ left: '8%', opacity: 0 }}
             animate={{ left: ['8%', '92%'], opacity: [0, 1, 1, 0] }}
-            transition={{ duration: 4, repeat: Infinity, delay: i * 1.33, ease: 'linear' }}
+            transition={{ duration: 2.4, delay: i * 0.5, ease: 'linear' }}
           />
         ))}
         {LAYERS.map((l) => (
@@ -147,19 +147,12 @@ export default function WhatIsDataVault() {
           (by Dan Linstedt, and refined by the community since) so that each of these changes is <em>additive</em>: you add tables, you don't rework old ones.
         </P>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {CHANGES.map(({ icon: Icon, title, text }, i) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className="rounded-xl border bg-card/50 p-4"
-            >
+          {CHANGES.map(({ icon: Icon, title, text }) => (
+            <div key={title} className="rounded-xl border bg-card/50 p-4">
               <Icon className="mb-3 size-5 text-sky-400" />
               <div className="font-medium">{title}</div>
               <p className="mt-1 text-sm text-muted-foreground">{text}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </Section>
