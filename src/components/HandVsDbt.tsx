@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router'
 import { CodeBlock } from '@/components/CodeBlock'
 import { Switch } from '@/components/ui/switch'
 import { MODEL } from '@/lib/dv/models'
+import { setSqlDialect, useSqlDialect } from '@/lib/dialect'
 import { cn } from '@/lib/utils'
 
 /** p = loading pattern, k = keys, d = payload, s = source, x = the extra column */
@@ -42,6 +44,129 @@ const LINK: Line[] = [
   ['p', 'WHERE rn = 1'],
   ['p', '  AND NOT EXISTS (SELECT 1 FROM raw_vault.customer_nation_l AS l'],
   ['k', '                  WHERE l.hk_customer_nation_l = ranked.hk_customer_nation_l);'],
+]
+
+const HUB_TSQL: Line[] = [
+  ['p', 'CREATE OR ALTER PROCEDURE raw_vault.load_customer_h AS'],
+  ['p', 'BEGIN'],
+  ['p', '    SET NOCOUNT ON;'],
+  ['p', '    BEGIN TRY'],
+  ['p', '        BEGIN TRANSACTION;'],
+  ['p', '        MERGE raw_vault.customer_h AS target'],
+  ['p', '        USING ('],
+  ['k', '            SELECT CONVERT(CHAR(32), HASHBYTES(\'MD5\', UPPER(TRIM(CAST(c_custkey AS NVARCHAR(100))))), 2) AS hk_customer_h,'],
+  ['p', '                   c_custkey, ldts, rsrc'],
+  ['p', '            FROM ('],
+  ['k', '                SELECT deliveries.*, ROW_NUMBER() OVER (PARTITION BY c_custkey ORDER BY ldts) AS rn'],
+  ['p', '                FROM ('],
+  ['s', "                    SELECT c_custkey, ldts, 'crm/customer' AS rsrc"],
+  ['s', '                    FROM stage.stg_customer'],
+  ['p', '                    UNION ALL'],
+  ['s', "                    SELECT o_custkey AS c_custkey, ldts, 'shop/orders' AS rsrc"],
+  ['s', '                    FROM stage.stg_orders'],
+  ['p', '                ) AS deliveries'],
+  ['p', `                ${HWM('customer_h').trim()}`],
+  ['p', '            ) AS ranked'],
+  ['k', '            WHERE rn = 1'],
+  ['p', '        ) AS source'],
+  ['k', '        ON target.hk_customer_h = source.hk_customer_h'],
+  ['p', '        WHEN NOT MATCHED BY TARGET THEN'],
+  ['k', '            INSERT (hk_customer_h, c_custkey, ldts, rsrc)'],
+  ['k', '            VALUES (source.hk_customer_h, source.c_custkey, source.ldts, source.rsrc);'],
+  ['p', '        COMMIT;'],
+  ['p', '    END TRY'],
+  ['p', '    BEGIN CATCH'],
+  ['p', '        IF @@TRANCOUNT > 0 ROLLBACK;'],
+  ['p', '        THROW;'],
+  ['p', '    END CATCH'],
+  ['p', 'END;'],
+]
+
+const LINK_TSQL: Line[] = [
+  ['p', 'CREATE OR ALTER PROCEDURE raw_vault.load_customer_nation_l AS'],
+  ['p', 'BEGIN'],
+  ['p', '    SET NOCOUNT ON;'],
+  ['p', '    BEGIN TRY'],
+  ['p', '        BEGIN TRANSACTION;'],
+  ['p', '        MERGE raw_vault.customer_nation_l AS target'],
+  ['p', '        USING ('],
+  ['p', '            SELECT hk_customer_nation_l, hk_customer_h, hk_nation_h, ldts, rsrc'],
+  ['p', '            FROM ('],
+  ['k', '                SELECT hashed.*, ROW_NUMBER() OVER (PARTITION BY hk_customer_nation_l ORDER BY ldts) AS rn'],
+  ['p', '                FROM ('],
+  ['s', '                    SELECT c_custkey, c_nationkey, ldts, rsrc,'],
+  ['k', "                           CONVERT(CHAR(32), HASHBYTES('MD5', CONCAT_WS('||', UPPER(TRIM(CAST(c_custkey AS NVARCHAR(100)))), UPPER(TRIM(CAST(c_nationkey AS NVARCHAR(100)))))), 2) AS hk_customer_nation_l,"],
+  ['k', "                           CONVERT(CHAR(32), HASHBYTES('MD5', UPPER(TRIM(CAST(c_custkey AS NVARCHAR(100))))), 2) AS hk_customer_h,"],
+  ['k', "                           CONVERT(CHAR(32), HASHBYTES('MD5', UPPER(TRIM(CAST(c_nationkey AS NVARCHAR(100))))), 2) AS hk_nation_h"],
+  ['s', '                    FROM stage.stg_customer'],
+  ['p', `                    ${HWM('customer_nation_l').trim()}`],
+  ['p', '                ) AS hashed'],
+  ['p', '            ) AS ranked'],
+  ['k', '            WHERE rn = 1'],
+  ['p', '        ) AS source'],
+  ['k', '        ON target.hk_customer_nation_l = source.hk_customer_nation_l'],
+  ['p', '        WHEN NOT MATCHED BY TARGET THEN'],
+  ['k', '            INSERT (hk_customer_nation_l, hk_customer_h, hk_nation_h, ldts, rsrc)'],
+  ['k', '            VALUES (source.hk_customer_nation_l, source.hk_customer_h, source.hk_nation_h, source.ldts, source.rsrc);'],
+  ['p', '        COMMIT;'],
+  ['p', '    END TRY'],
+  ['p', '    BEGIN CATCH'],
+  ['p', '        IF @@TRANCOUNT > 0 ROLLBACK;'],
+  ['p', '        THROW;'],
+  ['p', '    END CATCH'],
+  ['p', 'END;'],
+]
+
+const SAT_TSQL: Line[] = [
+  ['x', '-- once, before the next load:'],
+  ['x', 'ALTER TABLE raw_vault.customer_n_s ADD c_email NVARCHAR(200);'],
+  ['p', 'CREATE OR ALTER PROCEDURE raw_vault.load_customer_n_s AS'],
+  ['p', 'BEGIN'],
+  ['p', '    SET NOCOUNT ON;'],
+  ['p', '    BEGIN TRY'],
+  ['p', '        BEGIN TRANSACTION;'],
+  ['p', '        WITH src AS ('],
+  ['k', '            SELECT'],
+  ['k', "                CONVERT(CHAR(32), HASHBYTES('MD5', UPPER(TRIM(CAST(c_custkey AS NVARCHAR(100))))), 2) AS hk_customer_h,"],
+  ['d', '                c_name, c_address, c_mktsegment, c_acctbal, c_comment,'],
+  ['x', '                c_email,'],
+  ['p', '                ldts, rsrc,'],
+  ['k', "                CONVERT(CHAR(32), HASHBYTES('MD5', CONCAT_WS(';', TRIM(CAST(c_name AS NVARCHAR(200))), TRIM(CAST(c_address AS NVARCHAR(500))), TRIM(CAST(c_mktsegment AS NVARCHAR(100))), TRIM(CAST(c_acctbal AS NVARCHAR(100))), TRIM(CAST(c_comment AS NVARCHAR(MAX)))"],
+  ['x', "                    , TRIM(CAST(c_email AS NVARCHAR(200)))"],
+  ['k', "                )), 2) AS hd_customer_n_s"],
+  ['s', '            FROM stage.stg_customer'],
+  ['p', HWM('customer_n_s')],
+  ['p', '        ), latest AS ('],
+  ['p', '            SELECT hk_customer_h, hd_customer_n_s,'],
+  ['p', '                   ROW_NUMBER() OVER (PARTITION BY hk_customer_h ORDER BY ldts DESC) AS rn'],
+  ['p', '            FROM raw_vault.customer_n_s'],
+  ['p', '        ), changed AS ('],
+  ['p', '            SELECT src.*, LAG(hd_customer_n_s) OVER (PARTITION BY hk_customer_h ORDER BY ldts) AS prev_hd'],
+  ['p', '            FROM src'],
+  ['p', '        )'],
+  ['p', '        SELECT c.* INTO #changed'],
+  ['p', '        FROM changed AS c'],
+  ['p', '        LEFT JOIN latest AS l ON l.hk_customer_h = c.hk_customer_h AND l.rn = 1'],
+  ['k', '        WHERE (c.prev_hd IS NULL AND (l.hk_customer_h IS NULL OR l.hd_customer_n_s <> c.hd_customer_n_s))'],
+  ['k', '           OR c.prev_hd <> c.hd_customer_n_s;'],
+  ['p', '        INSERT INTO raw_vault.customer_n_s ('],
+  ['k', '            hk_customer_h, hd_customer_n_s,'],
+  ['d', '            c_name, c_address, c_mktsegment, c_acctbal, c_comment,'],
+  ['x', '            c_email,'],
+  ['p', '            ldts, rsrc)'],
+  ['p', '        SELECT hk_customer_h, hd_customer_n_s,'],
+  ['d', '               c_name, c_address, c_mktsegment, c_acctbal, c_comment,'],
+  ['x', '               c_email,'],
+  ['p', '               ldts, rsrc'],
+  ['p', '        FROM #changed;'],
+  ['p', '        DROP TABLE #changed;'],
+  ['p', '        COMMIT;'],
+  ['p', '    END TRY'],
+  ['p', '    BEGIN CATCH'],
+  ['p', '        IF @@TRANCOUNT > 0 ROLLBACK;'],
+  ['p', '        THROW;'],
+  ['p', '    END CATCH'],
+  ['p', 'END;'],
 ]
 
 const SAT: Line[] = [
@@ -110,10 +235,10 @@ function tagYaml(code: string, extra: boolean): Line[] {
   return out
 }
 
-const PATTERNS = {
-  hub: { label: 'Hub', model: 'customer_h', hand: HUB, keys: 'Hashkey and business key' },
-  link: { label: 'Link', model: 'customer_nation_l', hand: LINK, keys: 'Link and hub hashkeys' },
-  sat: { label: 'Satellite', model: 'customer_n_s', hand: SAT, keys: 'Parent hashkey and hashdiff' },
+export const PATTERNS = {
+  hub: { label: 'Hub', model: 'customer_h', hand: HUB, tsql: HUB_TSQL, keys: 'Hashkey and business key' },
+  link: { label: 'Link', model: 'customer_nation_l', hand: LINK, tsql: LINK_TSQL, keys: 'Link and hub hashkeys' },
+  sat: { label: 'Satellite', model: 'customer_n_s', hand: SAT, tsql: SAT_TSQL, keys: 'Parent hashkey and hashdiff' },
 } as const
 type PatternId = keyof typeof PATTERNS
 
@@ -145,11 +270,12 @@ export function HandVsDbt() {
   const [id, setId] = useState<PatternId>('sat')
   const [part, setPart] = useState<Tag>('p')
   const [extra, setExtra] = useState(false)
+  const dialect = useSqlDialect()
   const p = PATTERNS[id]
   const isSat = id === 'sat'
   const showExtra = isSat && extra
 
-  const hand = useMemo(() => p.hand.filter(([t]) => t !== 'x' || showExtra), [p, showExtra])
+  const hand = useMemo(() => (dialect === 'tsql' ? p.tsql : p.hand).filter(([t]) => t !== 'x' || showExtra), [dialect, p, showExtra])
   const yaml = useMemo(() => tagYaml(MODEL[p.model].code, showExtra), [p, showExtra])
 
   const parts: { id: Tag; label: string }[] = [
@@ -165,6 +291,15 @@ export function HandVsDbt() {
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <Group label="Entity" value={id} options={(Object.keys(PATTERNS) as PatternId[]).map((k) => ({ id: k, label: PATTERNS[k].label }))} onChange={setId} />
         <Group label="Highlight" value={active} options={parts} onChange={setPart} />
+        <Group
+          label="Dialect"
+          value={dialect}
+          options={[
+            { id: 'generic' as const, label: 'Generic SQL' },
+            { id: 'tsql' as const, label: 'T-SQL procedure' },
+          ]}
+          onChange={setSqlDialect}
+        />
         {isSat && (
           <label className="inline-flex items-center gap-2 text-sm">
             <Switch
@@ -179,13 +314,15 @@ export function HandVsDbt() {
         )}
       </div>
       <div className="grid items-start gap-4 lg:grid-cols-2">
-        <CodeBlock title={`By hand · ${count(hand)} lines`} code={hand.map(([, l]) => l).join('\n')} highlight={lineNos(hand, active)} />
-        <CodeBlock title={`With datavault4dbt · ${count(yaml)} lines`} code={yaml.map(([, l]) => l).join('\n')} highlight={lineNos(yaml, active)} />
+        <CodeBlock title={`${dialect === 'tsql' ? 'T-SQL procedure' : 'By hand'} · ${count(hand)} lines`} code={hand.map(([, l]) => l).join('\n')} highlight={lineNos(hand, active)} className="[&>pre]:text-xs [&>pre]:leading-5" />
+        <CodeBlock title={`With datavault4dbt · ${count(yaml)} lines`} code={yaml.map(([, l]) => l).join('\n')} highlight={lineNos(yaml, active)} className="[&>pre]:text-xs [&>pre]:leading-5" />
       </div>
       <p aria-live="polite" className="max-w-3xl text-sm leading-6 text-foreground/85">
         {showExtra
-          ? 'Suppose the CRM starts sending c_email. By hand you change the table and both column lists; in dbt it is one line in src_payload. Either way, the stage adds c_email to the hashdiff columns.'
-          : 'Both sides assume the stage has already computed the hashkeys and hashdiffs. The highlighted lines on the left are what the highlighted lines on the right replace.'}
+          ? <>Suppose the CRM starts sending c_email. By hand you change the table and both column lists; in dbt it is one line in src_payload. Either way, the stage adds c_email to the hashdiff columns.{dialect === 'tsql' && <> This procedure hashes inline, so every procedure carries its own hash rule. That is the parity problem covered in <Link to="/hash-parity" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Hash parity and restoring history</Link>.</>}</>
+          : dialect === 'tsql'
+            ? <>This procedure hashes inline, so every procedure carries its own hash rule. That is the parity problem covered in <Link to="/hash-parity" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Hash parity and restoring history</Link>.</>
+            : 'Both sides assume the stage has already computed the hashkeys and hashdiffs. The highlighted lines on the left are what the highlighted lines on the right replace.'}
       </p>
     </div>
   )

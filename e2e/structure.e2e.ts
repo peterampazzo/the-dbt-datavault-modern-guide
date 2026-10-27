@@ -14,7 +14,7 @@ test('Start here remembers the practitioner path and updates next links and side
   await expect(page.getByRole('button', { name: 'I know Data Vault, new to dbt' })).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('link', { name: 'Start this path: I know Data Vault, new to dbt' }).click()
 
-  await expect(page.getByText(/Chapter 3 of 13/)).toBeVisible()
+  await expect(page.getByText(/Chapter 3 of 15/)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Part 1: The method' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Part 2: Building it with dbt' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Part 3: Going further' })).toBeVisible()
@@ -41,12 +41,17 @@ test('Start here remembers the practitioner path and updates next links and side
   await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next chapter: One lake, any engine' })).toBeVisible()
   await page.goto('/#/one-lake/recap')
   await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next chapter: Working the modern way' })).toBeVisible()
+  await page.goto('/#/modern-way/recap')
+  await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next chapter: From a hand-written SQL Server vault' })).toBeVisible()
+  await page.goto('/#/from-sql-server/recap')
+  await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next chapter: Hash parity and restoring history' })).toBeVisible()
   await page.goto('/#/dv-names/the-names-we-use')
   await expect(page.getByRole('link', { name: 'dbt primer', exact: true })).toBeVisible()
 })
 
 test('every paged chapter surface stays within the 1200px height target at 1280×800', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'Height audit runs at its specified desktop viewport.')
+  test.setTimeout(90_000)
   await page.setViewportSize({ width: 1280, height: 800 })
 
   // Only a standalone interactive that cannot fit may be listed here, with its measured height and rationale.

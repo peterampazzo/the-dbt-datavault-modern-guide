@@ -57,7 +57,7 @@ export function setReadingPath(next: ReadingPath) {
 }
 
 export function getPathOrder(selected: ReadingPath): string[] {
-  if (selected === 'dv-practitioner') return ['dv-names', 'dbt-primer', 'dbt', 'load-player', 'replay', 'one-lake', 'modern-way']
+  if (selected === 'dv-practitioner') return ['dv-names', 'dbt-primer', 'dbt', 'load-player', 'replay', 'one-lake', 'modern-way', 'from-sql-server', 'hash-parity']
   return CHAPTERS.map((chapter) => chapter.slug)
 }
 

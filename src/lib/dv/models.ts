@@ -483,6 +483,48 @@ FROM row_hashes`,
     {%- endif -%}
 {%- endmacro %}`,
   },
+  integrated_customer_precedence: {
+    name: 'integrated_customer_precedence',
+    code: `WITH ranked AS (
+    SELECT
+        hk_customer_h,
+        c_name,
+        c_address,
+        rsrc,
+        ROW_NUMBER() OVER (
+            PARTITION BY hk_customer_h
+            ORDER BY CASE rsrc
+                WHEN 'crm/customer' THEN 1
+                WHEN 'shop/customer' THEN 2
+                ELSE 99
+            END
+        ) AS precedence
+    FROM {{ ref('customer_n_s') }}
+    WHERE rsrc IN ('crm/customer', 'shop/customer')
+)
+SELECT hk_customer_h, c_name, c_address, rsrc
+FROM ranked
+WHERE precedence = 1`,
+  },
+  business_rules_in_business_vault: {
+    name: 'business_rules_in_business_vault',
+    code: `SELECT
+    hk_customer_h,
+    CASE WHEN c_mktsegment = 'BUILDING' THEN 'priority' ELSE 'standard' END AS service_tier
+FROM {{ ref('customer_n_s') }}`,
+  },
+  persistent_staging: {
+    name: 'persistent_staging',
+    code: `{{ config(materialized='incremental', unique_key='delivery_row_id') }}
+
+SELECT
+    *,
+    {{ var('delivery_id') }} AS delivery_row_id
+FROM {{ source('landing', 'customer') }}
+{% if is_incremental() %}
+WHERE ldts > (SELECT COALESCE(MAX(ldts), '1900-01-01') FROM {{ this }})
+{% endif %}`,
+  },
 }
 
 export const LAYER_META: Record<Layer, { label: string; color: string; ring: string; text: string }> = {

@@ -5,7 +5,7 @@ const stored = (page: import('@playwright/test').Page) => page.evaluate(() => lo
 
 test('chapter header shows position, time and the 30-second summary', async ({ page }) => {
   await open(page, 'hash-lab')
-  await expect(page.getByText(/Chapter 6 of 13 · Part 2: Building it with dbt · about \d+ min/)).toBeVisible()
+  await expect(page.getByText(/Chapter 6 of 15 · Part 2: Building it with dbt · about \d+ min/)).toBeVisible()
   await expect(page.getByRole('region', { name: 'In 30 seconds' }).getByRole('listitem')).toHaveCount(3)
 })
 

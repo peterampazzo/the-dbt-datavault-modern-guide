@@ -242,6 +242,8 @@ A tickable list, saved locally:
 
 Every PR passes `pnpm lint`, `test`, `build`, `e2e` and `ux:check`, adds e2e tests for its interactives, and gets the manual keyboard pass from `ux-audit.md`. Nothing is recorded.
 
+**PR E status:** Implemented in the legacy-parity feature branch: the T-SQL dialect switch, chapters 14–15, configurable hash vectors, and legacy-history reconciliation are wired into the practitioner path.
+
 ---
 
 ## 9. Decisions so far

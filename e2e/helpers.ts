@@ -15,6 +15,8 @@ export const ROUTES = [
   { slug: 'replay', title: 'Replay: one history, two shapes' },
   { slug: 'one-lake', title: 'One lake, any engine' },
   { slug: 'modern-way', title: 'Working the modern way' },
+  { slug: 'from-sql-server', title: 'From a hand-written SQL Server vault' },
+  { slug: 'hash-parity', title: 'Hash parity and restoring history' },
 ] as const
 
 /** Opens a route, by default as one long page so every section is on screen. */

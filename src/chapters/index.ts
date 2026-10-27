@@ -459,4 +459,70 @@ export const CHAPTERS = [
     ],
     Component: lazy(() => import('./ModernWay')),
   },
+  {
+    slug: 'from-sql-server',
+    title: 'From a hand-written SQL Server vault',
+    short: 'Legacy patterns',
+    minutes: 8,
+    part: 4,
+    audience: 'practitioner',
+    summary: [
+      'Compare seven hand-written loading patterns with dbt models and metadata.',
+      'Keep raw history insert-only while deriving end dates, precedence and snapshots above it.',
+      'Put hash rules, source retention and business rules in reviewable project code.',
+    ],
+    recap: [
+      'dbt does not replace Data Vault objects; it makes their loading rules repeatable and testable.',
+      'Persistent staging, one hash rule and explicit business-vault precedence make rebuilds safer.',
+      'Snapshot control and PIT metadata keep “what was true then?” queryable without updating raw rows.',
+    ],
+    quiz: [
+      {
+        q: 'Where should a rule that chooses CRM over shop attributes live?',
+        options: ['In the raw staging model', 'In an explicit business-vault model', 'In the customer hub'],
+        answer: 1,
+        why: 'The business vault is the right layer for integration and precedence rules.',
+      },
+      {
+        q: 'What preserves source deliveries for a rebuild?',
+        options: ['Transient staging', 'Persistent staging', 'A mart snapshot only'],
+        answer: 1,
+        why: 'Persistent staging keeps every delivery and its load context.',
+      },
+    ],
+    Component: lazy(() => import('./FromSqlServer')),
+  },
+  {
+    slug: 'hash-parity',
+    title: 'Hash parity and restoring history',
+    short: 'Hash parity',
+    minutes: 8,
+    part: 4,
+    audience: 'practitioner',
+    summary: [
+      'Compare legacy and datavault4dbt hash settings with fixed business-key vectors.',
+      'Choose between reproducing old hashkeys and recomputing keys from retained business keys.',
+      'Map old keys to new keys, seed versions, and reconcile payloads before switching readers.',
+    ],
+    recap: [
+      'Encoding, delimiters, NULL text, quotes and upper-casing all affect hash parity.',
+      'Archived deliveries are the best source for history; a 1:1 legacy-vault copy is the next option.',
+      'A key map and zero-mismatch reconciliation make a migration observable and reversible.',
+    ],
+    quiz: [
+      {
+        q: 'What should always be recomputed during migration?',
+        options: ['Business keys', 'Hashdiffs from the payload', 'Archived delivery dates'],
+        answer: 1,
+        why: 'Hashdiffs should describe the payload under the new engine’s explicit rule.',
+      },
+      {
+        q: 'Why do the two semicolon edge rows still mismatch in the parity lab?',
+        options: ['The values are missing', 'The legacy unescaped delimiter is ambiguous', 'The hubs have no business keys'],
+        answer: 1,
+        why: 'Two different value tuples collapse to the same legacy concatenated string.',
+      },
+    ],
+    Component: lazy(() => import('./HashParity')),
+  },
 ] as const satisfies readonly ChapterDefinition[]

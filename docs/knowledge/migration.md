@@ -25,3 +25,9 @@ Plan how persistent staging can delete personal data when needed, such as by par
 Store source deliveries once in open formats, then point the selected Spark engine at that storage. Keep engine-specific SQL in named macros and vars, and keep the same global hash rules on each target. A cross-engine unit test should prove that the same business keys produce identical hashkeys before switching the raw-vault build.
 
 The source layer stays; derived staging and vault tables can be rebuilt. Permissions, orchestration and BI connections may need to be reconfigured for the new compute engine. Check the dbt and datavault4dbt release notes for current adapter support before planning the move.
+
+## Legacy patterns and hash parity
+
+When replacing hand-written SQL Server loading procedures, keep the raw vault insert-only and move precedence, snapshot and end-date logic into derived dbt models. Persistent staging is the first history source; a one-to-one legacy-vault copy can be loaded as an additional `legacy/...` source when deliveries are unavailable.
+
+Hash parity is a rule comparison, not a guess. Record the input datatype, encoding, delimiter, NULL text, quote character, escaping and upper-casing behavior, then run fixed vectors such as trailing spaces, `ß` and delimiters inside keys. If other systems do not consume the old hashkeys, recompute keys from retained business keys and keep an auditable old-hash → business-key → new-hash map; recompute hashdiffs from payload under the new rule.
