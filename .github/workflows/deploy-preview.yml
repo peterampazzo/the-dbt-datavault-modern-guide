@@ -1,0 +1,118 @@
+name: Deploy preview
+
+# main -> the "preview" branch alias; PRs from this repo -> pr-<number>.
+# Fork PRs get no secrets, so they only deploy when someone with write access
+# runs this workflow by hand with the PR number. The build job never sees the
+# Cloudflare token; only the deploy job does, and it runs no PR code.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to deploy (use for fork PRs after reviewing the code)
+        required: true
+        type: number
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number || inputs.pr_number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      alias: ${{ steps.target.outputs.alias }}
+      pr: ${{ steps.target.outputs.pr }}
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      - id: target
+        env:
+          PR: ${{ github.event.pull_request.number || inputs.pr_number }}
+        run: |
+          if [ -n "$PR" ]; then
+            echo "alias=pr-$PR" >> "$GITHUB_OUTPUT"
+            echo "pr=$PR" >> "$GITHUB_OUTPUT"
+            echo "ref=refs/pull/$PR/head" >> "$GITHUB_OUTPUT"
+          else
+            echo "alias=preview" >> "$GITHUB_OUTPUT"
+            echo "ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target.outputs.ref }}
+          persist-credentials: false
+      - id: sha
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Prevent preview indexing
+        run: |
+          printf '\n/*\n  X-Robots-Tag: noindex, nofollow\n' >> dist/_headers
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.pages-deployment-alias-url || steps.deploy.outputs.deployment-url }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Validate deployment configuration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Missing CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+          test -n "$CLOUDFLARE_PROJECT_NAME" || { echo "Missing CLOUDFLARE_PROJECT_NAME"; exit 1; }
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: npm
+          command: >-
+            pages deploy dist
+            --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }}
+            --branch=${{ needs.build.outputs.alias }}
+            --commit-hash=${{ needs.build.outputs.sha }}
+      - name: Comment preview URL on the PR
+        if: needs.build.outputs.pr != ''
+        uses: actions/github-script@v7
+        env:
+          PR: ${{ needs.build.outputs.pr }}
+          URL: ${{ steps.deploy.outputs.pages-deployment-alias-url || steps.deploy.outputs.deployment-url }}
+          SHA: ${{ needs.build.outputs.sha }}
+        with:
+          script: |
+            const marker = '<!-- cloudflare-preview -->'
+            const body = `${marker}\nPreview: ${process.env.URL}\n\nBuilt from ${process.env.SHA.slice(0, 7)}.`
+            const issue_number = Number(process.env.PR)
+            const { owner, repo } = context.repo
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number })
+            const existing = comments.find((c) => c.body?.startsWith(marker))
+            if (existing) await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body })
