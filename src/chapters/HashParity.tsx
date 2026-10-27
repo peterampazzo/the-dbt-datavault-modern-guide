@@ -129,6 +129,15 @@ ${VECTOR_INPUTS.map((row) => `          - ${JSON.stringify(row)}`).join('\n')}
       rows:
 ${VECTOR_KEYS.map((key) => `          - ${JSON.stringify({ c_custkey: key, ldts: BATCHES[0], hk_customer_h: dvHash([key]).hash })}`).join('\n')}`
 
+const RECONCILIATION_LABEL: Record<string, string> = {
+  legacyHubRows: 'Legacy hub rows',
+  newHubRows: 'New hub rows',
+  legacySatVersions: 'Legacy satellite versions',
+  newSatVersions: 'New satellite versions',
+  payloadMismatches: 'Payload mismatches',
+  hashdiffMismatches: 'Hashdiff mismatches',
+}
+
 export default function HashParity() {
   const seeded = seedFromLegacy()
   return (
@@ -170,7 +179,7 @@ export default function HashParity() {
         <P>The sample legacy vault is derived from batches 1–2 of the guide’s own engine. The seed joins each satellite to its hub, recomputes the default hk/hashdiff, and drops <code>LoadEndDate</code>; <code>sat_v1</code> rebuilds the end dates when needed.</P>
         <DataTable title="Legacy hash → business key → new hash" tone="hub" rows={seeded.keyMap.map((row) => ({ legacy_hash: row.legacyHashKey, c_custkey: row.customerNumber, new_hash: row.newHashKey }))} />
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Object.entries(seeded.reconciliation).map(([label, value]) => <div key={label} className="rounded-lg border bg-card/50 p-3"><div className="text-xs text-muted-foreground">{label}</div><div className="mt-1 font-mono text-lg">{value}</div></div>)}
+          {Object.entries(seeded.reconciliation).map(([label, value]) => <div key={label} className="rounded-lg border bg-card/50 p-3"><div className="text-xs text-muted-foreground">{RECONCILIATION_LABEL[label] ?? label}</div><div className="mt-1 font-mono text-lg">{value}</div></div>)}
         </div>
         <Callout kind="tip" title="What the counts say">
           The hub and satellite counts are equal, and both payload and hashdiff mismatch counts are zero. The key map is one-to-one on this sample, so no legacy hashkey is silently assigned to two business keys.
