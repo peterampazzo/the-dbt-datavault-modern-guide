@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import { dvHash, hk } from './hash'
-import { END, isGhost, pit, replay, REPLAY_TABLES, satV1, simulate, UNKNOWN_KEY } from './engine'
+import {
+  END,
+  integratedCustomer,
+  isGhost,
+  orderTotals,
+  pit,
+  replay,
+  REPLAY_TABLES,
+  satV1,
+  shopCustomerSatellite,
+  simulate,
+  UNKNOWN_KEY,
+} from './engine'
 import { createHash } from 'node:crypto'
 
 const md5 = (s: string) => createHash('md5').update(s).digest('hex')
@@ -66,6 +78,73 @@ describe('simulate', () => {
     const daniel = p.find((r) => r.c_custkey === 4 && r.sdts === '2024-01-04 07:00:00')!
     expect(daniel.customer_n_s_ldts).toBe('2024-01-01 06:00:00')
     expect(daniel.customer_phone_ma_s_hk).toBe(UNKNOWN_KEY)
+  })
+})
+
+describe('business vault', () => {
+  const runs = simulate()
+  const crm = real(runs[2].tables.customer_n_s) as never
+  const shop = real(shopCustomerSatellite()) as never
+
+  it('integrates exact source values with CRM precedence', () => {
+    const rows = integratedCustomer(crm, shop, ['crm/customer', 'shop/customer'])
+      .filter((row) => [2, 3, 8].includes(Number(row.c_custkey)))
+      .map(({ c_custkey, ldts, c_name, c_address, rsrc, source_of_c_name, source_of_c_address }) => ({
+        c_custkey, ldts, c_name, c_address, rsrc, source_of_c_name, source_of_c_address,
+      }))
+      .sort((a, b) => Number(a.c_custkey) - Number(b.c_custkey) || String(a.ldts).localeCompare(String(b.ldts)))
+    expect(rows).toEqual([
+      { c_custkey: 2, ldts: '2024-01-01 06:00:00', c_name: 'Bruno Costa', c_address: 'Av. Paulista 900', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 2, ldts: '2024-01-02 06:00:00', c_name: 'Bruno Costa', c_address: 'Rua Augusta 15', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 2, ldts: '2024-01-03 06:00:00', c_name: 'Bruno Costa', c_address: 'Rua Augusta 15', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 3, ldts: '2024-01-01 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 3, ldts: '2024-01-02 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 3, ldts: '2024-01-03 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 8, ldts: '2024-01-01 06:00:00', c_name: 'Hana Sato', c_address: '5-3 Ginza', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-02 06:00:00', c_name: 'Hana Sato', c_address: 'Ginza 5-3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-03 06:00:00', c_name: 'Hana Sato', c_address: 'Tokyo storefront, 1-2', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+    ])
+  })
+
+  it('integrates exact source values with shop precedence and keeps shop-only keys', () => {
+    const rows = integratedCustomer(crm, shop, ['shop/customer', 'crm/customer'])
+      .filter((row) => [2, 3, 8].includes(Number(row.c_custkey)))
+      .map(({ c_custkey, ldts, c_name, c_address, rsrc, source_of_c_name, source_of_c_address }) => ({
+        c_custkey, ldts, c_name, c_address, rsrc, source_of_c_name, source_of_c_address,
+      }))
+      .sort((a, b) => Number(a.c_custkey) - Number(b.c_custkey) || String(a.ldts).localeCompare(String(b.ldts)))
+    expect(rows).toEqual([
+      { c_custkey: 2, ldts: '2024-01-01 06:00:00', c_name: 'Bruno Costa', c_address: 'Av. Paulista 900', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 2, ldts: '2024-01-02 06:00:00', c_name: 'Bruno C.', c_address: 'Rua Augusta 15', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 2, ldts: '2024-01-03 06:00:00', c_name: 'Bruno Costa', c_address: 'Rua Augusta 15', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 3, ldts: '2024-01-01 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 3, ldts: '2024-01-02 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 3, ldts: '2024-01-03 06:00:00', c_name: 'Kiki Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-01 06:00:00', c_name: 'Hana Sato', c_address: '5-3 Ginza', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-02 06:00:00', c_name: 'Hana Sato', c_address: 'Ginza 5-3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-03 06:00:00', c_name: 'Hana Sato', c_address: 'Tokyo storefront, 1-2', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+    ])
+    expect(rows.some((row) => row.c_custkey === 8)).toBe(true)
+  })
+
+  it('computes cumulative order totals by customer and load date', () => {
+    const totals = orderTotals(runs[2].tables)
+    // Orders: Alice 250 + 60 = 310; Chiara 1800; Emi 95.9; Farah 420; Gabriel 310.
+    const expected = [
+      { hk_customer_h: hk(1), ldts: '2024-01-01 06:00:00', order_count: 1, total_price: 250 },
+      { hk_customer_h: hk(1), ldts: '2024-01-02 06:00:00', order_count: 2, total_price: 310 },
+      { hk_customer_h: hk(3), ldts: '2024-01-01 06:00:00', order_count: 1, total_price: 1800 },
+      { hk_customer_h: hk(5), ldts: '2024-01-01 06:00:00', order_count: 1, total_price: 95.9 },
+      { hk_customer_h: hk(6), ldts: '2024-01-02 06:00:00', order_count: 1, total_price: 420 },
+      { hk_customer_h: hk(7), ldts: '2024-01-03 06:00:00', order_count: 1, total_price: 310 },
+    ].sort((a, b) => a.hk_customer_h.localeCompare(b.hk_customer_h) || a.ldts.localeCompare(b.ldts))
+    const actual = totals
+      .map(({ hk_customer_h, ldts, order_count, total_price }) => ({ hk_customer_h, ldts, order_count, total_price }))
+      .sort((a, b) => String(a.hk_customer_h).localeCompare(String(b.hk_customer_h)) || String(a.ldts).localeCompare(String(b.ldts)))
+    expect(actual).toEqual(expected)
+    expect(totals.every((row) => typeof row.hd_customer_order_total_s === 'string')).toBe(true)
+    expect(totals.find((row) => row.hk_customer_h === hk(1) && row.order_count === 1)?.hd_customer_order_total_s)
+      .toBe(dvHash([1, 250], { kind: 'hashdiff' }).hash)
   })
 })
 

@@ -244,6 +244,8 @@ Every PR passes `pnpm lint`, `test`, `build`, `e2e` and `ux:check`, adds e2e tes
 
 **PR E status:** Implemented in the legacy-parity feature branch: the T-SQL dialect switch, chapters 14–15, configurable hash vectors, and legacy-history reconciliation are wired into the practitioner path.
 
+**PR F status:** Implemented in the business-vault feature branch: the second customer source, integrated and computed satellites, chapter 16, chapter 17 and migration guidance are wired into the practitioner path.
+
 ---
 
 ## 9. Decisions so far

@@ -11,7 +11,7 @@ describe('reading paths', () => {
   })
 
   it('orders the practitioner path and exposes adjacent chapters', () => {
-    expect(getPathOrder('dv-practitioner')).toEqual(['dv-names', 'dbt-primer', 'dbt', 'load-player', 'replay', 'one-lake', 'modern-way', 'from-sql-server', 'hash-parity'])
+    expect(getPathOrder('dv-practitioner')).toEqual(['dv-names', 'dbt-primer', 'dbt', 'load-player', 'replay', 'one-lake', 'modern-way', 'from-sql-server', 'hash-parity', 'business-vault', 'migration-checklist'])
     expect(getFirstPathChapter('dv-practitioner')).toBe('dv-names')
     expect(getNextPathChapter('dv-names', 'dv-practitioner')).toBe('dbt-primer')
     expect(getNextPathChapter('dbt-primer', 'dv-practitioner')).toBe('dbt')
@@ -26,6 +26,9 @@ describe('reading paths', () => {
     expect(getPreviousPathChapter('dv-names', 'dv-practitioner')).toBeUndefined()
     expect(getPreviousPathChapter('one-lake', 'dv-practitioner')).toBe('replay')
     expect(getNextPathChapter('from-sql-server', 'dv-practitioner')).toBe('hash-parity')
+    expect(getNextPathChapter('hash-parity', 'dv-practitioner')).toBe('business-vault')
+    expect(getNextPathChapter('business-vault', 'dv-practitioner')).toBe('migration-checklist')
+    expect(getPreviousPathChapter('migration-checklist', 'dv-practitioner')).toBe('business-vault')
     expect(getPreviousPathChapter('hash-parity', 'dv-practitioner')).toBe('from-sql-server')
   })
 

@@ -525,4 +525,70 @@ export const CHAPTERS = [
     ],
     Component: lazy(() => import('./HashParity')),
   },
+  {
+    slug: 'business-vault',
+    title: 'The modern business vault',
+    short: 'Business vault',
+    minutes: 7,
+    part: 4,
+    audience: 'essential',
+    summary: [
+      'Keep reusable precedence and calculations in a business vault above the raw history.',
+      'Compare CRM-first and shop-first integration without changing either source satellite.',
+      'Use computed satellites and one snapshot control before shaping marts for readers.',
+    ],
+    recap: [
+      'The business vault holds reusable, auditable rules; marts serve a particular audience.',
+      'Explicit source precedence can be rebuilt, tested and changed without updating raw-vault rows.',
+      'Computed satellites preserve changes to derived measures, while PITs share a snapshot calendar.',
+    ],
+    quiz: [
+      {
+        q: 'Where should CRM-versus-shop precedence live?',
+        options: ['In the raw satellite', 'In a business-vault model', 'In a hub business key'],
+        answer: 1,
+        why: 'Precedence is a reusable business rule, so it belongs above the raw source history.',
+      },
+      {
+        q: 'What does a computed satellite preserve?',
+        options: ['Only the latest total', 'Changes to a derived measure over load time', 'A mutable copy maintained by MERGE'],
+        answer: 1,
+        why: 'An insert-only computed satellite records each changed result with its load timestamp.',
+      },
+    ],
+    Component: lazy(() => import('./BusinessVault')),
+  },
+  {
+    slug: 'migration-checklist',
+    title: 'Migration checklist',
+    short: 'Checklist',
+    minutes: 5,
+    part: 4,
+    audience: 'practitioner',
+    summary: [
+      'Turn a migration into eight observable gates instead of one risky cut-over.',
+      'Keep deliveries, prove hash and business-rule parity, and compare rebuilds.',
+      'Save your progress locally while you work through the checklist.',
+    ],
+    recap: [
+      'Persistent staging and protected models make a migration replayable.',
+      'Hash vectors, unit tests and reconciliation make differences visible before cut-over.',
+      'Cut over only after the parallel run agrees and a rebuild path is documented.',
+    ],
+    quiz: [
+      {
+        q: 'What should come before cut-over?',
+        options: ['A green parallel reconciliation', 'Deleting the legacy vault', 'A mart-only comparison'],
+        answer: 0,
+        why: 'A parallel comparison gives evidence that the new models agree before readers switch.',
+      },
+      {
+        q: 'Where is checklist progress saved?',
+        options: ['In the raw vault', 'In this browser’s local storage', 'In a mutable MERGE table'],
+        answer: 1,
+        why: 'The checklist is a local review aid and does not write to warehouse data.',
+      },
+    ],
+    Component: lazy(() => import('./MigrationChecklist')),
+  },
 ] as const satisfies readonly ChapterDefinition[]

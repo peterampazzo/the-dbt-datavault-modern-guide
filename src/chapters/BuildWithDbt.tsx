@@ -10,10 +10,11 @@ import { cn } from '@/lib/utils'
 import { Link } from 'react-router'
 
 const GROUPS: { label: string; models: string[] }[] = [
-  { label: 'Stage', models: ['stg_customer', 'stg_nation', 'stg_orders'] },
+  { label: 'Stage', models: ['stg_customer', 'stg_shop_customer', 'stg_nation', 'stg_orders'] },
   { label: 'Hubs', models: ['customer_h', 'nation_h', 'order_h'] },
   { label: 'Links', models: ['customer_nation_l', 'order_customer_nh_l'] },
-  { label: 'Satellites', models: ['customer_n_s', 'nation_n_s'] },
+  { label: 'Satellites', models: ['customer_n_s', 'customer_shop_s', 'customer_shop_s_v1', 'nation_n_s'] },
+  { label: 'Business vault', models: ['customer_integrated_s', 'customer_order_total_s'] },
 ]
 
 const KEYS: Record<string, string> = {

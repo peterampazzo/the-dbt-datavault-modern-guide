@@ -1,4 +1,4 @@
-import { BATCHES, CUSTOMER_EMAIL, CUSTOMERS, LATE_CUSTOMER, NATIONS, ORDERS, PHONES } from './dataset'
+import { BATCHES, CUSTOMER_EMAIL, CUSTOMERS, LATE_CUSTOMER, NATIONS, ORDERS, PHONES, SHOP_CUSTOMERS } from './dataset'
 import { ERROR_KEY, hd, hk, standardiseAttribute, ZERO_KEY } from './hash'
 
 /**
@@ -152,6 +152,7 @@ function withGhosts(rows: Row[], columns: Record<string, 'string' | 'number' | '
 // ---------- staging ----------
 
 export const CUSTOMER_PAYLOAD = ['c_name', 'c_address', 'c_mktsegment', 'c_acctbal', 'c_comment'] as const
+export const SHOP_CUSTOMER_PAYLOAD = ['c_name', 'c_address'] as const
 
 export function stageCustomer(source: Row[]): Row[] {
   const payload: readonly string[] = source.some((r) => r.c_email !== undefined) ? [...CUSTOMER_PAYLOAD, 'c_email'] : CUSTOMER_PAYLOAD
@@ -177,6 +178,21 @@ export function stageCustomer(source: Row[]): Row[] {
   }
   if (payload.includes('c_email')) columns.c_email = 'string'
   return withGhosts(rows, columns)
+}
+
+export function stageShopCustomer(source: Row[]): Row[] {
+  const rows = source.map((r) => ({
+    ...r,
+    hk_customer_h: hk(r.c_custkey as number),
+    hd_customer_shop_s: hd(r.c_name as string, r.c_address as string),
+  }))
+  return withGhosts(rows, {
+    c_custkey: 'number',
+    c_name: 'string',
+    c_address: 'string',
+    hk_customer_h: 'hash',
+    hd_customer_shop_s: 'hash',
+  })
 }
 
 function stageNation(source: Row[]): Row[] {
@@ -297,6 +313,22 @@ function loadSat(target: Row[], stage: Row[], key: string, hdCol: string, cols: 
     }
   }
   return { rows: [...target, ...inserted], decisions, hwm }
+}
+
+/** Build the second customer satellite with the same insert-only loader as the CRM satellite. */
+export function shopCustomerSatellite(): Row[] {
+  let target: Row[] = []
+  for (const [index, ldts] of BATCHES.entries()) {
+    const source = SHOP_CUSTOMERS[index].map((row) => ({ ...row, ldts, rsrc: 'shop/customer' }))
+    target = loadSat(
+      target,
+      stageShopCustomer(source),
+      'hk_customer_h',
+      'hd_customer_shop_s',
+      ['hk_customer_h', 'hd_customer_shop_s', 'ldts', 'rsrc', 'c_custkey', ...SHOP_CUSTOMER_PAYLOAD],
+    ).rows
+  }
+  return target
 }
 
 /** Multi-active satellite: the whole set of a key is (re)inserted when the set hashdiff changes. */
@@ -495,6 +527,81 @@ export function simulate(opts: SimOptions = {}): BatchRun[] {
     })
   }
   return runs
+}
+
+export type CustomerPrecedence =
+  | readonly ['crm/customer', 'shop/customer']
+  | readonly ['shop/customer', 'crm/customer']
+
+const INTEGRATED_ATTRIBUTES = ['c_name', 'c_address', 'c_mktsegment', 'c_acctbal', 'c_comment'] as const
+
+/** Integrate source satellites at each observed load timestamp using explicit source precedence. */
+export function integratedCustomer(crmSat: Row[], shopSat: Row[], precedence: CustomerPrecedence): Row[] {
+  const sources: Record<CustomerPrecedence[number], Row[]> = {
+    'crm/customer': crmSat.filter((row) => !isGhost(row)),
+    'shop/customer': shopSat.filter((row) => !isGhost(row)),
+  }
+  const keys = new Set([...crmSat, ...shopSat].filter((row) => !isGhost(row)).map((row) => String(row.hk_customer_h)))
+  const snapshots = [...new Set(Object.values(sources).flatMap((rows) => rows.map((row) => String(row.ldts))))].sort()
+  const output: Row[] = []
+
+  for (const hkValue of keys) {
+    for (const ldts of snapshots) {
+      const latest = Object.fromEntries(
+        precedence.map((source) => [
+          source,
+          [...sources[source]]
+            .filter((row) => String(row.hk_customer_h) === hkValue && String(row.ldts) <= ldts)
+            .sort(byLdts)
+            .at(-1),
+        ]),
+      ) as Record<CustomerPrecedence[number], Row | undefined>
+      if (!latest[precedence[0]] && !latest[precedence[1]]) continue
+      const row: Row = { hk_customer_h: hkValue, ldts, rsrc: UNKNOWN_RSRC }
+      const keySource = precedence.map((source) => latest[source]).find((candidate) => candidate?.c_custkey !== null && candidate?.c_custkey !== undefined)
+      row.c_custkey = keySource?.c_custkey ?? null
+
+      for (const attribute of INTEGRATED_ATTRIBUTES) {
+        const winner = precedence
+          .map((source) => ({ source, value: latest[source]?.[attribute] }))
+          .find(({ value }) => value !== null && value !== undefined)
+        row[attribute] = winner?.value ?? null
+        row[`source_of_${attribute}`] = winner?.source ?? null
+      }
+      output.push(row)
+    }
+  }
+  return output.sort((a, b) => String(a.hk_customer_h).localeCompare(String(b.hk_customer_h)) || String(a.ldts).localeCompare(String(b.ldts)))
+}
+
+/** Build cumulative order totals as an insert-only computed satellite. */
+export function orderTotals(tables: Pick<BatchRun['tables'], 'order_customer_nh_l'>): Row[] {
+  const orders = tables.order_customer_nh_l.filter((row) => !isGhost(row))
+  const snapshots = [...new Set(orders.map((row) => String(row.ldts)))].sort()
+  const keys = [...new Set(orders.map((row) => String(row.hk_customer_h)))].sort()
+  const output: Row[] = []
+
+  for (const hkValue of keys) {
+    let previousHash: string | undefined
+    for (const ldts of snapshots) {
+      const customerOrders = orders.filter((row) => String(row.hk_customer_h) === hkValue && String(row.ldts) <= ldts)
+      if (!customerOrders.length) continue
+      const orderCount = customerOrders.length
+      const totalPrice = customerOrders.reduce((sum, row) => sum + Number(row.o_totalprice ?? 0), 0)
+      const hashdiff = hd(orderCount, totalPrice)
+      if (hashdiff === previousHash) continue
+      previousHash = hashdiff
+      output.push({
+        hk_customer_h: hkValue,
+        ldts,
+        rsrc: UNKNOWN_RSRC,
+        order_count: orderCount,
+        total_price: totalPrice,
+        hd_customer_order_total_s: hashdiff,
+      })
+    }
+  }
+  return output.sort((a, b) => String(a.hk_customer_h).localeCompare(String(b.hk_customer_h)) || String(a.ldts).localeCompare(String(b.ldts)))
 }
 
 function replayRowKey(table: ReplayTableName, row: Row) {

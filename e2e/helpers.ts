@@ -17,6 +17,8 @@ export const ROUTES = [
   { slug: 'modern-way', title: 'Working the modern way' },
   { slug: 'from-sql-server', title: 'From a hand-written SQL Server vault' },
   { slug: 'hash-parity', title: 'Hash parity and restoring history' },
+  { slug: 'business-vault', title: 'The modern business vault' },
+  { slug: 'migration-checklist', title: 'Migration checklist' },
 ] as const
 
 /** Opens a route, by default as one long page so every section is on screen. */
