@@ -12,14 +12,12 @@ const GLOSSARY_DATA = [
     id: 'hub',
     term: 'Hub',
     definition: 'A hub stores one row for each distinct business key of a core business concept.',
-    aka: 'Entity hub',
     chapter: 'what-is-data-vault',
   },
   {
     id: 'link',
     term: 'Link',
     definition: 'A link stores a unique relationship between two or more hubs.',
-    aka: 'Relationship link',
     chapter: 'what-is-data-vault',
   },
   {
@@ -128,7 +126,6 @@ const GLOSSARY_DATA = [
     id: 'persistent-staging',
     term: 'Persistent staging',
     definition: 'Persistent staging retains source deliveries so derived models can be replayed.',
-    aka: 'Retained staging',
     chapter: 'replay',
   },
   {
@@ -181,7 +178,6 @@ const GLOSSARY_DATA = [
     id: 'incremental',
     term: 'Incremental model',
     definition: 'An incremental model processes new or changed rows after its initial build.',
-    aka: 'Incremental',
     chapter: 'dbt-primer',
   },
   {
@@ -246,7 +242,6 @@ const GLOSSARY_DATA = [
     id: 'computed-satellite',
     term: 'Computed satellite',
     definition: 'A computed satellite stores insert-only history derived by a reusable business rule.',
-    aka: 'Derived satellite',
     chapter: 'business-vault',
   },
   {
