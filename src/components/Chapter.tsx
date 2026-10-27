@@ -162,7 +162,7 @@ export function Chapter({ children }: { children: ReactNode }) {
             </li>
           ))}
         </ol>
-        <Link to={href(1)} className="mt-6 inline-flex items-center gap-2 rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Link to={href(1)} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           Start <ArrowRight aria-hidden className="size-4" />
         </Link>
       </section>
@@ -180,11 +180,11 @@ export function Chapter({ children }: { children: ReactNode }) {
       <div className="mt-10 border-t pt-5">
         {nextChapter ? (
           <Link to={`/${nextChapter.slug}`} className="inline-flex items-center gap-2 font-medium text-foreground hover:underline">
-            Next chapter: {nextChapter.title} <ArrowRight aria-hidden className="size-4" />
+            Next: {nextChapter.title} <ArrowRight aria-hidden className="size-4" />
           </Link>
         ) : (
           <Link to="/" className="inline-flex items-center gap-2 font-medium text-foreground hover:underline">
-            Back to home <ArrowRight aria-hidden className="size-4" />
+            Back: Home <ArrowRight aria-hidden className="size-4" />
           </Link>
         )}
       </div>
@@ -220,9 +220,9 @@ export function Chapter({ children }: { children: ReactNode }) {
             ) : <span />}
             <span className="shrink-0 text-xs text-muted-foreground">Page {cur + 1} of {pageRefs.length}</span>
             {cur < recapIndex ? (
-              <PageLink to={href(cur + 1)} dir="next" label={`Next: ${pageRefs[cur + 1].title}`} primary />
+              <PageLink to={href(cur + 1)} dir="next" label={pageRefs[cur + 1].title} primary />
             ) : nextChapter ? (
-              <PageLink to={`/${nextChapter.slug}`} dir="next" label={`Next chapter: ${nextChapter.title}`} primary />
+              <PageLink to={`/${nextChapter.slug}`} dir="next" label={nextChapter.title} primary />
             ) : <span />}
           </div>
           <ol aria-label="All pages in this chapter" className="mt-1 flex flex-wrap justify-center">
@@ -256,12 +256,12 @@ function PageLink({ to, dir, label, primary }: { to: string; dir: 'prev' | 'next
     <Link
       to={to}
       className={cn(
-        'group flex min-w-0 items-center gap-2 rounded-md py-2 text-sm',
-        primary ? 'font-medium hover:text-sky-700 dark:hover:text-sky-400' : 'text-muted-foreground hover:text-foreground',
+        'group flex min-h-6 min-w-0 items-center gap-2 rounded-md py-2 text-sm',
+        primary ? 'max-sm:min-h-11 font-medium hover:text-sky-700 dark:hover:text-sky-400' : 'text-muted-foreground hover:text-foreground',
       )}
     >
       {dir === 'prev' && <ArrowLeft aria-hidden className="size-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />}
-      <span className={cn('truncate', dir === 'prev' && 'max-sm:sr-only')}>{label}</span>
+      <span className={cn('truncate', dir === 'prev' && 'max-sm:sr-only')}>{dir === 'prev' ? 'Back' : 'Next'}: {label}</span>
       {dir === 'next' && <ArrowRight aria-hidden className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5" />}
     </Link>
   )

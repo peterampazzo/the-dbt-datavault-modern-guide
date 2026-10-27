@@ -34,17 +34,13 @@ export function Home() {
     <div>
       <section className="grid items-center gap-10 py-6 lg:grid-cols-[1.1fr_1fr]">
         <div>
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4 inline-flex rounded-full border px-3 py-1 font-mono text-xs text-muted-foreground">
-            interactive guide · datavault4dbt
-          </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
             className="text-4xl font-semibold leading-tight tracking-tight md:text-6xl"
           >
-            Data Vault, <span className="bg-gradient-to-r from-sky-400 via-emerald-400 to-amber-400 bg-clip-text text-transparent">modelled</span> and{' '}
-            <span className="bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">built with dbt</span>
+            Data Vault, modelled and built with dbt
           </motion.h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="mt-6 max-w-xl text-lg text-muted-foreground">
             We take three ordinary datasets (customers, nations and orders), model them as a Data Vault, then build that vault with dbt.
@@ -54,13 +50,13 @@ export function Home() {
             {resume ? (
               <Link
                 to={`/${resume.chapter.slug}${resume.section ? `/${resume.section}` : ''}`}
-                className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90"
               >
                 Continue: {resume.chapter.title}
                 {resume.sectionTitle ? `, ${resume.sectionTitle}` : ''} <ArrowRight className="size-4" />
               </Link>
             ) : (
-              <Link to={`/${CHAPTERS[0].slug}`} className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90">
+              <Link to={`/${CHAPTERS[0].slug}`} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90">
                 Start reading <ArrowRight className="size-4" />
               </Link>
             )}
@@ -114,6 +110,10 @@ export function Home() {
           </div>
         ))}
       </section>
+      <nav aria-label="Guide resources" className="mt-10 flex flex-wrap gap-4 border-t pt-6">
+        <Link to="/glossary" className="inline-flex min-h-11 items-center underline underline-offset-4">Browse the glossary</Link>
+        <Link to="/about" className="inline-flex min-h-11 items-center underline underline-offset-4">About this guide</Link>
+      </nav>
     </div>
   )
 }

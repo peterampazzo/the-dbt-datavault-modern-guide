@@ -1,4 +1,5 @@
 import { Chapter } from '@/components/Chapter'
+import { Term } from '@/components/Term'
 import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Code } from '@/components/Prose'
@@ -115,7 +116,7 @@ export default function SatelliteFlavours() {
         keyPoint="The multi-active key keeps concurrently valid phone rows distinct."
       >
         <P>
-          A multi-active satellite keys rows by parent + <Code>phone_type</Code>, and hashes the whole set together: when Alice adds a work phone, all three of her rows get a new version.
+          A <Term id="multi-active-satellite">multi-active satellite</Term> keys rows by parent + <Code>phone_type</Code>, and hashes the whole set together: when Alice adds a work phone, all three of her rows get a new version.
         </P>
         <DataTable title="customer_phone_ma_s" tone="sat" rows={last.customer_phone_ma_s} hideGhosts />
         <CodeBlock title="customer_phone_ma_s.sql" code={MODEL.customer_phone_ma_s.code} />
@@ -126,7 +127,7 @@ export default function SatelliteFlavours() {
         keyPoint="Use it to record relationship activity without updating the insert-only link."
       >
         <P>
-          Links are insert-only, so they can't tell you that a relationship <em>ended</em>. An effectivity satellite tracks <Code>is_active</Code> per link: when Chiara
+          Links are insert-only, so they can't tell you that a relationship <em>ended</em>. An <Term id="effectivity-satellite">effectivity satellite</Term> tracks <Code>is_active</Code> per link: when Chiara
           moves, her Italy link flips to inactive and the new Germany link starts active. Daniel's links go inactive while he's missing and come back on day three.
         </P>
         <DataTable title="customer_nation_es" tone="sat" rows={last.customer_nation_es} hideGhosts />
@@ -138,7 +139,7 @@ export default function SatelliteFlavours() {
         keyPoint="It records provenance of appearance, not descriptive attribute history."
       >
         <P>
-          A record-tracking satellite has no payload. It logs every load and source in which a key appeared, such as Daniel's absence on day two or Farah's first appearance through an order.
+          A <Term id="record-tracking">record-tracking satellite</Term> has no payload. It logs every load and source in which a key appeared, such as Daniel's absence on day two or Farah's first appearance through an order.
         </P>
         <DataTable title="customer_rts" tone="sat" rows={last.customer_rts} hideGhosts maxHeight="max-h-96" />
         <CodeBlock title="customer_rts.sql" code={MODEL.customer_rts.code} />

@@ -1,6 +1,21 @@
 import { Link } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, P, Section } from '@/components/Prose'
+import { Term } from '@/components/Term'
+import type { GlossaryId } from '@/lib/glossary'
+
+const TERM_IDS: Record<string, GlossaryId> = {
+  'Hub / _h': 'hub',
+  'Link / _l': 'link',
+  'Non-historised link / _nh_l': 'non-historized-link',
+  PIT: 'pit',
+  'Snapshot control': 'snapshot-control',
+  Hashkey: 'hashkey',
+  Hashdiff: 'hashdiff',
+  'Load date / timestamp': 'ldts',
+  'Record source': 'rsrc',
+  'Ghost records': 'ghost-record',
+}
 
 const rows = [
   ['Hub / _h', 'customer_h, nation_h, order_h', '/what-is-data-vault/the-three-building-blocks', 'What is Data Vault › The three building blocks'],
@@ -33,8 +48,8 @@ export default function DvNames() {
         keyPoint="Model suffixes identify the object; datavault4dbt macro names identify how each model is generated."
       >
         <P>
-          Satellite names end in <code>_s</code>; the part before the suffix names the parent hub or link and, for variants,
-          the kind (<code>_ma_s</code> multi-active, <code>_es</code> effectivity, <code>_rts</code> record tracking).
+          <Term id="satellite">Satellite</Term> names end in <code>_s</code>; the part before the suffix names the parent hub or link and, for variants,
+          the kind (<code>_ma_s</code> <Term id="multi-active-satellite">multi-active</Term>, <code>_es</code> <Term id="effectivity-satellite">effectivity</Term>, <code>_rts</code> <Term id="record-tracking">record tracking</Term>).
           The datavault4dbt macro behind each is listed in the table.
         </P>
         <P>
@@ -50,9 +65,9 @@ export default function DvNames() {
               </tr>
             </thead>
             <tbody>
-              {rows.map(([term, name, path, pageTitle]) => (
+          {rows.map(([term, name, path, pageTitle]) => (
                 <tr key={term} className="border-t align-top">
-                  <th scope="row" className="px-3 py-2.5 font-medium">{term}</th>
+                  <th scope="row" className="px-3 py-2.5 font-medium">{TERM_IDS[term] ? <Term id={TERM_IDS[term]}>{term}</Term> : term}</th>
                   <td className="px-3 py-2.5 font-mono text-xs leading-5">{name}</td>
                   <td className="px-3 py-2.5">
                     <Link to={path} className="text-sky-700 underline underline-offset-2 dark:text-sky-400">

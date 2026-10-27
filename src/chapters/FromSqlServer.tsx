@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
 import { ChapterHeader, P, Section } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { MODEL, SNIPPETS } from '@/lib/dv/models'
 import { LEGACY_PATTERNS } from '@/lib/legacy/patterns'
 
@@ -23,7 +24,7 @@ export default function FromSqlServer() {
     <Chapter>
       <ChapterHeader
         title="From a hand-written SQL Server vault"
-        lead="Keep the useful Data Vault ideas, then move repeated loading rules into models, metadata and tests."
+        lead={<>Keep the useful Data Vault ideas, keep the <Term id="raw-vault">raw vault</Term> insert-only, and move repeated loading rules into models, metadata and tests.</>}
       />
 
       <Section title="The same destination, safer route" lead="A hand-written vault can work. The risk grows when every procedure copies its own assumptions about history, keys and sources.">
@@ -43,7 +44,7 @@ export default function FromSqlServer() {
         <Pair
           before="transient_staging"
           after={{ title: 'persistent staging', code: SNIPPETS.persistent_staging.code }}
-          why={<>A transient table leaves no evidence to replay when a model changes. Persistent staging appends each delivery and keeps the source load time; see <Link to="/replay" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Replay: one history, two shapes</Link> for the rebuild trade-off.</>}
+          why={<>A transient table leaves no evidence to replay when a model changes. <Term id="persistent-staging">Persistent staging</Term> appends each delivery and keeps the source load time; see <Link to="/replay" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Replay: one history, two shapes</Link> for the rebuild trade-off.</>}
         />
       </Section>
 
@@ -59,7 +60,7 @@ export default function FromSqlServer() {
         <Pair
           before="inline_hashes"
           after={{ title: 'MODEL.stg_customer hashed_columns', code: MODEL.stg_customer.code, lang: 'yaml' }}
-          why={<>The stage owns the hash rule in one place, so a hub and every downstream link use the same business-key standardisation. When an older procedure used a different cast or encoding, compare the outputs in <Link to="/hash-parity" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Hash parity and restoring history</Link>.</>}
+          why={<>The stage owns the hash rule in one place, so a hub and every downstream link use the same <Term id="hashkey">hashkey</Term> standardisation and satellite <Term id="hashdiff">hashdiff</Term> inputs. When an older procedure used a different cast or encoding, test <Term id="hash-parity">hash parity</Term> in the <Link to="/hash-parity" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">restoring-history lab</Link>.</>}
         />
       </Section>
 
@@ -67,7 +68,7 @@ export default function FromSqlServer() {
         <Pair
           before="cloned_business_vault"
           after={{ title: 'integrated_customer_precedence', code: SNIPPETS.integrated_customer_precedence.code }}
-          why="The business vault is the explicit place to resolve a source conflict. A precedence order is visible in code and can be changed with a review, instead of cloning another procedure and hoping the copies stay aligned."
+          why={<>The <Term id="business-vault">business vault</Term> is the explicit place to resolve a source conflict. A precedence order is visible in code and can be changed with a review, instead of cloning another procedure and hoping the copies stay aligned.</>}
         />
       </Section>
 
@@ -83,7 +84,7 @@ export default function FromSqlServer() {
         <Pair
           before="no_snapshot_control"
           after={{ title: 'control_snap_v1 + customer_pit', code: `${MODEL.control_snap_v1.code}\n\n${MODEL.customer_pit.code}` }}
-          why="A snapshot control defines which observation times matter, and a PIT stores pointers to the satellite versions valid at those times. dbt metadata makes the tracked entity and satellite set visible instead of hiding them in join text."
+          why={<>A <Term id="snapshot-control">snapshot control</Term> defines which observation times matter, and a <Term id="pit">PIT</Term> stores pointers to the satellite versions valid at those times. dbt metadata makes the tracked entity and satellite set visible instead of hiding them in join text.</>}
         />
       </Section>
     </Chapter>

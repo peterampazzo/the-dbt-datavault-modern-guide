@@ -4,6 +4,7 @@ import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
 import { DataTable } from '@/components/DataTable'
 import { Callout, ChapterHeader, P, Section } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { integratedCustomer, isGhost, orderTotals, shopCustomerSatellite, simulate, type CustomerPrecedence, type Row } from '@/lib/dv/engine'
 import { MODEL, SNIPPETS } from '@/lib/dv/models'
 
@@ -83,7 +84,7 @@ export default function BusinessVault() {
     <Chapter>
       <ChapterHeader
         title="The modern business vault"
-        lead="Keep reusable integration and calculation rules above the raw vault, then shape the result for each audience in a mart."
+        lead={<>Keep reusable integration and calculation rules in the <Term id="business-vault">business vault</Term>, then shape the result for each audience in a <Term id="mart">mart</Term>.</>}
       />
 
       <Section title="Business vault vs marts" lead="The business vault keeps reusable, auditable rules. A mart is shaped for one audience." keyPoint="Keep reusable rules keyed by vault keys; let marts serve a specific question.">
@@ -99,7 +100,7 @@ export default function BusinessVault() {
         </div>
       </Section>
 
-      <Section title="Precedence toggle" lead="Pick which source wins when both have a non-null profile value. Each cell shows its winning source." keyPoint="Precedence belongs in a business-vault model, not in a raw satellite.">
+      <Section title="Precedence toggle" lead={<><Term id="precedence">Precedence</Term> chooses which source wins when both have a non-null profile value. Each cell shows its winning source.</>} keyPoint="Precedence belongs in a business-vault model, not in a raw satellite.">
         <div className="mb-4 flex flex-wrap gap-2" data-testid="precedence-toggle">
           {PRECEDENCES.map((option) => (
             <button
@@ -120,7 +121,7 @@ export default function BusinessVault() {
         </Callout>
       </Section>
 
-      <Section title="Computed satellite" lead="A derived satellite can record reusable calculations without copying raw rows." keyPoint="Computed satellites are insert-only history too: a changed total gets a new version.">
+      <Section title="Computed satellite" lead={<>A <Term id="computed-satellite">computed satellite</Term> records reusable calculations without copying raw rows.</>} keyPoint="Computed satellites are insert-only history too: a changed total gets a new version.">
         <DataTable
           title="customer_order_total_s"
           tone="bv"
@@ -145,7 +146,7 @@ export default function BusinessVault() {
         <Link className="font-medium text-sky-700 underline dark:text-sky-400" to="/pit">Review snapshots and PIT pointers →</Link>
       </Section>
 
-      <Section title="No copies maintained by MERGE" lead="Raw-vault rows remain insert-only. Rebuild the business vault from those rows instead of maintaining a second mutable copy." keyPoint="A rule in dbt code can be changed, tested and rebuilt without editing raw history.">
+      <Section title="No copies maintained by MERGE" lead={<>Raw-vault rows remain insert-only. Rebuild the business vault from <Term id="raw-vault">raw-vault</Term> rows instead of maintaining a second mutable copy.</>} keyPoint="A rule in dbt code can be changed, tested and rebuilt without editing raw history.">
         <P>When precedence, totals or a reporting definition changes, run the model again from the raw vault. Keep the previous result long enough to compare it, then publish the rebuilt mart.</P>
         <Callout kind="tip" title="Rebuildable is the safety feature">
           The business vault is derived work. Retained deliveries and raw-vault history let you change the rule without pretending the source said something else.

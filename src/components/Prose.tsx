@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { CHAPTERS, PARTS } from '@/chapters'
 import { useLocation } from 'react-router'
 
-export function ChapterHeader({ title, lead }: { title: string; lead: ReactNode }) {
+export function ChapterHeader({ title, lead }: { title: ReactNode; lead: ReactNode }) {
   const { pathname } = useLocation()
   const slug = pathname.split('/').filter(Boolean)[0]
   const n = CHAPTERS.findIndex((chapter) => chapter.slug === slug) + 1
@@ -59,8 +59,8 @@ export function Section({
   title?: string
   children: ReactNode
   className?: string
-  lead?: string
-  keyPoint?: string
+  lead?: ReactNode
+  keyPoint?: ReactNode
   pageNumber?: string
   sectionId?: string
 }) {

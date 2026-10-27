@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Boxes, GitBranch, Layers, Scale, Workflow } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code, RecapExtras } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { Decomposition } from '@/components/Decomposition'
 import { cn } from '@/lib/utils'
 import { Link } from 'react-router'
@@ -198,13 +199,13 @@ function SourceToReports() {
         )}
         {selected === 3 && (
           <p className="text-sm leading-6">
-            Integrate sources on shared business keys. The raw vault records <Code>rsrc</Code> (where a row came from) and <Code>ldts</Code> (when it arrived); the business
-            vault adds derived rules and query helpers.
+            Integrate sources on shared <Term id="business-key">business keys</Term>. The <Term id="raw-vault">raw vault</Term> records <Term id="rsrc"><Code>rsrc</Code></Term> (where a row came from) and <Term id="ldts"><Code>ldts</Code></Term> (when it arrived); the <Term id="business-vault">business vault</Term>
+            adds derived rules and query helpers.
           </p>
         )}
         {selected === 4 && (
           <p className="text-sm leading-6">
-            Shape vault history into marts for reporting: dimensions, facts and views that answer business questions.
+            Shape vault history into <Term id="mart">marts</Term> for reporting: dimensions, facts and views that answer business questions.
           </p>
         )}
       </section>
@@ -307,12 +308,12 @@ export default function WhatIsDataVault() {
     <Chapter>
       <ChapterHeader
         title="What is Data Vault"
-        lead="A modelling pattern for enterprise warehouses that splits every concept into its keys (hubs), its relationships (links) and its context and history (satellites), so the warehouse can keep absorbing change."
+        lead={<>A modelling pattern for enterprise warehouses that splits every concept into its keys (<Term id="hub">hubs</Term>), its relationships (<Term id="link">links</Term>) and its context and history (<Term id="satellite">satellites</Term>), so the warehouse can keep absorbing change.</>}
       />
 
       <Section
         title="From source systems to reports"
-        lead="Follow customer, nation and orders from external systems through delivery, persistent staging and the vault to reporting."
+        lead={<>Follow customer, nation and orders from external systems through <Term id="landing">landing</Term> and <Term id="persistent-staging">persistent staging</Term> to reporting.</>}
       >
         <SourceToReports />
       </Section>
@@ -386,7 +387,14 @@ export default function WhatIsDataVault() {
               <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
                 {b.rules.map((r) => (
                   <li key={r} className="flex gap-2">
-                    <span className={b.text}>›</span> {r}
+                    <span className={b.text}>›</span>{' '}
+                    {r === 'Business key + hashkey + ldts + rsrc'
+                      ? <>Business key + <Term id="hashkey">hashkey</Term> + ldts + rsrc</>
+                      : r === 'Keyed by parent hashkey + ldts'
+                        ? r
+                        : r === 'New row only when the hashdiff changes'
+                          ? <>New row only when the <Term id="hashdiff">hashdiff</Term> changes</>
+                          : r}
                   </li>
                 ))}
               </ul>

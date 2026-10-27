@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { CUSTOMERS, NATIONS, ORDERS } from '@/lib/dv/dataset'
@@ -141,7 +142,7 @@ const STEPS: Step[] = [
     title: 'Find the business keys',
     body: (
       <>
-        Each concept needs a key that the business recognises and that would survive replacing the source system: <Code>c_custkey</Code>, <Code>n_nationkey</Code>,{' '}
+        Each concept needs a <Term id="business-key">business key</Term> that the business recognises and that would survive replacing the source system: <Code>c_custkey</Code>, <Code>n_nationkey</Code>,{' '}
         <Code>o_orderkey</Code>. Look for keys used across the enterprise, not just the primary keys of one application.{' '}
         <Link to="/modelling/find-the-business-key-yourself" className="text-sky-700 underline underline-offset-4 dark:text-sky-400">
           Try the customer key finder.
@@ -488,7 +489,7 @@ function KeyFinder() {
         {feedback[column]}
       </output>
       <p className="text-sm leading-6">
-        A good business key is what the business uses to identify a thing (for example, a customer number on invoices): unique, stable and shared across systems, not an
+            A good business key is what the business uses to identify a thing (for example, a customer number on invoices): unique, stable and shared across systems, not an
         internal ID only one database understands.
       </p>
       <div className="grid min-w-0 items-start gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,1.2fr)]">

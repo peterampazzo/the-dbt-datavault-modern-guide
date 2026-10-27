@@ -101,6 +101,7 @@ export function Layout() {
             <Logo />
             <span className="sr-only sm:not-sr-only">The dbt + Data Vault guide</span>
           </Link>
+          <Link to="/about" className="inline-flex min-h-11 items-center rounded-md px-2 text-sm font-medium hover:bg-muted">About</Link>
           <nav className="ml-4 flex w-0 min-w-0 flex-1 gap-1 overflow-x-auto lg:hidden">
             {CHAPTERS.map((c, i) => (
               <NavLink
@@ -239,6 +240,12 @@ export function Layout() {
               </div>
             ))}
           </div>
+          <nav aria-label="Guide resources" className="mt-8 border-t px-2 pt-4">
+            <ul className="space-y-1">
+              <li><Link to="/glossary" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">Glossary</Link></li>
+              <li><Link to="/about" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">About this guide</Link></li>
+            </ul>
+          </nav>
         </aside>
         <main className="relative min-w-0 flex-1 px-4 py-10 md:px-10">
           <Suspense fallback={<div className="h-96 rounded-xl motion-safe:animate-pulse bg-muted/40" />}>
@@ -251,6 +258,12 @@ export function Layout() {
               </Link>
             </div>
           )}
+          <footer className="mt-12 border-t pt-5">
+            <nav aria-label="Guide information" className="flex flex-wrap gap-4 text-sm">
+              <Link to="/about" className="inline-flex min-h-11 items-center underline underline-offset-4">About this guide</Link>
+              <Link to="/glossary" className="inline-flex min-h-11 items-center underline underline-offset-4">Glossary</Link>
+            </nav>
+          </footer>
         </main>
       </div>
     </div>

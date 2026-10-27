@@ -4,6 +4,7 @@ import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
 import { DataTable } from '@/components/DataTable'
 import { ChapterHeader, Callout, P, Section } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { BATCHES, CUSTOMERS, ORDERS } from '@/lib/dv/dataset'
 import { dvHash, type Value } from '@/lib/dv/hash'
 import { legacyHash } from '@/lib/legacy/parity'
@@ -143,7 +144,7 @@ export default function HashParity() {
   return (
     <Chapter>
       <ChapterHeader
-        title="Hash parity and restoring history"
+        title={<><Term id="hash-parity">Hash parity</Term> and restoring history</>}
         lead="Compare an older key rule with datavault4dbt, then bring history across without losing the business meaning."
       />
 

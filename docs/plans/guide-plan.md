@@ -238,7 +238,7 @@ A tickable list, saved locally:
 | **D** | Chapter 4 dbt primer + chapter 13 Working the modern way; `primer-dbt/`; DuckDB-WASM panels only on primer pages 4.3, 4.6 and 4.7 | B | Build-time dbt replay; lazy live panels with static fallback; no DuckDB in chapter 13 or vault chapters |
 | **E** | Chapter 14 legacy patterns, chapter 15 hash parity, dialect switch on By hand | C | Hash vectors for both encodings; dialect switch remembered |
 | **F** | Chapter 16 business vault, chapter 17 checklist, `migration.md` part 2 | E | Unit tests for precedence and computed sat |
-| **G** | Glossary popovers (with a "SQL Server name" line), quick checks on every recap, polish (impeccable craft floor), About page | F | The ADHD plan's success criteria S1–S7 all pass |
+| **G** | Glossary popovers (with a "SQL Server name" line), quick checks on every recap, polish (impeccable craft floor), About page | F | Implemented |
 
 Every PR passes `pnpm lint`, `test`, `build`, `e2e` and `ux:check`, adds e2e tests for its interactives, and gets the manual keyboard pass from `ux-audit.md`. Nothing is recorded.
 

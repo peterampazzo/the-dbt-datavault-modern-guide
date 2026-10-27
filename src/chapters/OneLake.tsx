@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
+import { Term } from '@/components/Term'
 
 type Engine = 'fabric' | 'databricks'
 
@@ -65,7 +66,7 @@ function EngineDiagram() {
 export default function OneLake() {
   return (
     <Chapter>
-      <ChapterHeader title="One lake, any engine" lead="Keep source files in open storage while compute and dbt targets can change." />
+      <ChapterHeader title="One lake, any engine" lead={<>Keep source files in an open <Term id="lakehouse">lakehouse</Term> while compute and dbt targets can change.</>} />
       <Section
         title="Switch engines"
         lead="Switch the compute engine and watch the connection label change while persistent staging stays put."
@@ -82,7 +83,7 @@ export default function OneLake() {
       </Section>
       <Section
         title="The layers"
-        lead="Follow customer, nation and orders from source systems through retained deliveries and derived models to reporting."
+        lead={<>Map customer, nation and orders onto the <Term id="medallion">medallion architecture</Term>, from source systems to reporting.</>}
         keyPoint="Landing and persistent staging preserve source data; stage, vault and mart models are derived and rebuildable."
       >
         <p className="mb-4 max-w-full whitespace-normal font-mono text-xs text-foreground">

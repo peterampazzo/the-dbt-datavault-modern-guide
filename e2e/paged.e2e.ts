@@ -37,7 +37,7 @@ test('arrow keys turn pages, and the dots jump to any page', async ({ page }) =>
   await page.getByRole('link', { name: 'Next: Recap' }).click()
   await expect(page.getByText('Page 6 of 6')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Recap' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Next chapter: Hash lab' }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Next: Hash lab' }).first()).toBeVisible()
 })
 
 test('a page address survives a reload and Continue returns to it', async ({ page }) => {
@@ -99,7 +99,7 @@ test('chapter 3 is the Data Vault name bridge', async ({ page }) => {
 test('recap quick check is optional and gives correct and incorrect feedback', async ({ page }) => {
   await open(page, 'dv-names', { paged: true })
   await page.goto('/#/dv-names/recap')
-  const next = page.locator('#chapter-recap').getByRole('link', { name: 'Next chapter: dbt primer' })
+  const next = page.locator('#chapter-recap').getByRole('link', { name: 'Next: dbt primer' })
   await expect(next).toBeVisible()
   await next.click()
   await expect(page).toHaveURL(/#\/dbt-primer$/)

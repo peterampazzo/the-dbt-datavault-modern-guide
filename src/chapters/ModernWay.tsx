@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
 import { ChapterHeader, Code, Section } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { SNIPPETS } from '@/lib/dv/models'
 import { EMAIL_HASHDIFFS } from '@/lib/primer/email-hashdiffs'
 import { PRIMER } from '@/lib/primer/project'
@@ -59,7 +60,7 @@ function ChangePlayer() {
             )}
           >
             <span className="mr-1 font-mono text-xs text-foreground">{index + 1}.</span>
-            {item.title}
+            {item.title === 'Open a pull request' ? <Term id="pull-request">{item.title}</Term> : item.title}
           </li>
         ))}
       </ol>
@@ -261,12 +262,13 @@ export default function ModernWay() {
         lead="Step through a payload change, the failing unit test, its fix and deployment; nothing advances until you choose."
         keyPoint="A reviewed, tested change moves through git and CI before it is deployed."
       >
+        <p className="mb-4 max-w-[75ch]">Continuous integration and delivery (<Term id="ci-cd">CI/CD</Term>) runs checks before a reviewed change is deployed.</p>
         <ChangePlayer />
       </Section>
 
       <Section
         title="Targets"
-        lead="Compare dev, ci and prod outputs, then see who runs each target."
+        lead={<>Compare dev, ci and prod outputs, then see who runs each <Term id="target">target</Term>.</>}
         keyPoint="The target changes the connection and output location; it does not change the model's business rules."
       >
         <Targets />

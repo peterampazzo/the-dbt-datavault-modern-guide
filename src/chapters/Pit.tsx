@@ -1,4 +1,5 @@
 import { Chapter } from '@/components/Chapter'
+import { Term } from '@/components/Term'
 import { useMemo } from 'react'
 import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
@@ -21,7 +22,7 @@ export default function Pit() {
   return (
     <Chapter>
       <ChapterHeader
-        title="Business vault: snapshots and PITs"
+        title={<>Business vault: snapshots and <Term id="pit">PITs</Term></>}
         lead="Asking 'what did customer 3 look like on 2 January?' means finding the right version in every satellite. A point-in-time table precomputes those pointers per snapshot."
       />
       <Section
@@ -73,7 +74,7 @@ export default function Pit() {
       </Section>
       <Section
         title="The models"
-        lead="Review the snapshot-control and PIT models that define dates and produce the pointers."
+        lead={<>Review the <Term id="snapshot-control">snapshot control</Term> and PIT models that define dates and produce the pointers.</>}
         keyPoint="Snapshot control supplies active dates; the PIT stores equality-join pointers for those dates."
       >
         <div className="grid gap-4 xl:grid-cols-2">

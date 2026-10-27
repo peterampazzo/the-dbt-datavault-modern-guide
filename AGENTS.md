@@ -18,7 +18,7 @@ pnpm e2e       # Playwright suite: chapter flows, keyboard, axe WCAG 2.2 AA, ove
 pnpm ux:check  # just the audit + WCAG specs (see docs/knowledge/ux-audit.md)
 ```
 
-Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs the same plus `pnpm e2e`. Cloudflare Pages deploys: `deploy-preview.yml` (main → `preview`, each PR → `pr-<number>`; fork PRs only via a manual run with the PR number) and `deploy-production.yml` (published `vX.Y.Z` release → production). Both use the `preview`/`production` GitHub environments (`CLOUDFLARE_API_TOKEN` secret, `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PROJECT_NAME` variables).
+Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs the same plus `pnpm e2e`; `primer.yml` checks that `src/lib/primer/compiled.json` is up to date. Cloudflare Pages deploys: `deploy-preview.yml` (main → `preview`, each PR → `pr-<number>`; fork PRs only via a manual run with the PR number) and `deploy-production.yml` (published `vX.Y.Z` release → production). Both use the `preview`/`production` GitHub environments (`CLOUDFLARE_API_TOKEN` secret, `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PROJECT_NAME` variables).
 
 ## Layout
 
@@ -48,7 +48,8 @@ Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs th
    - about 4 primary controls per interactive;
    - each chapter has an optional, never-blocking quick check.
    Run `pnpm e2e` and the manual steps in `docs/knowledge/ux-audit.md` before UX-facing PRs.
-10. **Scope.** Every page must teach Data Vault modelling, or how dbt builds, loads, tests or protects the vault. Platform detail belongs only where it changes a Data Vault decision. Tool setup, platform operations, general dbt topics with no Data Vault angle, and company-specific material stay out; link out instead.
+10. **Glossary terms.** Add new definitions to `src/lib/glossary.ts` and use `<Term id="...">` at the term's first explanatory use in each chapter.
+11. **Scope.** Every page must teach Data Vault modelling, or how dbt builds, loads, tests or protects the vault. Platform detail belongs only where it changes a Data Vault decision. Tool setup, platform operations, general dbt topics with no Data Vault angle, and company-specific material stay out; link out instead.
 
 ## Knowledge base
 

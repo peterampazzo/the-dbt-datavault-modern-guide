@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
@@ -6,12 +6,13 @@ import { LivePrimerResult } from '@/components/LivePrimerResult'
 import type { PrimerResultColumn, PrimerResultRow } from '@/components/PrimerResult'
 import { SqlServerNote } from '@/components/SqlServerNote'
 import { Callout, ChapterHeader, Code, P, Section } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { MODEL } from '@/lib/dv/models'
 import { BATCHES, CUSTOMERS } from '@/lib/dv/dataset'
 import { DBT_FLOW, PRIMER, PROCEDURE_FLOW, SSIS_FLOW, WORKFLOW_CONCEPTS, type WorkflowConcept, type WorkflowView } from '@/lib/primer/project'
 import { cn } from '@/lib/utils'
 
-function PrimerFooter({ keyPoint, note }: { keyPoint: string; note: string }) {
+function PrimerFooter({ keyPoint, note }: { keyPoint: ReactNode; note: string }) {
   return (
     <>
       <p className="mt-6 max-w-3xl text-sm leading-6">
@@ -77,7 +78,8 @@ function WorkflowComparison() {
 
   return (
     <div className="space-y-3">
-      <div role="group" aria-label="Choose a SQL Server or dbt representation" className="flex flex-wrap gap-2">
+      <fieldset className="flex flex-wrap gap-2">
+        <legend className="sr-only">Choose a SQL Server or dbt representation</legend>
         {(Object.keys(VIEW_LABELS) as WorkflowView[]).map((key) => (
           <button
             key={key}
@@ -92,7 +94,7 @@ function WorkflowComparison() {
             {VIEW_LABELS[key]}
           </button>
         ))}
-      </div>
+      </fieldset>
 
       {view === 'ssis' && (
         <div className="space-y-3 rounded-xl border bg-card/50 p-3">
@@ -301,14 +303,15 @@ function JinjaCompile() {
 
   return (
     <div className="space-y-4">
-      <div role="group" aria-label="Show Jinja or compiled SQL" className="flex gap-2">
+      <fieldset className="flex gap-2">
+        <legend className="sr-only">Show Jinja or compiled SQL</legend>
         <button type="button" aria-pressed={!compiled} onClick={() => setCompiled(false)} className={cn('rounded-lg border px-3 py-2 text-sm', !compiled ? 'border-sky-600 bg-sky-500/10' : 'bg-card/50')}>
           Jinja
         </button>
         <button type="button" aria-pressed={compiled} onClick={() => setCompiled(true)} className={cn('rounded-lg border px-3 py-2 text-sm', compiled ? 'border-sky-600 bg-sky-500/10' : 'bg-card/50')}>
           Compiled SQL
         </button>
-      </div>
+      </fieldset>
       {!compiled && <CodeBlock title={PRIMER.round_amount_usage.path} code={PRIMER.round_amount_usage.code} lang={PRIMER.round_amount_usage.lang} />}
       <CodeBlock title={file.path} code={file.code} lang={file.lang} />
       {!compiled && <P>The macro definition lives in its own file; this model calls it with <Code>{`{{ round_amount('c_acctbal') }}`}</Code>.</P>}
@@ -346,7 +349,8 @@ function Materializations() {
 
   return (
     <div className="space-y-4">
-      <div role="group" aria-label="Choose a dbt materialization" className="flex flex-wrap gap-2">
+      <fieldset className="flex flex-wrap gap-2">
+        <legend className="sr-only">Choose a dbt materialization</legend>
         {(Object.keys(MATERIALIZATIONS) as Materialization[]).map((key) => (
           <button
             key={key}
@@ -358,7 +362,7 @@ function Materializations() {
             {MATERIALIZATIONS[key].label}
           </button>
         ))}
-      </div>
+      </fieldset>
       <CodeBlock title={file.path} code={file.code} lang={file.lang} />
       <p className="max-w-3xl text-sm leading-6">{item.explanation} A SQL Server analogue is {item.sqlServer}.</p>
       {selected === 'incremental' && (
@@ -478,9 +482,9 @@ function TestsAndDocs() {
         >
           {duplicate ? 'Remove duplicate customer' : 'Add duplicate customer'}
         </button>
-        <p role="status" aria-live="polite" className={cn('text-sm font-medium', passes ? 'text-emerald-800 dark:text-emerald-300' : 'text-red-800 dark:text-red-300')}>
+        <output aria-live="polite" className={cn('text-sm font-medium', passes ? 'text-emerald-800 dark:text-emerald-300' : 'text-red-800 dark:text-red-300')}>
           unique(c_custkey): {passes ? 'PASS' : 'FAIL'}
-        </p>
+        </output>
       </div>
       <CodeBlock title={PRIMER.schema_tests.path} code={PRIMER.schema_tests.code} lang={PRIMER.schema_tests.lang} />
       <CodeBlock
@@ -520,7 +524,7 @@ export default function DbtPrimer() {
     <Chapter>
       <ChapterHeader
         title="dbt primer"
-        lead="See how a version-controlled dbt project replaces scattered procedure files and how models, tests and build order fit together."
+        lead={<>See how a version-controlled dbt project replaces scattered procedure files. A <Term id="model">model</Term> is a SQL query; <Term id="ref-function">ref()</Term> links models, and <Term id="source-function">source()</Term> declares an input.</>}
       />
 
       <Section
@@ -552,7 +556,7 @@ export default function DbtPrimer() {
           </div>
         </div>
         <P>
-          Each model is a SQL <Code>SELECT</Code>. Git records changes, <Code>ref()</Code> records dependencies, and YAML can attach tests and documentation to the models.
+          Each model is a SQL <Code>SELECT</Code>. Git records changes, <Code>ref()</Code> records dependencies, and YAML can attach <Term id="test">tests</Term> and documentation to the models.
         </P>
         <PrimerFooter
           keyPoint="dbt keeps SQL, dependency order and checks in one version-controlled project."
@@ -577,7 +581,7 @@ export default function DbtPrimer() {
       >
         <ModelsAndRef />
         <PrimerFooter
-          keyPoint="source() names an input table, while ref() names another model and creates a dependency."
+          keyPoint={<><Code>source()</Code> names an input table, while <Code>ref()</Code> names another model and creates a dependency.</>}
           note="A staging view or procedure can read the landing table; a later procedure call or job step supplies the order that ref() records in the graph."
         />
       </Section>
@@ -595,7 +599,7 @@ export default function DbtPrimer() {
 
       <Section
         title="Materializations"
-        lead="Switch one model between view, table and incremental output to see the SQL shape and its closest SQL Server analogue."
+        lead={<>Switch one model between view, table and <Term id="incremental">incremental</Term> output to see the SQL shape and its closest SQL Server analogue.</>}
       >
         <Materializations />
         <PrimerFooter
@@ -606,7 +610,7 @@ export default function DbtPrimer() {
 
       <Section
         title="Incremental and --full-refresh"
-        lead="Step through two deliveries, a landing truncate and a full refresh; each count is derived from dataset.ts."
+        lead={<>Step through two deliveries, a landing truncate and a <Term id="full-refresh">full refresh</Term>; each count is derived from dataset.ts. The <Term id="high-water-mark">high-water mark</Term> skips already-seen rows.</>}
       >
         <IncrementalPlayer />
         <PrimerFooter
@@ -617,7 +621,7 @@ export default function DbtPrimer() {
 
       <Section
         title="Tests and docs"
-        lead="Add a duplicate customer to make the unique test fail, remove it to pass, then open the lineage chapter."
+        lead={<>Add a duplicate customer to make the unique test fail, remove it to pass, then open the lineage chapter. A <Term id="unit-test">unit test</Term> checks a model against fixed inputs and expected rows.</>}
       >
         <TestsAndDocs />
         <PrimerFooter

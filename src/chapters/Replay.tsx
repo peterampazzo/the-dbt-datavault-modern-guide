@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { CodeBlock } from '@/components/CodeBlock'
 import { SNIPPETS } from '@/lib/dv/models'
 import { REPLAY_TABLES, replay, short, type ReplayChange, type ReplayRowDiff, type ReplayCellStatus } from '@/lib/dv/engine'
@@ -174,7 +175,7 @@ function ReplayLab({ initialChange }: { initialChange: ReplayChange }) {
 
       <div>
         <h3 className="mb-2 text-sm font-semibold">customer_n_s: truth beside rebuilt</h3>
-        <section aria-label="customer_n_s truth and rebuilt cells" tabIndex={0} className="max-h-[26rem] max-w-full overflow-auto rounded-lg border">
+        <section aria-label="customer_n_s truth and rebuilt cells" tabIndex={0} className="max-h-[24rem] max-w-full overflow-auto rounded-lg border">
           <table className="w-full min-w-[48rem] text-left text-xs">
             <thead className="sticky top-0 z-10 bg-muted">
               <tr>
@@ -253,7 +254,7 @@ function Replay() {
 
   return (
     <Chapter>
-      <ChapterHeader title="Replay: one history, two shapes" lead="Keep source deliveries so a changed model can rebuild the raw vault." />
+      <ChapterHeader title="Replay: one history, two shapes" lead={<>Keep source deliveries in <Term id="persistent-staging">persistent staging</Term> so a changed model can rebuild the raw vault.</>} />
       <Section
         title="The replay lab"
         lead="Choose what was kept, change the customer model, then run a full refresh to compare the rebuilt tables with truth."
