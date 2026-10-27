@@ -5,7 +5,7 @@ const stored = (page: import('@playwright/test').Page) => page.evaluate(() => lo
 
 test('chapter header shows position, time and the 30-second summary', async ({ page }) => {
   await open(page, 'hash-lab')
-  await expect(page.getByText(/Chapter 4 of 8 · about \d+ min/)).toBeVisible()
+  await expect(page.getByText(/Chapter 6 of 17 · Part 2: Building it with dbt · about \d+ min/)).toBeVisible()
   await expect(page.getByRole('region', { name: 'In 30 seconds' }).getByRole('listitem')).toHaveCount(3)
 })
 
@@ -26,7 +26,7 @@ test('Home offers to continue where you left off, at the same section', async ({
   await page.locator('#where-it-sits').evaluate((el) => el.scrollIntoView({ block: 'start' }))
   await expect.poll(() => stored(page)).toContain('where-it-sits')
   await page.goto('/#/')
-  const cont = page.getByRole('link', { name: /Continue: What is Data Vault, Where it sits/ })
+  const cont = page.getByRole('link', { name: /Continue: What is Data Vault, .*Where it sits/ })
   await expect(cont).toBeVisible()
   await cont.click()
   await expect(page.locator('#where-it-sits')).toBeInViewport()

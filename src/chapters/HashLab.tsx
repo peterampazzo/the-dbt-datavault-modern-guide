@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Plus, X } from 'lucide-react'
@@ -184,25 +185,38 @@ function DiffFlip() {
 
 export default function HashLab() {
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
-        n={4}
         title="Hash lab"
         lead="Hashkeys give every business key a fixed-width surrogate that any loader can compute independently. Hashdiffs fingerprint a whole payload so change detection is one comparison."
       />
-      <Section title="Build a hash, step by step">
+      <Section
+        title="Build a hash, step by step"
+        lead="Change the input values to see the guide’s hash standard applied one step at a time."
+        keyPoint="Hashkeys use trimmed, quoted, upper-cased inputs joined by ||, with ^^ for NULL, before MD5."
+      >
         <P>
           This is the same standardisation datavault4dbt applies with its default settings: cast to string, trim, replace NULL with <Code>^^</Code>, quote, join with{' '}
           <Code>||</Code>, upper-case for hashkeys only, then MD5. Edit the inputs and watch each step update.
         </P>
         <Lab />
       </Section>
-      <Section title="Hashdiff: did anything change?">
+      <Section
+        title="Hashdiff: did anything change?"
+        lead="Compare payload fingerprints to see when a satellite needs a new version."
+        keyPoint="A satellite inserts when the new hashdiff differs from the latest version for that parent key."
+      >
         <P>
           The satellite stores the hashdiff of the payload it last saw for each key. A new delivery is hashed the same way. Different hash, new row; same hash, skip. The
           trailing spaces below don't count because values are trimmed first. Change one letter's case and see what happens.
         </P>
         <DiffFlip />
+      </Section>
+      <Section
+        title="Ghost keys and why we hash"
+        lead="See how deterministic hashes and reserved ghost records keep unknown and error joins intact."
+        keyPoint="Ghost rows preserve unknown and error references so downstream joins do not lose records."
+      >
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Callout kind="info" title="Why hash at all?">
             Every loader computes keys from the business key alone, with no lookups against a sequence table. Hubs, links and satellites can therefore load in parallel, and
@@ -214,6 +228,6 @@ export default function HashLab() {
           </Callout>
         </div>
       </Section>
-    </article>
+    </Chapter>
   )
 }

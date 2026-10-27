@@ -41,6 +41,12 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
         lang,
         themes: { light: 'github-light-default', dark: 'github-dark-default' },
       })
+      // github-light comment grey drops below 4.5:1 on highlighted lines
+      for (const line of res.tokens)
+        for (const t of line) {
+          const style = t.htmlStyle as Record<string, string> | undefined
+          if (style?.color?.toLowerCase() === '#6e7781') style.color = '#57606a'
+        }
       setTokens(res.tokens)
     })
     return () => {

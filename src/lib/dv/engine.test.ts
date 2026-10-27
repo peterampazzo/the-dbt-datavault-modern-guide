@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import { dvHash, hk } from './hash'
-import { END, isGhost, pit, satV1, simulate, UNKNOWN_KEY } from './engine'
+import {
+  END,
+  integratedCustomer,
+  isGhost,
+  orderTotals,
+  pit,
+  replay,
+  REPLAY_TABLES,
+  satV1,
+  shopCustomerSatellite,
+  simulate,
+  UNKNOWN_KEY,
+} from './engine'
 import { createHash } from 'node:crypto'
 
 const md5 = (s: string) => createHash('md5').update(s).digest('hex')
@@ -66,5 +78,174 @@ describe('simulate', () => {
     const daniel = p.find((r) => r.c_custkey === 4 && r.sdts === '2024-01-04 07:00:00')!
     expect(daniel.customer_n_s_ldts).toBe('2024-01-01 06:00:00')
     expect(daniel.customer_phone_ma_s_hk).toBe(UNKNOWN_KEY)
+  })
+})
+
+describe('business vault', () => {
+  const runs = simulate()
+  const crm = real(runs[2].tables.customer_n_s) as never
+  const shop = real(shopCustomerSatellite()) as never
+
+  it('integrates exact source values with CRM precedence', () => {
+    const rows = integratedCustomer(crm, shop, ['crm/customer', 'shop/customer'])
+      .filter((row) => [2, 3, 8].includes(Number(row.c_custkey)))
+      .map(({ c_custkey, ldts, c_name, c_address, rsrc, source_of_c_name, source_of_c_address }) => ({
+        c_custkey, ldts, c_name, c_address, rsrc, source_of_c_name, source_of_c_address,
+      }))
+      .sort((a, b) => Number(a.c_custkey) - Number(b.c_custkey) || String(a.ldts).localeCompare(String(b.ldts)))
+    expect(rows).toEqual([
+      { c_custkey: 2, ldts: '2024-01-01 06:00:00', c_name: 'Bruno Costa', c_address: 'Av. Paulista 900', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 2, ldts: '2024-01-02 06:00:00', c_name: 'Bruno Costa', c_address: 'Rua Augusta 15', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 2, ldts: '2024-01-03 06:00:00', c_name: 'Bruno Costa', c_address: 'Rua Augusta 15', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 3, ldts: '2024-01-01 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 3, ldts: '2024-01-02 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 3, ldts: '2024-01-03 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'crm/customer', source_of_c_address: 'crm/customer' },
+      { c_custkey: 8, ldts: '2024-01-01 06:00:00', c_name: 'Hana Sato', c_address: '5-3 Ginza', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-02 06:00:00', c_name: 'Hana Sato', c_address: 'Ginza 5-3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-03 06:00:00', c_name: 'Hana Sato', c_address: 'Tokyo storefront, 1-2', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+    ])
+  })
+
+  it('integrates exact source values with shop precedence and keeps shop-only keys', () => {
+    const rows = integratedCustomer(crm, shop, ['shop/customer', 'crm/customer'])
+      .filter((row) => [2, 3, 8].includes(Number(row.c_custkey)))
+      .map(({ c_custkey, ldts, c_name, c_address, rsrc, source_of_c_name, source_of_c_address }) => ({
+        c_custkey, ldts, c_name, c_address, rsrc, source_of_c_name, source_of_c_address,
+      }))
+      .sort((a, b) => Number(a.c_custkey) - Number(b.c_custkey) || String(a.ldts).localeCompare(String(b.ldts)))
+    expect(rows).toEqual([
+      { c_custkey: 2, ldts: '2024-01-01 06:00:00', c_name: 'Bruno Costa', c_address: 'Av. Paulista 900', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 2, ldts: '2024-01-02 06:00:00', c_name: 'Bruno C.', c_address: 'Rua Augusta 15', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 2, ldts: '2024-01-03 06:00:00', c_name: 'Bruno Costa', c_address: 'Rua Augusta 15', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 3, ldts: '2024-01-01 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 3, ldts: '2024-01-02 06:00:00', c_name: 'Chiara Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 3, ldts: '2024-01-03 06:00:00', c_name: 'Kiki Rossi', c_address: 'Via Roma 3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-01 06:00:00', c_name: 'Hana Sato', c_address: '5-3 Ginza', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-02 06:00:00', c_name: 'Hana Sato', c_address: 'Ginza 5-3', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+      { c_custkey: 8, ldts: '2024-01-03 06:00:00', c_name: 'Hana Sato', c_address: 'Tokyo storefront, 1-2', rsrc: 'SYSTEM', source_of_c_name: 'shop/customer', source_of_c_address: 'shop/customer' },
+    ])
+    expect(rows.some((row) => row.c_custkey === 8)).toBe(true)
+  })
+
+  it('computes cumulative order totals by customer and load date', () => {
+    const totals = orderTotals(runs[2].tables)
+    // Orders: Alice 250 + 60 = 310; Chiara 1800; Emi 95.9; Farah 420; Gabriel 310.
+    const expected = [
+      { hk_customer_h: hk(1), ldts: '2024-01-01 06:00:00', order_count: 1, total_price: 250 },
+      { hk_customer_h: hk(1), ldts: '2024-01-02 06:00:00', order_count: 2, total_price: 310 },
+      { hk_customer_h: hk(3), ldts: '2024-01-01 06:00:00', order_count: 1, total_price: 1800 },
+      { hk_customer_h: hk(5), ldts: '2024-01-01 06:00:00', order_count: 1, total_price: 95.9 },
+      { hk_customer_h: hk(6), ldts: '2024-01-02 06:00:00', order_count: 1, total_price: 420 },
+      { hk_customer_h: hk(7), ldts: '2024-01-03 06:00:00', order_count: 1, total_price: 310 },
+    ].sort((a, b) => a.hk_customer_h.localeCompare(b.hk_customer_h) || a.ldts.localeCompare(b.ldts))
+    const actual = totals
+      .map(({ hk_customer_h, ldts, order_count, total_price }) => ({ hk_customer_h, ldts, order_count, total_price }))
+      .sort((a, b) => String(a.hk_customer_h).localeCompare(String(b.hk_customer_h)) || String(a.ldts).localeCompare(String(b.ldts)))
+    expect(actual).toEqual(expected)
+    expect(totals.every((row) => typeof row.hd_customer_order_total_s === 'string')).toBe(true)
+    expect(totals.find((row) => row.hk_customer_h === hk(1) && row.order_count === 1)?.hd_customer_order_total_s)
+      .toBe(dvHash([1, 250], { kind: 'hashdiff' }).hash)
+  })
+})
+
+describe('replay', () => {
+  const emptyCounts = Object.fromEntries(
+    REPLAY_TABLES.map((table) => [
+      table,
+      { rowsTruth: 0, rowsRebuilt: 0, missingRows: 0, wrongCells: 0, missingCells: 0 },
+    ]),
+  )
+  const summary = (options: Parameters<typeof replay>[0]) => {
+    const result = replay(options)
+    return Object.fromEntries(
+      REPLAY_TABLES.map((table) => {
+        const { rowsTruth, rowsRebuilt, missingRows, wrongCells, missingCells } = result.diff[table]
+        return [table, { rowsTruth, rowsRebuilt, missingRows, wrongCells, missingCells }]
+      }),
+    )
+  }
+  const expectedTables = {
+    customer_h: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 6, missingCells: 0 },
+    nation_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 6, missingCells: 0 },
+    order_h: { rowsTruth: 6, rowsRebuilt: 1, missingRows: 5, wrongCells: 0, missingCells: 0 },
+    customer_nation_l: { rowsTruth: 8, rowsRebuilt: 7, missingRows: 1, wrongCells: 6, missingCells: 0 },
+    order_customer_nh_l: { rowsTruth: 6, rowsRebuilt: 1, missingRows: 5, wrongCells: 0, missingCells: 0 },
+    nation_n_s: { rowsTruth: 7, rowsRebuilt: 6, missingRows: 6, wrongCells: 0, missingCells: 0 },
+  }
+
+  it('keeps persistent staging identical to truth for every model change and refresh choice', () => {
+    for (const change of ['none', 'new-column', 'cast-fix'] as const) {
+      for (const fullRefresh of [false, true]) {
+        expect(summary({ landing: 'persistent', change, fullRefresh })).toEqual({
+          ...emptyCounts,
+          customer_h: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          nation_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          order_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          customer_nation_l: { rowsTruth: 8, rowsRebuilt: 8, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          order_customer_nh_l: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+          customer_n_s: {
+            rowsTruth: change === 'new-column' ? 10 : 9,
+            rowsRebuilt: change === 'new-column' ? 10 : 9,
+            missingRows: 0,
+            wrongCells: 0,
+            missingCells: 0,
+          },
+          nation_n_s: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 0, missingCells: 0 },
+        })
+      }
+    }
+  })
+
+  it('matches the current model when truncated landing has no full refresh', () => {
+    expect(summary({ landing: 'truncate', change: 'none', fullRefresh: false })).toEqual({
+      ...emptyCounts,
+      customer_h: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      nation_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      order_h: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      customer_nation_l: { rowsTruth: 8, rowsRebuilt: 8, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      order_customer_nh_l: { rowsTruth: 6, rowsRebuilt: 6, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      customer_n_s: { rowsTruth: 9, rowsRebuilt: 9, missingRows: 0, wrongCells: 0, missingCells: 0 },
+      nation_n_s: { rowsTruth: 7, rowsRebuilt: 7, missingRows: 0, wrongCells: 0, missingCells: 0 },
+    })
+  })
+
+  it('counts the unmapped email and cast-fix losses in the insert-only vault', () => {
+    expect(summary({ landing: 'truncate', change: 'new-column', fullRefresh: false }).customer_n_s).toEqual({
+      rowsTruth: 10,
+      rowsRebuilt: 9,
+      missingRows: 1,
+      wrongCells: 9,
+      missingCells: 9,
+    })
+    expect(summary({ landing: 'truncate', change: 'cast-fix', fullRefresh: false }).customer_n_s).toEqual({
+      rowsTruth: 9,
+      rowsRebuilt: 9,
+      missingRows: 0,
+      wrongCells: 6,
+      missingCells: 0,
+    })
+  })
+
+  it('counts the rows and changed cells after a truncated full refresh', () => {
+    for (const change of ['none', 'new-column', 'cast-fix'] as const) {
+      const result = replay({ landing: 'truncate', change, fullRefresh: true })
+      const emailRows = change === 'new-column' ? 10 : 9
+      expect(
+        Object.fromEntries(
+          REPLAY_TABLES.filter((table) => table !== 'customer_n_s').map((table) => {
+            const { rowsTruth, rowsRebuilt, missingRows, wrongCells, missingCells } = result.diff[table]
+            return [table, { rowsTruth, rowsRebuilt, missingRows, wrongCells, missingCells }]
+          }),
+        ),
+      ).toEqual(expectedTables)
+      expect(result.diff.customer_n_s).toMatchObject({
+        rowsTruth: emailRows,
+        rowsRebuilt: 7,
+        missingRows: 7,
+        wrongCells: 0,
+        missingCells: 0,
+      })
+      expect(result.diff.customer_n_s.rows.filter((row) => row.status === 'missing')).toHaveLength(7)
+    }
   })
 })

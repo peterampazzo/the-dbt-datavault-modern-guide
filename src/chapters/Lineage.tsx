@@ -1,3 +1,4 @@
+import { Chapter } from '@/components/Chapter'
 import { useMemo, useState } from 'react'
 import { Background, Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -93,13 +94,16 @@ export default function Lineage() {
 
   const m = MODEL[sel]
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
-        n={8}
         title="The whole dbt project"
         lead="Everything from the previous chapters as one dbt DAG: seeds, stages, raw vault, business vault and a mart. Click a node to trace its upstream and downstream models."
       />
-      <Section>
+      <Section
+        title="Explore the project graph"
+        lead="Select a node in the lineage graph to inspect its model and its dependencies."
+        keyPoint="dbt’s ref() dependencies connect landed data to stages, vault models, business-vault helpers and the mart."
+      >
         <div
           className="h-[34rem] overflow-hidden rounded-2xl border bg-card/30"
           onKeyDown={(e) => {
@@ -145,6 +149,6 @@ export default function Lineage() {
           <CodeBlock title={`${m.name}.sql`} code={m.code} lang={m.layer === 'seed' ? 'bash' : 'sql'} />
         </div>
       </Section>
-    </article>
+    </Chapter>
   )
 }

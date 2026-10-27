@@ -12,6 +12,7 @@ export interface CustomerRow {
   c_acctbal: number
   c_comment: string
 }
+export type ShopCustomerRow = Pick<CustomerRow, 'c_custkey' | 'c_name' | 'c_address'>
 export interface NationRow {
   n_nationkey: number
   n_name: string
@@ -105,6 +106,56 @@ export const CUSTOMERS: CustomerRow[][] = [
     c(6, 'Farah Khan', '88 King St W', 5, 'BUILDING', 3100),
     c(7, 'Gabriel Silva', 'Rua Oscar Freire 2', 1, 'AUTOMOBILE', 640),
   ],
+]
+
+/** A web-shop customer profile: a second source for identity and contact details. */
+export const SHOP_CUSTOMERS: ShopCustomerRow[][] = [
+  [
+    { c_custkey: 1, c_name: 'Alice Martin', c_address: '12 Rue Lafayette' },
+    { c_custkey: 2, c_name: 'Bruno Costa', c_address: 'Av. Paulista 900' },
+    { c_custkey: 3, c_name: 'Chiara Rossi', c_address: 'Via Roma 3' },
+    { c_custkey: 8, c_name: 'Hana Sato', c_address: '5-3 Ginza' },
+  ],
+  [
+    { c_custkey: 1, c_name: 'Alice Martin', c_address: '12 Rue Lafayette' },
+    { c_custkey: 2, c_name: 'Bruno C.', c_address: 'Rua Augusta 15' },
+    { c_custkey: 3, c_name: 'Chiara Rossi', c_address: 'Via Roma 3' },
+    { c_custkey: 8, c_name: 'Hana Sato', c_address: 'Ginza 5-3' },
+  ],
+  [
+    { c_custkey: 1, c_name: 'Alice Martin', c_address: '12 Rue Lafayette' },
+    { c_custkey: 2, c_name: 'Bruno Costa', c_address: 'Rua Augusta 15' },
+    { c_custkey: 3, c_name: 'Kiki Rossi', c_address: 'Via Roma 3' },
+    { c_custkey: 8, c_name: 'Hana Sato', c_address: 'Tokyo storefront, 1-2' },
+  ],
+]
+
+/** Email values for the replay lab's optional c_email model change, keyed by batch and customer key. */
+export const CUSTOMER_EMAIL: Record<number, string>[] = [
+  {
+    1: 'alice@example.test',
+    2: 'bruno@example.test',
+    3: 'chiara@example.test',
+    4: 'daniel@example.test',
+    5: 'emi@example.test',
+  },
+  {
+    1: 'alice@example.test',
+    2: 'bruno@example.test',
+    3: 'chiara@example.test',
+    5: 'emi@example.test',
+    6: 'farah@example.test',
+    8: 'hana@example.test',
+  },
+  {
+    1: 'alice@example.test',
+    2: 'bruno.costa@example.test',
+    3: 'chiara@example.test',
+    4: 'daniel@example.test',
+    5: 'emi@example.test',
+    6: 'farah@example.test',
+    7: 'gabriel@example.test',
+  },
 ]
 
 /** A row that shows up a day late, carrying yesterday's load timestamp. */

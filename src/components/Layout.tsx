@@ -1,11 +1,12 @@
-import { Suspense, useEffect, useState, useRef } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router'
-import { ArrowLeft, ArrowRight, Moon, Sun, Check } from 'lucide-react'
+import { Suspense, useEffect, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
+import { ArrowRight, BookOpen, Moon, ScrollText, Sun, Check } from 'lucide-react'
 import { motion } from 'motion/react'
-import { CHAPTERS } from '@/chapters'
+import { CHAPTERS, PARTS } from '@/chapters'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { markDone, setLast, useProgress } from '@/lib/progress'
+import { setLast, useProgress } from '@/lib/progress'
+import { getOptionalRefresherSlugs, setReadingMode, usePages, useReadingMode, useReadingPath } from '@/lib/reading'
 
 function useTheme() {
   const [dark, setDark] = useState(() => localStorage.getItem('theme') !== 'light')
@@ -67,57 +68,41 @@ function useSections(pathname: string) {
 export function Layout() {
   const [dark, setDark] = useTheme()
   const { pathname, search } = useLocation()
-  const idx = CHAPTERS.findIndex((c) => pathname.endsWith(c.slug))
-  const prev = idx > 0 ? CHAPTERS[idx - 1] : null
-  const next = idx >= 0 && idx < CHAPTERS.length - 1 ? CHAPTERS[idx + 1] : idx === -1 ? CHAPTERS[0] : null
-
+  const navigate = useNavigate()
+  const [slug, pageSeg] = pathname.split('/').filter(Boolean)
+  const idx = CHAPTERS.findIndex((c) => c.slug === slug)
   const chapter = idx >= 0 ? CHAPTERS[idx] : null
   const progress = useProgress()
   const doneCount = CHAPTERS.filter((c) => progress.done.includes(c.slug)).length
+  const mode = useReadingMode()
+  const readingPath = useReadingPath()
+  const refresherSlugs = new Set(getOptionalRefresherSlugs(readingPath))
   const { sections, active } = useSections(pathname)
-  const footer = useRef<HTMLDivElement>(null)
+  const published = usePages()
+  const chapterPages = chapter && published.slug === chapter.slug ? published.pages : []
+  const currentPage = mode === 'paged' ? (pageSeg ?? '') : active
 
   useEffect(() => {
-    const target = new URLSearchParams(search).get('s')
-    if (!target) {
-      window.scrollTo({ top: 0 })
-      return
-    }
-    let tries = 0
-    const t = setInterval(() => {
-      const el = document.getElementById(target)
-      if (el || ++tries > 30) {
-        clearInterval(t)
-        el?.scrollIntoView({ block: 'start' })
-      }
-    }, 100)
-    return () => clearInterval(t)
-  }, [pathname, search])
+    const s = new URLSearchParams(search).get('s')
+    if (chapter && s) navigate(`/${chapter.slug}/${s}`, { replace: true })
+    else if (!chapter) window.scrollTo({ top: 0 })
+  }, [chapter, pathname, search, navigate])
 
   useEffect(() => {
-    if (chapter) setLast(chapter.slug, active, sections.find((s) => s.id === active)?.title)
-  }, [chapter, active, sections])
-
-  useEffect(() => {
-    const el = footer.current
-    if (!el || !chapter) return
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && window.scrollY > 200 && document.querySelector('main h1')) markDone(chapter.slug)
-    })
-    io.observe(el)
-    return () => io.disconnect()
-  }, [chapter])
+    if (chapter && mode === 'scroll') setLast(chapter.slug, active, sections.find((s) => s.id === active)?.title)
+  }, [chapter, active, sections, mode])
 
   return (
     <div className="min-h-svh bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 -z-0 bg-[radial-gradient(60rem_30rem_at_80%_-10%,rgba(56,189,248,0.08),transparent),radial-gradient(40rem_30rem_at_-10%_110%,rgba(245,158,11,0.06),transparent)]" />
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-[90rem] items-center gap-3 px-4">
+      <header className="sticky top-0 z-40 overflow-x-hidden border-b bg-background/80 backdrop-blur">
+        <div className="mx-auto flex h-14 w-full max-w-[90rem] items-center gap-3 px-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
             <Logo />
             <span className="sr-only sm:not-sr-only">The dbt + Data Vault guide</span>
           </Link>
-          <nav className="ml-4 flex flex-1 gap-1 overflow-x-auto lg:hidden">
+          <Link to="/about" className="inline-flex min-h-11 items-center rounded-md px-2 text-sm font-medium hover:bg-muted">About</Link>
+          <nav className="ml-4 flex w-0 min-w-0 flex-1 gap-1 overflow-x-auto lg:hidden">
             {CHAPTERS.map((c, i) => (
               <NavLink
                 key={c.slug}
@@ -137,6 +122,16 @@ export function Layout() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Show as one page"
+              aria-pressed={mode === 'scroll'}
+              title={mode === 'scroll' ? 'Read page by page' : 'Show as one page'}
+              onClick={() => setReadingMode(mode === 'scroll' ? 'paged' : 'scroll')}
+            >
+              {mode === 'scroll' ? <BookOpen /> : <ScrollText />}
+            </Button>
             <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={() => setDark(!dark)}>
               {dark ? <Sun /> : <Moon />}
             </Button>
@@ -164,37 +159,73 @@ export function Layout() {
       <div className="relative mx-auto flex max-w-[90rem]">
         <aside className="sticky top-14 hidden h-[calc(100svh-3.5rem)] w-64 shrink-0 overflow-y-auto border-r px-3 py-6 lg:block">
           <div className="mb-3 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Chapters</div>
-          <ol className="space-y-0.5">
-            {CHAPTERS.map((c, i) => (
-              <li key={c.slug}>
-                <NavLink
-                  to={`/${c.slug}`}
-                  className={({ isActive }) =>
-                    cn(
-                      'relative flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors',
-                      isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+          {PARTS.map((part) => {
+            const chapters = CHAPTERS.map((c, i) => ({ chapter: c, index: i })).filter(({ chapter: c }) => c.part === part.n)
+            if (chapters.length === 0) return null
+            return (
+              <section key={part.n} aria-labelledby={`part-${part.n}-heading`} className="mb-5">
+                <h3 id={`part-${part.n}-heading`} className="mb-1 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Part {part.n}: {part.title}
+                </h3>
+                <ol className="space-y-0.5">
+                  {chapters.map(({ chapter: c, index: i }) => {
+                    const refresher = refresherSlugs.has(c.slug)
+                    return (
+                      <li key={c.slug}>
+                        <NavLink
+                          to={`/${c.slug}`}
+                          className={({ isActive }) =>
+                            cn(
+                              'relative flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors',
+                              isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                            )
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              {isActive && (
+                                <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-muted" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
+                              )}
+                              <span className={cn('relative font-mono text-xs', isActive ? 'text-foreground' : 'text-muted-foreground')}>{String(i + 1).padStart(2, '0')}</span>
+                              <span className="relative min-w-0 flex-1">{c.title}</span>
+                              {refresher && <span className="relative text-[10px] text-muted-foreground">refresher</span>}
+                              {progress.done.includes(c.slug) && (
+                                <>
+                                  <Check aria-hidden className="relative size-3.5 shrink-0 text-emerald-700 dark:text-emerald-400" />
+                                  <span className="sr-only"> (done)</span>
+                                </>
+                              )}
+                            </>
+                          )}
+                        </NavLink>
+                        {chapter?.slug === c.slug && chapterPages.length > 1 && (
+                          <ol aria-label={`Pages in ${c.title}`} className="mb-2 ml-7 mt-1 space-y-0.5 border-l">
+                            {chapterPages.map((p, j) => (
+                              <li key={p.id || 'cover'}>
+                                <Link
+                                  to={j === 0 ? `/${c.slug}` : `/${c.slug}/${p.id}`}
+                                  aria-current={currentPage === p.id ? 'page' : undefined}
+                                  onClick={() => {
+                                    if (mode === 'scroll' && p.id) document.getElementById(p.id === 'recap' ? 'chapter-recap' : p.id)?.scrollIntoView({ block: 'start' })
+                                  }}
+                                  className={cn(
+                                    '-ml-px block border-l-2 py-1 pl-3 text-[13px] leading-5',
+                                    currentPage === p.id ? 'border-sky-500 text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
+                                  )}
+                                >
+                                  {p.title}
+                                </Link>
+                              </li>
+                            ))}
+                          </ol>
+                        )}
+                      </li>
                     )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-muted" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
-                      )}
-                      <span className={cn('relative font-mono text-xs', isActive ? 'text-foreground' : 'text-muted-foreground')}>{String(i + 1).padStart(2, '0')}</span>
-                      <span className="relative">{c.title}</span>
-                      {progress.done.includes(c.slug) && (
-                        <>
-                          <Check aria-hidden className="relative ml-auto size-3.5 shrink-0 text-emerald-700 dark:text-emerald-400" />
-                          <span className="sr-only"> (done)</span>
-                        </>
-                      )}
-                    </>
-                  )}
-                </NavLink>
-              </li>
-            ))}
-          </ol>
+                  })}
+                </ol>
+              </section>
+            )
+          })}
           <div className="mt-8 space-y-1.5 px-2 text-xs text-muted-foreground">
             <div className="font-medium uppercase tracking-wider">Legend</div>
             {[
@@ -209,48 +240,31 @@ export function Layout() {
               </div>
             ))}
           </div>
+          <nav aria-label="Guide resources" className="mt-8 border-t px-2 pt-4">
+            <ul className="space-y-1">
+              <li><Link to="/glossary" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">Glossary</Link></li>
+              <li><Link to="/about" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">About this guide</Link></li>
+            </ul>
+          </nav>
         </aside>
         <main className="relative min-w-0 flex-1 px-4 py-10 md:px-10">
           <Suspense fallback={<div className="h-96 rounded-xl motion-safe:animate-pulse bg-muted/40" />}>
             <Outlet />
           </Suspense>
-          <div ref={footer} className="mt-16 flex justify-between gap-4 border-t pt-6">
-            {prev ? (
-              <Link to={`/${prev.slug}`} className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" /> {prev.title}
+          {!chapter && (
+            <div className="mt-16 flex justify-end gap-4 border-t pt-6">
+              <Link to={`/${CHAPTERS[0].slug}`} className="group flex items-center gap-2 text-sm font-medium hover:text-sky-400">
+                {CHAPTERS[0].title} <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-            ) : (
-              <span />
-            )}
-            {next && (
-              <Link to={`/${next.slug}`} className="group flex items-center gap-2 text-sm font-medium hover:text-sky-400">
-                {next.title} <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            )}
-          </div>
+            </div>
+          )}
+          <footer className="mt-12 border-t pt-5">
+            <nav aria-label="Guide information" className="flex flex-wrap gap-4 text-sm">
+              <Link to="/about" className="inline-flex min-h-11 items-center underline underline-offset-4">About this guide</Link>
+              <Link to="/glossary" className="inline-flex min-h-11 items-center underline underline-offset-4">Glossary</Link>
+            </nav>
+          </footer>
         </main>
-        {chapter && sections.length > 1 && (
-          <nav aria-label="On this page" className="sticky top-14 hidden h-[calc(100svh-3.5rem)] w-52 shrink-0 overflow-y-auto py-10 pr-4 xl:block">
-            <div className="mb-2 text-xs font-medium text-muted-foreground">On this page</div>
-            <ul className="space-y-1 border-l text-sm">
-              {sections.map((s) => (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    aria-current={active === s.id ? 'location' : undefined}
-                    onClick={() => document.getElementById(s.id)?.scrollIntoView({ block: 'start' })}
-                    className={cn(
-                      '-ml-px border-l-2 py-0.5 pl-3 text-left',
-                      active === s.id ? 'border-sky-500 text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    {s.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
       </div>
     </div>
   )

@@ -1,9 +1,15 @@
+import { Chapter } from '@/components/Chapter'
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Boxes, GitBranch, Layers, Scale, Workflow } from 'lucide-react'
-import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
+import { ChapterHeader, Section, P, Callout, Code, RecapExtras } from '@/components/Prose'
+import { Term } from '@/components/Term'
 import { Decomposition } from '@/components/Decomposition'
 import { cn } from '@/lib/utils'
+import { Link } from 'react-router'
+import { BATCHES } from '@/lib/dv/dataset'
+import { CodeBlock } from '@/components/CodeBlock'
+import { SNIPPETS } from '@/lib/dv/models'
 
 const CHANGES = [
   { icon: Boxes, title: 'New sources', text: 'New internal systems, external feeds, acquisitions and mergers.' },
@@ -38,86 +44,251 @@ const BLOCKS = [
 
 const LAYERS = [
   {
-    id: 'src',
+    id: 'sources',
     name: 'Sources',
-    medal: '',
-    color: 'bg-zinc-500',
-    text: 'CRM, ERP, web shop, partner files. Each one has its own keys, grain and quirks.',
-    guide: 'raw_customer, raw_nation, raw_orders',
+    medal: 'Source systems',
+    contents: 'Customer, nation and orders data from their source systems.',
+    writer: 'The CRM, reference system and web shop.',
+    changes: 'Each source changes on its own schedule.',
+    rebuild: 'The source systems, when they can replay their history.',
+  },
+  {
+    id: 'landing',
+    name: 'Landing + persistent staging',
+    medal: 'Bronze',
+    contents: 'Source rows as received, with each delivery and its load time.',
+    writer: 'An ingestion job or connector.',
+    changes: 'Append-only; retain every delivery.',
+    rebuild: 'Retained source deliveries, or the source systems when replay is available.',
   },
   {
     id: 'stage',
-    name: 'Staging',
-    medal: 'Bronze',
-    color: 'bg-slate-500',
-    text: 'Data lands as close to the source as possible. dbt stage views add hashkeys, hashdiffs, ldts and rsrc. No business rules yet.',
-    guide: 'stg_customer, stg_nation, stg_orders',
+    name: 'Stage · dv_stage',
+    medal: 'Silver',
+    contents: 'Views with hashkeys, hashdiffs, ldts and rsrc; no business rules.',
+    writer: 'dbt stage models using datavault4dbt.',
+    changes: 'Views; rebuilt from landed rows when the model changes.',
+    rebuild: 'Landing and persistent staging.',
   },
   {
     id: 'raw',
     name: 'Raw vault',
     medal: 'Silver',
-    color: 'bg-sky-500',
-    text: 'Hubs, links and satellites loaded insert-only. This layer is auditable: every row traces back to a source and a load.',
-    guide: 'customer_h, customer_nation_l, customer_n_s, …',
+    contents: 'Hubs, links and satellites integrated by business key.',
+    writer: 'dbt models using datavault4dbt.',
+    changes: 'Insert-only in normal loads; rebuilt by a full refresh.',
+    rebuild: 'Persistent staging and the model code.',
   },
   {
-    id: 'bv',
+    id: 'business',
     name: 'Business vault',
     medal: 'Silver',
-    color: 'bg-violet-500',
-    text: 'Business rules, key alignment and query helpers such as PIT and bridge tables. Rows are marked as system-generated.',
-    guide: 'control_snap_v1, customer_pit',
+    contents: 'Business rules, PITs, bridges and other derived helpers.',
+    writer: 'dbt models.',
+    changes: 'Derived views or tables; rebuilt when rules change.',
+    rebuild: 'The raw vault and business-vault model code.',
   },
   {
-    id: 'mart',
-    name: 'Information marts',
+    id: 'marts',
+    name: 'Marts',
     medal: 'Gold',
-    color: 'bg-rose-500',
-    text: 'Star schemas, wide tables and views shaped for the people asking questions. Rebuilt from the vault at any time.',
-    guide: 'dim_customer',
+    contents: 'Dimensions, facts and reporting views.',
+    writer: 'dbt models.',
+    changes: 'Views or rebuilt tables shaped for reporting.',
+    rebuild: 'Vault history and the mart model code.',
   },
 ]
 
 function Architecture() {
-  const [active, setActive] = useState('raw')
+  const [active, setActive] = useState('landing')
   const layer = LAYERS.find((l) => l.id === active)!
   return (
-    <div className="rounded-2xl border bg-card/30 p-5">
-      <div className="relative grid grid-cols-5 gap-2">
-        <div className="absolute inset-x-[10%] top-1/2 h-px bg-border" />
-        {[0, 1, 2].map((i) => (
-          <motion.span
-            key={`${active}-${i}`}
-            className="absolute top-1/2 size-2 -translate-y-1/2 rounded-full bg-sky-400 shadow-[0_0_12px_2px] shadow-sky-400/60"
-            initial={{ left: '8%', opacity: 0 }}
-            animate={{ left: ['8%', '92%'], opacity: [0, 1, 1, 0] }}
-            transition={{ duration: 2.4, delay: i * 0.5, ease: 'linear' }}
-          />
+    <div className="space-y-4">
+      <ol aria-label="Warehouse layers" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {LAYERS.map((l, index) => (
+          <li key={l.id}>
+            <button
+              type="button"
+              aria-pressed={active === l.id}
+              onClick={() => setActive(l.id)}
+              className={cn(
+                'flex h-full w-full flex-col items-start gap-1 rounded-xl border bg-card px-3 py-3 text-left',
+                active === l.id ? 'border-foreground/50 ring-2 ring-foreground/15' : 'hover:border-foreground/30',
+              )}
+            >
+              <span className="text-xs text-muted-foreground">Layer {index + 1} · {l.medal}</span>
+              <span className="font-semibold">{l.name}</span>
+            </button>
+          </li>
         ))}
-        {LAYERS.map((l) => (
-          <button
-            key={l.id}
-            onClick={() => setActive(l.id)}
-            className={cn(
-              'relative z-10 flex flex-col items-center gap-2 rounded-xl border bg-card px-2 py-4 text-center transition-all',
-              active === l.id ? 'scale-105 border-foreground/40 shadow-lg' : 'hover:border-foreground/30',
-            )}
-          >
-            <span className={cn('size-3 rounded-full', l.color)} />
-            <span className="text-xs font-semibold sm:text-sm">{l.name}</span>
-            {l.medal && <span className="font-mono text-[10px] text-muted-foreground">{l.medal}</span>}
-          </button>
+      </ol>
+      <section aria-live="polite" aria-label={`${layer.name} layer details`} className="rounded-xl border bg-card/60 p-4">
+        <h3 className="mb-3 font-semibold">{layer.name}</h3>
+        <dl className="grid gap-x-5 gap-y-3 text-sm sm:grid-cols-2">
+          {[
+            ['What’s in it', layer.contents],
+            ['Who writes it', layer.writer],
+            ['How it changes', layer.changes],
+            ['What it can be rebuilt from', layer.rebuild],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <dt className="font-medium">{label}</dt>
+              <dd className="mt-0.5 leading-5 text-muted-foreground">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </div>
+  )
+}
+
+const SOURCE_STOPS = [
+  { title: 'Source systems' },
+  { title: 'Getting the data out' },
+  { title: 'Landing and persistent staging' },
+  { title: 'Data Vault' },
+  { title: 'Marts and reports' },
+]
+
+function SourceToReports() {
+  const [selected, setSelected] = useState(0)
+  const stop = SOURCE_STOPS[selected]
+  return (
+    <div className="space-y-4">
+      <ol aria-label="From source systems to reports" className="grid grid-cols-2 gap-2 md:grid-cols-5">
+        {SOURCE_STOPS.map(({ title }, index) => (
+          <li key={title}>
+            <button
+              type="button"
+              aria-pressed={selected === index}
+              onClick={() => setSelected(index)}
+              className={cn(
+                'flex h-full w-full flex-col items-start gap-1 rounded-xl border px-3 py-3 text-left',
+                selected === index ? 'border-foreground/50 bg-muted ring-2 ring-foreground/15' : 'bg-card hover:border-foreground/30',
+              )}
+            >
+              <span className="text-xs text-foreground">Stop {index + 1}</span>
+              <span className="font-semibold leading-5">{title}</span>
+            </button>
+          </li>
         ))}
+      </ol>
+      <section aria-live="polite" aria-label={stop.title} className="min-h-28 rounded-xl border bg-card/60 p-4">
+        <h3 className="mb-2 font-semibold">{stop.title}</h3>
+        {selected === 0 && (
+          <p className="text-sm leading-6">
+            A CRM sends <Code>customer</Code>, a reference system sends <Code>nation</Code>, and a web shop sends <Code>orders</Code>. Each has its own IDs. The same
+            customer can appear in more than one: <Code>o_custkey</Code> in orders refers to <Code>c_custkey</Code>.
+          </p>
+        )}
+        {selected === 1 && (
+          <>
+            <p className="text-sm leading-6">
+              A full extract reads everything; a delta reads new or changed rows; CDC captures changes as they happen. Data can arrive through database copies, files or
+              APIs on a schedule. Each run is a delivery with a load time.
+            </p>
+            <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              {BATCHES.map((date, index) => <li key={date}>Delivery {index + 1}: {date}</li>)}
+            </ul>
+          </>
+        )}
+        {selected === 2 && (
+          <p className="text-sm leading-6">
+            Land rows as received and keep every delivery in append-only persistent staging. <Link to="/replay" className="font-medium text-sky-700 underline underline-offset-4 dark:text-sky-400">See why replayable history matters in the Replay lab.</Link>
+          </p>
+        )}
+        {selected === 3 && (
+          <p className="text-sm leading-6">
+            Integrate sources on shared <Term id="business-key">business keys</Term>. The <Term id="raw-vault">raw vault</Term> records <Term id="rsrc"><Code>rsrc</Code></Term> (where a row came from) and <Term id="ldts"><Code>ldts</Code></Term> (when it arrived); the <Term id="business-vault">business vault</Term>
+            adds derived rules and query helpers.
+          </p>
+        )}
+        {selected === 4 && (
+          <p className="text-sm leading-6">
+            Shape vault history into <Term id="mart">marts</Term> for reporting: dimensions, facts and views that answer business questions.
+          </p>
+        )}
+      </section>
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setSelected((index) => Math.max(0, index - 1))}
+          disabled={selected === 0}
+          className="rounded-md border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Back
+        </button>
+        <span aria-live="polite" className="text-xs text-muted-foreground">Stop {selected + 1} of {SOURCE_STOPS.length}</span>
+        <button
+          type="button"
+          onClick={() => setSelected((index) => Math.min(SOURCE_STOPS.length - 1, index + 1))}
+          disabled={selected === SOURCE_STOPS.length - 1}
+          className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
-      <motion.div key={active} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto]">
-        <p className="text-sm leading-6">{layer.text}</p>
-        <div className="font-mono text-xs text-muted-foreground sm:text-right">
-          in this guide
-          <br />
-          <span className="text-foreground">{layer.guide}</span>
+      <div className="rounded-xl border bg-muted/30 p-4">
+        <h3 className="font-semibold">Three questions a warehouse has to answer</h3>
+        <ul className="mt-2 grid gap-2 text-sm sm:grid-cols-3">
+          <li>How do we represent one customer appearing in several systems?</li>
+          <li>What changes when sources send updates on different days?</li>
+          <li>What did we know on date X?</li>
+        </ul>
+      </div>
+      <p className="font-medium">Data Vault is the design for the integration step.</p>
+    </div>
+  )
+}
+
+function FabricArchitecture() {
+  const [view, setView] = useState<'generic' | 'fabric'>('generic')
+  return (
+    <div className="space-y-4">
+      <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0">
+        <legend className="sr-only">Choose architecture view</legend>
+        <button type="button" aria-pressed={view === 'generic'} onClick={() => setView('generic')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          Generic
+        </button>
+        <button type="button" aria-pressed={view === 'fabric'} onClick={() => setView('fabric')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          Medallion on Fabric
+        </button>
+      </fieldset>
+      {view === 'generic' ? (
+        <div className="rounded-xl border bg-card/60 p-4">
+          <p className="font-medium">Landing + persistent staging → dv_stage → raw_vault → business_vault → marts</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">The source copy is Bronze; stage and both vaults are Silver; reporting marts are Gold.</p>
         </div>
-      </motion.div>
+      ) : (
+        <>
+          <ol aria-label="Fabric medallion layers" className="grid gap-3 md:grid-cols-3">
+            <li className="rounded-xl border bg-card/60 p-4">
+              <span className="text-xs text-muted-foreground">Bronze · lakehouse</span>
+              <h3 className="mt-1 font-semibold">Files + Delta tables</h3>
+              <p className="mt-2 text-sm leading-5">Landing and persistent staging keep each source delivery.</p>
+            </li>
+            <li className="rounded-xl border bg-card/60 p-4">
+              <span className="text-xs text-muted-foreground">Silver · lakehouse</span>
+              <h3 className="mt-1 font-semibold">Three schemas</h3>
+              <p className="mt-2 font-mono text-sm leading-6">dv_stage<br />raw_vault<br />business_vault</p>
+            </li>
+            <li className="rounded-xl border bg-card/60 p-4">
+              <span className="text-xs text-muted-foreground">Gold</span>
+              <h3 className="mt-1 font-semibold">marts</h3>
+              <p className="mt-2 text-sm leading-5">Use a lakehouse or a warehouse for reporting models.</p>
+            </li>
+          </ol>
+          <p className="text-sm leading-6">
+            Use one lakehouse with several schemas where lakehouse schemas are enabled in your workspace, or one lakehouse per layer when you want separate permissions.
+            Either way, dbt writes each model layer to its own schema with <Code>+schema</Code>. A custom <Code>generate_schema_name</Code> macro avoids prefixing those
+            names with the target schema.
+          </p>
+          <div className="grid gap-3 lg:grid-cols-2">
+            <CodeBlock title="dbt_project.yml · model schemas" code={SNIPPETS.dbt_project_layer_schemas.code} lang="yaml" />
+            <CodeBlock title="macros/generate_schema_name.sql" code={SNIPPETS.generate_schema_name.code} lang="sql" />
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -134,14 +305,24 @@ const COMPARE = [
 
 export default function WhatIsDataVault() {
   return (
-    <article>
+    <Chapter>
       <ChapterHeader
-        n={1}
         title="What is Data Vault"
-        lead="A modelling pattern for enterprise warehouses that splits every concept into its keys (hubs), its relationships (links) and its context and history (satellites), so the warehouse can keep absorbing change."
+        lead={<>A modelling pattern for enterprise warehouses that splits every concept into its keys (<Term id="hub">hubs</Term>), its relationships (<Term id="link">links</Term>) and its context and history (<Term id="satellite">satellites</Term>), so the warehouse can keep absorbing change.</>}
       />
 
-      <Section title="Built for a warehouse that never stops changing">
+      <Section
+        title="From source systems to reports"
+        lead={<>Follow customer, nation and orders from external systems through <Term id="landing">landing</Term> and <Term id="persistent-staging">persistent staging</Term> to reporting.</>}
+      >
+        <SourceToReports />
+      </Section>
+
+      <Section
+        title="Built for a warehouse that never stops changing"
+        lead="See how new sources, attributes, rules and deliveries add to a vault without rewriting its existing rows."
+        keyPoint="New sources, attributes, rules and deliveries should add to the vault without rewriting its existing rows."
+      >
         <P>
           An enterprise warehouse is not a project with an end date. It is an ongoing programme that keeps absorbing four kinds of change. Data Vault was designed
           (by Dan Linstedt, and refined by the community since) so that each of these changes is <em>additive</em>: you add tables, you don't rework old ones.
@@ -157,7 +338,11 @@ export default function WhatIsDataVault() {
         </div>
       </Section>
 
-      <Section title="Unified decomposition">
+      <Section
+        title="Unified decomposition"
+        lead="Watch one customer row separate into identity, relationship and changing context."
+        keyPoint="Hubs, links and satellites keep separate grains, then come together around shared keys."
+      >
         <div className="grid items-start gap-8 lg:grid-cols-2">
           <div>
             <P>
@@ -189,7 +374,11 @@ export default function WhatIsDataVault() {
         </Callout>
       </Section>
 
-      <Section title="The three building blocks">
+      <Section
+        title="The three building blocks"
+        lead="Compare what hubs, links and satellites store and the rules each follows."
+        keyPoint="A hub stores identity, a link stores a relationship, and a satellite stores descriptive history."
+      >
         <div className="grid gap-4 md:grid-cols-3">
           {BLOCKS.map((b) => (
             <motion.div key={b.name} whileHover={{ y: -4 }} className={cn('rounded-2xl border bg-gradient-to-b to-transparent p-5', b.tone)}>
@@ -198,7 +387,14 @@ export default function WhatIsDataVault() {
               <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
                 {b.rules.map((r) => (
                   <li key={r} className="flex gap-2">
-                    <span className={b.text}>›</span> {r}
+                    <span className={b.text}>›</span>{' '}
+                    {r === 'Business key + hashkey + ldts + rsrc'
+                      ? <>Business key + <Term id="hashkey">hashkey</Term> + ldts + rsrc</>
+                      : r === 'Keyed by parent hashkey + ldts'
+                        ? r
+                        : r === 'New row only when the hashdiff changes'
+                          ? <>New row only when the <Term id="hashdiff">hashdiff</Term> changes</>
+                          : r}
                   </li>
                 ))}
               </ul>
@@ -213,11 +409,31 @@ export default function WhatIsDataVault() {
         </P>
       </Section>
 
-      <Section title="Where it sits">
+      <Section
+        title="Where it sits"
+        lead="Select a layer to see what it holds, who writes it and how it can be rebuilt."
+        keyPoint="Bronze keeps source deliveries; stage and vault models are Silver; reporting marts are Gold."
+      >
         <P>
-          Data Vault is the integration layer between landing and reporting. In a lakehouse medallion architecture it is the <strong>Silver</strong> layer. Click a layer:
+          Data Vault fits between retained source deliveries and reporting. The source copy belongs in Bronze; <Code>dv_stage</Code>, the raw vault and the business vault
+          belong in Silver; marts belong in Gold.
         </P>
         <Architecture />
+      </Section>
+
+      <Section
+        title="On Fabric"
+        lead="Map the same layers onto Bronze, Silver and Gold storage, then route dbt models to their own schemas."
+        keyPoint="Fabric changes where a model runs and where it writes; it does not change the vault layers."
+      >
+        <FabricArchitecture />
+      </Section>
+
+      <Section
+        title="What each layer does"
+        lead="Trace customer, nation and orders from staging through the raw vault to marts."
+        keyPoint="Stage prepares source rows, the raw vault preserves them, and marts shape them for questions."
+      >
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
             ['Hubs', 'make key management easy', 'text-sky-700 dark:text-sky-400'],
@@ -232,7 +448,11 @@ export default function WhatIsDataVault() {
         </div>
       </Section>
 
-      <Section title="Data Vault vs a traditional warehouse">
+      <Section
+        title="Data Vault vs a traditional warehouse"
+        lead="Compare how Data Vault handles history, change and reporting with a more traditional warehouse design."
+        keyPoint="Data Vault feeds reporting marts; its history is retained so those marts can be rebuilt as needs change."
+      >
         <div tabIndex={0} className="overflow-x-auto rounded-xl border outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left">
@@ -261,8 +481,10 @@ export default function WhatIsDataVault() {
         </Callout>
       </Section>
 
-      <Section title="Further reading">
-        <ul className="space-y-1.5 text-sm">
+      <RecapExtras>
+        <section aria-labelledby="further-reading-heading" className="max-w-3xl">
+          <h2 id="further-reading-heading" className="mb-3 text-lg font-semibold">Further reading</h2>
+          <ul className="space-y-1.5 text-sm">
           {[
             ['Hans Hultgren — Introductory Guide to Data Vault Modeling (Genesee Academy, 2019)', 'http://dvstandards.com/wp-content/uploads/2021/02/data_vault_modeling_guide_2019_v3.pdf'],
             ['Databricks — What is a Data Vault?', 'https://www.databricks.com/blog/what-is-data-vault'],
@@ -275,8 +497,9 @@ export default function WhatIsDataVault() {
               </a>
             </li>
           ))}
-        </ul>
-      </Section>
-    </article>
+          </ul>
+        </section>
+      </RecapExtras>
+    </Chapter>
   )
 }

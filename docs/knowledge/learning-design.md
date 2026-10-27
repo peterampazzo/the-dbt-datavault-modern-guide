@@ -20,6 +20,14 @@ How this guide stays usable for people who learn with an interrupted or variable
 | S6 | Each chapter ends with an optional self-check that gives instant feedback. It never blocks progress. | Unit test plus visual check |
 | S7 | Lint, test and build pass, and every interactive works with the keyboard alone. | CI plus a manual keyboard pass |
 
+## Chapter structure
+
+Each chapter has a generated cover, one page per `<Section>`, and a generated recap. The cover identifies the chapter and Part, gives the estimated time, learning lead, audience badge and an “In 30 seconds” summary, then links to each page and a Start action. In paged mode the summary appears only on the cover; in one-page mode it appears once above all sections.
+
+Every content page has a numbered heading, a one-sentence lead explaining what it contains, and a short key point at the end. The recap repeats the chapter’s three key ideas, offers an optional quick check with feedback, and links to the next chapter in the active reading path or back home. Reaching the recap marks the chapter complete; the quick check never gates progress.
+
+For a cross-platform lesson, a brief `SqlServerNote` can follow the main explanation on each page. It connects the same modelling or loading decision to a familiar SQL Server operation without opening a separate platform topic.
+
 ## Rules
 
 Each rule gives Do, Don't, Why and Source.
@@ -58,7 +66,7 @@ Each rule gives Do, Don't, Why and Source.
    - Don't: write "as we saw in chapter 2" without showing it again.
    - Why: UK DfE COGA guideline 6; impeccable "Memory Bridge".
 9. **Always show where you are.**
-   - Do: show the chapter position (n of 8), section progress, a done tick, and "continue where you left off".
+    - Do: show the chapter position (n of total), Part, section progress, a done tick, and "continue where you left off".
    - Why: W3C COGA "Make Each Step Clear" and "Help users focus".
 10. **About 4 choices per decision.**
     - Do: give one primary action per interactive and put the rest behind "More options".
@@ -67,7 +75,7 @@ Each rule gives Do, Don't, Why and Source.
     - Do: end each chapter with 2–3 questions about the dataset story, give instant feedback that explains why, and make them optional. Answers must agree with `engine.ts` and be tested.
     - Why: retrieval practice helps students with ADHD as much as other students (Learning and Instruction, 2020); Nicky Case "See, Model, Apply".
 12. **Let readers turn things down.**
-    - Do: offer Focus mode as a reader toggle (off by default, remembered): one section at a time, sidebar hidden, motion reduced.
+    - Do: read one page at a time by default (the chapter root is a cover, each `<Section>` has its own address, and `/recap` closes the chapter). Provide Previous/Next, "Page N of M" and ← → keys, and offer a remembered "Show as one page" switch for skimming.
     - Why: UK DfE COGA guideline 8, "Support adaptation and personalisation".
 13. **Meaning is never colour only.**
     - Do: pair layer colours with a name, a suffix (`_h`, `_l`, `_s`) or an icon.
@@ -78,3 +86,7 @@ Each rule gives Do, Don't, Why and Source.
 15. **Craft floor.**
     - Don't: eyebrow labels above headings, gradient text, thick left-border callouts, uppercase tracked micro-labels, or monospace as decoration.
     - Why: these are pbakaus/impeccable craft-floor bans.
+16. **Keep interaction results near their controls.**
+    - Do: show the result within one screen of the control that changes it, so the reader can see cause and effect without searching.
+    - Don't: put the updated table, message or diagram far below a long interactive.
+    - Why: immediate feedback reduces working-memory demands and makes the next action clear.

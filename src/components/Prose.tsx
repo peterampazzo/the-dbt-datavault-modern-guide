@@ -1,19 +1,27 @@
 import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
-import { CHAPTERS } from '@/chapters'
+import { CHAPTERS, PARTS } from '@/chapters'
+import { useLocation } from 'react-router'
 
-export function ChapterHeader({ n, title, lead }: { n: number; title: string; lead: ReactNode }) {
+export function ChapterHeader({ title, lead }: { title: ReactNode; lead: ReactNode }) {
+  const { pathname } = useLocation()
+  const slug = pathname.split('/').filter(Boolean)[0]
+  const n = CHAPTERS.findIndex((chapter) => chapter.slug === slug) + 1
+  const chapter = CHAPTERS[n - 1]
+  const part = PARTS.find((entry) => entry.n === chapter.part)
   return (
     <header className="mb-10">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-2 font-mono text-sm text-sky-700 dark:text-sky-400">
-        Chapter {n} of {CHAPTERS.length} · about {CHAPTERS[n - 1].minutes} min
+        Chapter {n} of {CHAPTERS.length} · Part {chapter.part}: {part?.title} · about {chapter.minutes} min
       </motion.div>
       <motion.h1
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="text-4xl font-semibold tracking-tight md:text-5xl"
+        id="chapter-title"
+        tabIndex={-1}
+        className="text-4xl font-semibold tracking-tight outline-none md:text-5xl"
       >
         {title}
       </motion.h1>
@@ -28,7 +36,7 @@ export function ChapterHeader({ n, title, lead }: { n: number; title: string; le
       <section aria-label="In 30 seconds" className="mt-6 max-w-3xl rounded-xl border bg-card/60 px-4 py-3">
         <h2 className="mb-1.5 text-sm font-semibold">In 30 seconds</h2>
         <ul className="list-disc space-y-1 pl-5 text-sm leading-6 text-foreground/85">
-          {CHAPTERS[n - 1].summary.map((s) => (
+          {chapter.summary.map((s) => (
             <li key={s}>{s}</li>
           ))}
         </ul>
@@ -37,19 +45,46 @@ export function ChapterHeader({ n, title, lead }: { n: number; title: string; le
   )
 }
 
-const slugify = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+export const slugify = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
-export function Section({ title, children, className }: { title?: string; children: ReactNode; className?: string }) {
+export function Section({
+  title,
+  children,
+  className,
+  lead,
+  keyPoint,
+  pageNumber,
+  sectionId,
+}: {
+  title?: string
+  children: ReactNode
+  className?: string
+  lead?: ReactNode
+  keyPoint?: ReactNode
+  pageNumber?: string
+  sectionId?: string
+}) {
   return (
-    <section className={cn('mb-14', className)}>
+    <section id={!title ? sectionId : undefined} tabIndex={!title ? -1 : undefined} className={cn('mb-10 border-b pb-8', className)}>
       {title && (
-        <h2 id={slugify(title)} className="mb-4 scroll-mt-20 text-2xl font-semibold tracking-tight">
+        <h2 id={slugify(title)} tabIndex={-1} className="mb-4 scroll-mt-20 outline-none text-2xl font-semibold tracking-tight">
+          {pageNumber && <span aria-hidden className="mr-2 font-mono text-base text-muted-foreground">{pageNumber}</span>}
           {title}
         </h2>
       )}
+      {lead && <p className="mb-5 max-w-3xl text-sm leading-6 text-muted-foreground">{lead}</p>}
       {children}
+      {keyPoint && (
+        <p className="mt-6 max-w-3xl text-sm leading-6">
+          <strong>Key point:</strong> {keyPoint}
+        </p>
+      )}
     </section>
   )
+}
+
+export function RecapExtras({ children }: { children: ReactNode }) {
+  return <>{children}</>
 }
 
 export function P({ children }: { children: ReactNode }) {
@@ -71,5 +106,5 @@ export function Callout({ kind = 'info', title, children }: { kind?: 'info' | 'w
 }
 
 export function Code({ children }: { children: ReactNode }) {
-  return <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em]">{children}</code>
+  return <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-foreground text-[0.85em]">{children}</code>
 }

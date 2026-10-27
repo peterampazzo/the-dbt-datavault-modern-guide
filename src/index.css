@@ -146,6 +146,17 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 4.5rem;
+}
+
+main p {
+  max-width: 75ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 .react-flow .react-flow__node:focus-visible {
