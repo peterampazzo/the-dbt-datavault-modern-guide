@@ -72,7 +72,7 @@ test('save requested legacy parity screenshots at desktop size', async ({ page }
   await dialect.getByRole('button', { name: 'T-SQL procedure' }).click()
   await expect(dialect.getByRole('button', { name: 'T-SQL procedure' })).toHaveAttribute('aria-pressed', 'true')
   await expect(hand.getByText(/HASHBYTES/).first()).toBeVisible()
-  await page.screenshot({ path: '/home/ubuntu/screenshots/legacy-by-hand-tsql.png', fullPage: false, animations: 'disabled' })
+  await page.screenshot({ path: info.outputPath('legacy-by-hand-tsql.png'), fullPage: false, animations: 'disabled' })
 
   const parityPage = await page.context().newPage()
   await parityPage.setViewportSize({ width: 1280, height: 800 })
@@ -84,7 +84,7 @@ test('save requested legacy parity screenshots at desktop size', async ({ page }
   await lab.getByLabel('NULL as').selectOption('')
   await lab.getByLabel('Quote character').selectOption('')
   await expect(lab.getByRole('status')).toHaveText(/16 of \d+ rows match/)
-  await parityPage.screenshot({ path: '/home/ubuntu/screenshots/legacy-parity-matching.png', fullPage: false, animations: 'disabled' })
+  await parityPage.screenshot({ path: info.outputPath('legacy-parity-matching.png'), fullPage: false, animations: 'disabled' })
   await parityPage.close()
 
   const keyMapPage = await page.context().newPage()
@@ -92,5 +92,5 @@ test('save requested legacy parity screenshots at desktop size', async ({ page }
   await keyMapPage.emulateMedia({ reducedMotion: 'reduce' })
   await openPagedSection(keyMapPage, 'hash-parity/old-new-key-map-and-reconciliation', 'Old → new key map and reconciliation')
   await expect(keyMapPage.getByText(/sat_v1 rebuilds the end dates/i)).toBeVisible()
-  await keyMapPage.screenshot({ path: '/home/ubuntu/screenshots/legacy-key-map.png', fullPage: false, animations: 'disabled' })
+  await keyMapPage.screenshot({ path: info.outputPath('legacy-key-map.png'), fullPage: false, animations: 'disabled' })
 })
