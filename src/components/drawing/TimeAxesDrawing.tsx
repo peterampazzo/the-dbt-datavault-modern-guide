@@ -1,5 +1,6 @@
 import { Drawing, Line, Mono, Small } from './kit'
 import { isGhost, simulate } from '@/lib/dv/engine'
+import { BATCHES } from '@/lib/dv/dataset'
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -35,6 +36,7 @@ const ORDERS: Order[] = TABLES.order_customer_nh_l
     ldts: String(row.ldts),
   }))
   .sort((a, b) => Number(a.key) - Number(b.key))
+const DELIVERY_TIMES = [...new Set(BATCHES.map((ldts) => ldts.slice(11, 16)))]
 const CUTOFF = dayBefore(RUNS[0].ldts)
 const ORDER_DATES = ORDERS.flatMap((order) => [order.businessDate, order.ldts.slice(0, 10)]).sort()
 const FIRST_DAY = ORDER_DATES[0]
@@ -99,21 +101,31 @@ function axisMarkers(groups: OrderGroup[], y: number, left: number, right: numbe
   })
 }
 
-function timestampLabels(groups: OrderGroup[], left: number, right: number, narrow: boolean) {
+function loadTimeLabels(groups: OrderGroup[], left: number, right: number, y: number, size: number) {
+  if (DELIVERY_TIMES.length === 1) {
+    return (
+      <Small x={right} y={y} anchor="end" size={size}>
+        each delivery loads at {DELIVERY_TIMES[0]}
+      </Small>
+    )
+  }
+
   return groups.map((group, index) => {
     const x = dayPosition(group.date, left, right)
     const anchor = index === 0 ? 'start' : index === groups.length - 1 ? 'end' : 'middle'
     const labelX = x + (anchor === 'start' ? 8 : anchor === 'end' ? -8 : 0)
-    const y = narrow ? 327 + index * 21 : index % 2 === 0 ? 300 : 318
-    const timestamps = [...new Set(group.orders.map((order) => order.ldts))].join(' · ')
-    return <Small key={group.date} x={labelX} y={y} anchor={anchor} size={narrow ? 8.5 : 9.5}>{timestamps}</Small>
+    const times = [...new Set(group.orders.map((order) => order.ldts.slice(11, 16)))].join(' · ')
+    return <Small key={group.date} x={labelX} y={y} anchor={anchor} size={size}>{times}</Small>
   })
 }
 
 const drawingTitle = `${ORDERS.length} orders on shared business-time and load-time axes`
 const drawingDesc =
   `All ${ORDERS.length} orders are grouped by date on the same day scale from ${dayLabel(FIRST_DAY)} to ${dayLabel(LAST_DAY)}. ` +
-  `The dashed cutoff marks the end of ${CUTOFF} on both axes; load markers show their simulated timestamps.`
+  `The dashed cutoff marks the end of ${CUTOFF} on both axes. ` +
+  (DELIVERY_TIMES.length === 1
+    ? `Each delivery loads at ${DELIVERY_TIMES[0]}.`
+    : 'Load-time markers show each delivery time.')
 
 export function TimeAxesDrawing() {
   const wideLeft = 150
@@ -144,7 +156,7 @@ export function TimeAxesDrawing() {
             <Line d={`M${wideLeft} 276 H${wideRight}`} />
             {dayTicks(276, 353, wideLeft, wideRight, 10)}
             {axisMarkers(LOAD_GROUPS, 276, wideLeft, wideRight, 10, true)}
-            {timestampLabels(LOAD_GROUPS, wideLeft, wideRight, false)}
+            {loadTimeLabels(LOAD_GROUPS, wideLeft, wideRight, 305, 9.5)}
           </>
         ),
       }}
@@ -162,7 +174,7 @@ export function TimeAxesDrawing() {
             <Line d={`M${narrowLeft} 300 H${narrowRight}`} />
             {dayTicks(300, 408, narrowLeft, narrowRight, 9)}
             {axisMarkers(LOAD_GROUPS, 300, narrowLeft, narrowRight, 9, true)}
-            {timestampLabels(LOAD_GROUPS, narrowLeft, narrowRight, true)}
+            {loadTimeLabels(LOAD_GROUPS, narrowLeft, narrowRight, 330, 8.5)}
           </>
         ),
       }}
