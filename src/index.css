@@ -188,6 +188,10 @@ main section > [data-codeblock] {
   max-width: 48rem;
 }
 
+main section > [data-codeblock] + :is(p, ul, ol) {
+  margin-top: 1rem;
+}
+
 main section > :is(p, ul, ol, blockquote, dl) {
   margin-inline: auto;
   max-width: 40rem;
