@@ -146,7 +146,7 @@ export default function FromSqlServer() {
             </table>
           </div>
         </div>
-        <P>Keep a step as its own model when it is reused, tested or expensive; inline it as a CTE when it is not. Not every temp table should become an ephemeral model.</P>
+        <P className="mt-6">Keep a step as its own model when it is reused, tested or expensive; inline it as a CTE when it is not. Not every temp table should become an ephemeral model.</P>
         <P>dbt does not translate T-SQL: check precision, rounding, ordering and transaction assumptions.</P>
         <P>
           Reconcile the new outputs against the old before switching, using the <Link to="/migration-checklist" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Migration checklist</Link> and <Link to="/hash-parity" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Hash parity</Link>.

@@ -300,7 +300,7 @@ export default function BusinessVault() {
           <Code>not_null</Code> and <Code>unique</Code> tests can pass even when logic is wrong. A unit test fixes inputs and expected rows to catch that.
         </P>
         <CustomerOrderTotalTest />
-        <P>
+        <P className="mt-6">
           A <Term id="model-contract">model contract</Term> makes dbt check column names and types when it builds the model. dbt-fabricspark 1.13 enforces this for Delta tables and views, but marks not_null, unique, primary-key, foreign-key and check constraints as “not enforced”, so keep data tests for those.
         </P>
         <div className="mx-auto max-w-[48rem]">
