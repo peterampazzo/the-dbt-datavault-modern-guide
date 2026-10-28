@@ -224,6 +224,7 @@ function SlimCi() {
         title="Pull-request build · isolated target"
         code="dbt build --select state:modified+ --defer --state prod-artifacts/ --target ci"
         lang="bash"
+        className="mx-auto max-w-[48rem]"
       />
       <dl className="grid gap-3 md:grid-cols-2">
         <div className="rounded-lg border bg-card/50 p-4">
@@ -238,7 +239,7 @@ function SlimCi() {
       <p className="max-w-3xl text-sm leading-6">
         This can avoid rebuilding eligible unselected upstream models, so CI may do less work and finish sooner. It does not promise a fixed duration: runtime still depends on the project, data, adapter, warehouse and checks.
       </p>
-      <p className="text-sm leading-6">
+      <p className="max-w-3xl text-sm leading-6">
         See dbt’s official{' '}
         <a href="https://docs.getdbt.com/reference/node-selection/methods#the-state-method" target="_blank" rel="noreferrer" className="text-foreground underline underline-offset-2">state selection</a>
         {' '}and{' '}

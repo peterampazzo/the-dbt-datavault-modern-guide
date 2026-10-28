@@ -20,7 +20,7 @@ export function GlossaryPage() {
   }, [hash])
 
   return (
-    <article className="mx-auto max-w-4xl">
+    <article className="mx-auto max-w-3xl">
       <header className="mb-8 max-w-[75ch]">
         <h1 className="text-4xl font-semibold tracking-tight">Glossary</h1>
         <p className="mt-3 text-muted-foreground">Plain definitions for the terms used in this guide.</p>

@@ -16,7 +16,7 @@ function pinnedVersion(packageName: string) {
 
 export function AboutPage() {
   return (
-    <article className="mx-auto max-w-4xl">
+    <article className="mx-auto max-w-3xl">
       <header className="mb-8 max-w-[75ch]">
         <h1 className="text-4xl font-semibold tracking-tight">About this guide</h1>
         <p className="mt-3 text-muted-foreground">A practical, interactive route from source data to a tested Data Vault and reporting models.</p>

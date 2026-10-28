@@ -455,7 +455,7 @@ function IncrementalPlayer() {
           </button>
         </div>
       </div>
-      <p className="text-sm leading-6">
+      <p className="max-w-3xl text-sm leading-6">
         Continue with <Link to="/replay" className="text-foreground underline underline-offset-2">Replay</Link> to compare a changed model against the history still available.
       </p>
     </div>

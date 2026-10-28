@@ -56,7 +56,7 @@ function EngineDiagram() {
       <output aria-live="polite" className="block text-sm font-semibold text-emerald-800 dark:text-emerald-300">
         Storage unchanged. {compute} uses {connection}.
       </output>
-      <p className="text-xs leading-5 text-foreground">
+      <p className="max-w-3xl text-xs leading-5 text-foreground">
         Connection references: <a className="text-foreground underline" href="https://learn.microsoft.com/en-us/fabric/onelake/onelake-shortcuts" target="_blank" rel="noreferrer">OneLake shortcuts</a> · <a className="text-foreground underline" href="https://docs.databricks.com/aws/en/connect/unity-catalog/cloud-storage/external-locations" target="_blank" rel="noreferrer">Unity Catalog external locations</a>.
       </p>
     </div>

@@ -236,7 +236,7 @@ function SourceToReports() {
           <li>What did we know on date X?</li>
         </ul>
       </div>
-      <p className="font-medium">Data Vault is the design for the integration step.</p>
+      <p className="max-w-3xl font-medium">Data Vault is the design for the integration step.</p>
     </div>
   )
 }
