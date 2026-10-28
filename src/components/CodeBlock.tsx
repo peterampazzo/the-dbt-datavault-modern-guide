@@ -3,7 +3,7 @@ import type { ThemedToken } from 'shiki/core'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 
-type Lang = 'sql' | 'yaml' | 'bash'
+type Lang = 'sql' | 'yaml' | 'bash' | 'python' | 'text'
 
 let highlighterPromise: Promise<import('shiki/core').HighlighterCore> | null = null
 function getHighlighter() {
@@ -14,7 +14,12 @@ function getHighlighter() {
     ])
     return createHighlighterCore({
       themes: [import('shiki/themes/github-light-default.mjs'), import('shiki/themes/github-dark-default.mjs')],
-      langs: [import('shiki/langs/sql.mjs'), import('shiki/langs/yaml.mjs'), import('shiki/langs/bash.mjs')],
+      langs: [
+        import('shiki/langs/sql.mjs'),
+        import('shiki/langs/yaml.mjs'),
+        import('shiki/langs/bash.mjs'),
+        import('shiki/langs/python.mjs'),
+      ],
       engine: createJavaScriptRegexEngine(),
     })
   })()
@@ -34,6 +39,7 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
   const [tokens, setTokens] = useState<ThemedToken[][] | null>(null)
 
   useEffect(() => {
+    if (lang === 'text') return
     let alive = true
     getHighlighter().then((h) => {
       if (!alive) return

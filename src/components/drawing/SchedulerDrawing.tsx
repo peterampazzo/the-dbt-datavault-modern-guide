@@ -64,52 +64,53 @@ const wide = (
 
 const narrow = (
   <>
-    <Line d="M195 54 V69 H28 V293 H46" dashed arrow />
-    <Line d="M195 54 V352 H72" dashed arrow />
-    <Line d="M195 54 V411 H72" dashed arrow />
-    <Line d="M195 54 V470 H72" dashed arrow />
+    <Line d="M78 34 H20 V584" dashed />
+    <Line d="M20 294 H58" dashed arrow />
+    <Line d="M20 438 H78" dashed arrow />
+    <Line d="M20 512 H78" dashed arrow />
+    <Line d="M20 584 H78" dashed arrow />
 
-    <Line d="M195 115 V130" arrow />
-    <Line d="M195 184 V201" arrow />
-    <Line d="M195 339 V350" arrow />
-    <Line d="M195 395 V409" arrow />
-    <Line d="M195 454 V468" arrow />
-    <Line d="M195 513 V528" arrow />
+    <Line d="M195 130 V146" arrow />
+    <Line d="M195 198 V214" arrow />
+    <Line d="M195 390 V410" arrow />
+    <Line d="M195 466 V486" arrow />
+    <Line d="M195 538 V558" arrow />
+    <Line d="M195 610 V630" arrow />
 
-    <Card x={82} y={8} w={226} h={46} tone="ink" />
-    <Small x={195} y={27} anchor="middle">orchestrator</Small>
-    <Small x={195} y={44} anchor="middle" size={10}>when and in what order</Small>
-    <Card x={82} y={69} w={226} h={46} tone="stage" />
-    <Small x={195} y={88} anchor="middle">delivery · {BATCHES[0].slice(0, 10)}</Small>
-    <Small x={195} y={104} anchor="middle">lands</Small>
-    <Card x={82} y={130} w={226} h={54} tone="stage" />
-    <Small x={195} y={152} anchor="middle">persistent staging</Small>
+    <Card x={78} y={10} w={234} h={48} tone="ink" />
+    <Small x={195} y={29} anchor="middle">orchestrator</Small>
+    <Small x={195} y={46} anchor="middle" size={10}>when and in what order</Small>
+    <Card x={78} y={78} w={234} h={52} tone="stage" />
+    <Small x={195} y={108} anchor="middle">delivery lands · {BATCHES[0].slice(0, 10)}</Small>
+    <Card x={78} y={146} w={234} h={52} tone="stage" />
+    <Small x={195} y={177} anchor="middle">persistent staging</Small>
 
-    <Card x={46} y={201} w={298} h={138} tone="ink" />
-    <Small x={195} y={219} anchor="middle">dbt build · test each model</Small>
-    <Card x={82} y={231} w={226} h={28} tone="stage" r={7} />
-    <Small x={195} y={250} anchor="middle">stage + test</Small>
-    <Line d="M195 259 V267" arrow />
-    <Card x={82} y={267} w={226} h={28} tone="hub" r={7} />
-    <Small x={195} y={286} anchor="middle">raw vault + test</Small>
-    <Line d="M195 295 V303" arrow />
-    <Card x={82} y={303} w={226} h={28} tone="sat" r={7} />
-    <Small x={195} y={322} anchor="middle">business vault + test</Small>
+    <Card x={58} y={214} w={274} h={176} tone="ink" />
+    <Small x={195} y={235} anchor="middle">dbt build · test each model</Small>
+    <Card x={78} y={248} w={234} h={28} tone="stage" r={7} />
+    <Small x={195} y={267} anchor="middle">stage + test</Small>
+    <Line d="M195 276 V284" arrow />
+    <Card x={78} y={284} w={234} h={28} tone="hub" r={7} />
+    <Small x={195} y={303} anchor="middle">raw vault + test</Small>
+    <Line d="M195 312 V320" arrow />
+    <Card x={78} y={320} w={234} h={28} tone="sat" r={7} />
+    <Small x={195} y={339} anchor="middle">business vault + test</Small>
+    <Small x={195} y={372} anchor="middle" size={10}>tests run before downstream models</Small>
 
-    <Card x={72} y={350} w={246} h={45} tone="sat" />
-    <Small x={195} y={369} anchor="middle">optional calculation job</Small>
-    <Small x={195} y={386} anchor="middle" size={10}>writes its own table</Small>
-    <Card x={72} y={409} w={246} h={45} tone="stage" />
-    <Small x={195} y={437} anchor="middle">checks</Small>
-    <Card x={72} y={468} w={246} h={45} tone="link" />
-    <Small x={195} y={496} anchor="middle">publish</Small>
-    <Card x={72} y={528} w={246} h={45} tone="ink" />
-    <Small x={195} y={556} anchor="middle">marts / readers</Small>
+    <Card x={78} y={410} w={234} h={56} tone="sat" />
+    <Small x={195} y={433} anchor="middle">optional calculation job</Small>
+    <Small x={195} y={451} anchor="middle" size={10}>writes its own table</Small>
+    <Card x={78} y={486} w={234} h={52} tone="stage" />
+    <Small x={195} y={517} anchor="middle">checks</Small>
+    <Card x={78} y={558} w={234} h={52} tone="link" />
+    <Small x={195} y={589} anchor="middle">publish</Small>
+    <Card x={78} y={630} w={234} h={52} tone="ink" />
+    <Small x={195} y={661} anchor="middle">marts / readers</Small>
 
-    <Line d="M18 598 H52" />
-    <Small x={60} y={602}>solid = data</Small>
-    <Line d="M156 598 H190" dashed />
-    <Small x={198} y={602}>dashed = control</Small>
+    <Line d="M20 722 H54" />
+    <Small x={62} y={726}>solid = data</Small>
+    <Line d="M198 722 H232" dashed />
+    <Small x={240} y={726}>dashed = control</Small>
   </>
 )
 
@@ -120,7 +121,7 @@ export function SchedulerDrawing() {
       title={title}
       desc={desc}
       wide={{ viewBox: '0 0 1030 245', content: wide }}
-      narrow={{ viewBox: '0 0 390 615', content: narrow }}
+      narrow={{ viewBox: '0 0 390 750', content: narrow }}
     />
   )
 }

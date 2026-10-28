@@ -26,17 +26,6 @@ const aliceDimension = aliceSnapshots.map((snapshot, index) => {
 const publishedSegment = aliceDimension[0].segment
 const nextSegment = aliceDimension[1].segment
 
-function PlainCode({ title, code }: { title: string; code: string }) {
-  return (
-    <div className="overflow-hidden rounded-xl border bg-card/60 text-[13px] leading-5 shadow-sm">
-      <div className="flex items-center gap-2 border-b px-4 py-2 font-mono text-xs text-muted-foreground">{title}</div>
-      <pre tabIndex={0} className="overflow-x-auto py-3 font-mono outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
-        <code className="whitespace-pre px-4">{code}</code>
-      </pre>
-    </div>
-  )
-}
-
 function GreenIsNotPublished() {
   const [mode, setMode] = useState<'place' | 'gated'>('gated')
   const [step, setStep] = useState(1)
@@ -170,6 +159,7 @@ const SCHEDULER_SNIPPETS = [
   {
     id: 'airflow',
     label: 'Airflow + Cosmos',
+    lang: 'python',
     source: 'https://github.com/astronomer/astronomer-cosmos/blob/main/dev/dags/basic_cosmos_dag.py',
     code: `from datetime import datetime
 from cosmos import DbtDag, ProfileConfig, ProjectConfig
@@ -191,6 +181,7 @@ guide_vault = DbtDag(
   {
     id: 'dagster',
     label: 'Dagster',
+    lang: 'python',
     source: 'https://docs.dagster.io/api/libraries/dagster-dbt',
     code: `from pathlib import Path
 from dagster import AssetExecutionContext
@@ -203,6 +194,7 @@ def guide_vault(context: AssetExecutionContext, dbt: DbtCliResource):
   {
     id: 'fabric',
     label: 'Fabric',
+    lang: 'text',
     source: 'https://learn.microsoft.com/en-us/fabric/data-factory/dbt-job-overview',
     code: `Fabric pipeline
   1. Land the delivery in persistent staging
@@ -212,6 +204,7 @@ def guide_vault(context: AssetExecutionContext, dbt: DbtCliResource):
   {
     id: 'databricks',
     label: 'Databricks',
+    lang: 'yaml',
     source: 'https://docs.databricks.com/aws/en/jobs/dbt',
     code: `resources:
   jobs:
@@ -228,6 +221,7 @@ def guide_vault(context: AssetExecutionContext, dbt: DbtCliResource):
   {
     id: 'dbt-platform',
     label: 'dbt platform',
+    lang: 'text',
     source: 'https://docs.getdbt.com/docs/deploy/deploy-jobs',
     code: `Deploy job · environment: prod
   Commands: dbt build
@@ -258,8 +252,12 @@ function SchedulerTabs() {
         ))}
       </div>
       <div role="tabpanel" id={`scheduler-${active.id}-panel`} aria-labelledby={`scheduler-${active.id}-tab`} tabIndex={0} className="mt-4 space-y-3">
-        <PlainCode title={active.label} code={active.code} />
-        <a className="inline-flex min-h-11 items-center text-sm text-sky-700 underline dark:text-sky-400" href={active.source} target="_blank" rel="noreferrer">Read the {active.label} source</a>
+        <figure className="space-y-3">
+          <CodeBlock key={active.id} title={active.label} code={active.code} lang={active.lang} />
+          <figcaption>
+            <a className="inline-flex min-h-11 items-center text-sm text-sky-700 underline dark:text-sky-400" href={active.source} target="_blank" rel="noreferrer">Read the {active.label} source</a>
+          </figcaption>
+        </figure>
       </div>
     </div>
   )

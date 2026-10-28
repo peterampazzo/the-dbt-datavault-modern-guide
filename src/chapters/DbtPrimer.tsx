@@ -231,13 +231,15 @@ type PrimerCommand = 'build' | 'run' | 'test' | 'compile'
 type PrimerSelection = 'none' | 'exact' | 'downstream' | 'upstream'
 
 const COMMANDS: PrimerCommand[] = ['build', 'run', 'test', 'compile']
-const SELECTIONS: { id: PrimerSelection; label: string }[] = [
-  { id: 'none', label: '(none)' },
-  { id: 'exact', label: '<m>' },
-  { id: 'downstream', label: '<m>+' },
-  { id: 'upstream', label: '+<m>' },
-]
+const SELECTIONS: PrimerSelection[] = ['none', 'exact', 'downstream', 'upstream']
 const TARGETS = [...PRIMER.profiles.code.matchAll(/^\s{4}([\w-]+):\s*$/gm)].map((match) => match[1])
+
+function selectionLabel(selection: PrimerSelection, model: string) {
+  if (selection === 'none') return '(none)'
+  if (selection === 'exact') return model
+  if (selection === 'downstream') return `${model}+`
+  return `+${model}`
+}
 
 function selectedModels(selection: PrimerSelection, model: string) {
   if (selection === 'none') return new Set(PRIMER_MODELS.map((entry) => entry.name))
@@ -300,8 +302,8 @@ function CommandBuilder() {
         <legend className="mb-2 text-sm font-medium">Selection</legend>
         <div className="flex flex-wrap gap-2">
           {SELECTIONS.map((item) => (
-            <button key={item.id} type="button" aria-pressed={selection === item.id} onClick={() => setSelection(item.id)} className="rounded-md border px-3 py-2 font-mono text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
-              {item.label}
+            <button key={item} type="button" aria-pressed={selection === item} onClick={() => setSelection(item)} className="rounded-md border px-3 py-2 font-mono text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+              {selectionLabel(item, model)}
             </button>
           ))}
         </div>
@@ -352,6 +354,37 @@ const FABRIC_PROFILE = `guide:
       lakehouse: "{{ env_var('FABRIC_LAKEHOUSE') }}"
       schema: "{{ env_var('DBT_DEV_SCHEMA') }}"
       threads: 1`
+
+function ProfileExamples() {
+  const [selected, setSelected] = useState<'duckdb' | 'fabric'>('duckdb')
+  const fabric = selected === 'fabric'
+
+  return (
+    <div className="mx-auto max-w-[48rem]">
+      <fieldset className="flex flex-wrap gap-2">
+        <legend className="sr-only">Choose a profile example</legend>
+        <button type="button" aria-pressed={!fabric} onClick={() => setSelected('duckdb')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          Local DuckDB (this primer)
+        </button>
+        <button type="button" aria-pressed={fabric} onClick={() => setSelected('fabric')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          Fabric Lakehouse
+        </button>
+      </fieldset>
+      <figure className="mt-4">
+        <CodeBlock
+          title={fabric ? 'profiles.yml · Fabric Lakehouse (illustrative)' : PRIMER.profiles.path}
+          code={fabric ? FABRIC_PROFILE : PRIMER.profiles.code}
+          lang="yaml"
+        />
+        {fabric && (
+          <figcaption className="mt-2 text-xs text-muted-foreground">
+            Check the adapter's README for the fields your version needs.
+          </figcaption>
+        )}
+      </figure>
+    </div>
+  )
+}
 
 type PrimerNode = 'source' | 'stg_customer' | 'customer_by_segment'
 
@@ -807,10 +840,7 @@ export default function DbtPrimer() {
         <P className="mx-auto">
           dbt defaults to <Code>~/.dbt/profiles.yml</Code>, or uses <Code>DBT_PROFILES_DIR</Code>. The <Code>profile:</Code> field in <Code>dbt_project.yml</Code> selects a <Term id="profile">profile</Term>; targets are outputs inside it, and <Code>--target</Code> chooses one.
         </P>
-        <figure className="mx-auto grid max-w-[48rem] gap-4 lg:grid-cols-2">
-          <CodeBlock title={PRIMER.profiles.path} code={PRIMER.profiles.code} lang="yaml" />
-          <CodeBlock title="Fabric Lakehouse · illustrative; check the adapter README for the fields your version needs" code={FABRIC_PROFILE} lang="yaml" />
-        </figure>
+        <ProfileExamples />
         <P className="mx-auto mt-6">
           Secrets come from <Code>env_var()</Code> and never belong in Git; <Code>.env</Code> stays in <Code>.gitignore</Code>.
         </P>
