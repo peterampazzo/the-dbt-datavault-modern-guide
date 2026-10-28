@@ -4,6 +4,7 @@ import { Layout } from '@/components/Layout'
 import { Home } from '@/components/Home'
 import { AboutPage } from '@/components/AboutPage'
 import { GlossaryPage } from '@/components/GlossaryPage'
+import { DrawingsPage } from '@/components/DrawingsPage'
 import { CHAPTERS } from '@/chapters'
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="about" element={<AboutPage />} />
             <Route path="glossary" element={<GlossaryPage />} />
+            <Route path="drawings" element={<DrawingsPage />} />
             {CHAPTERS.map(({ slug, Component }) => (
               <Route key={slug} path={`${slug}/:page?`} element={<Component />} />
             ))}
