@@ -140,39 +140,39 @@ export function TimeAxesDrawing() {
       id="time-axes"
       title={drawingTitle}
       desc={drawingDesc}
-      className="my-3"
+      className="my-2"
       caption="The same cutoff can include a business date but exclude the later load date."
       wide={{
-        viewBox: '0 22 820 356',
+        viewBox: '0 22 820 300',
         content: (
           <>
             <Small x={20} y={74}>business time</Small>
             <Small x={20} y={207}>load time</Small>
-            <Line d={`M${wideCutoff} 48 V365`} tone="stage" dashed />
+            <Line d={`M${wideCutoff} 48 V310`} tone="stage" dashed />
             <Small x={wideCutoff} y={34} anchor="middle" size={10}>cutoff · end of {CUTOFF}</Small>
             <Line d={`M${wideLeft} 120 H${wideRight}`} />
             {dayTicks(120, 148, wideLeft, wideRight, 10)}
             {axisMarkers(BUSINESS_GROUPS, 120, wideLeft, wideRight, 10)}
             <Line d={`M${wideLeft} 276 H${wideRight}`} />
-            {dayTicks(276, 353, wideLeft, wideRight, 10)}
+            {dayTicks(276, 300, wideLeft, wideRight, 10)}
             {axisMarkers(LOAD_GROUPS, 276, wideLeft, wideRight, 10, true)}
-            {loadTimeLabels(LOAD_GROUPS, wideLeft, wideRight, 305, 9.5)}
+            {loadTimeLabels(LOAD_GROUPS, wideLeft, wideRight, 190, 9.5)}
           </>
         ),
       }}
       narrow={{
-        viewBox: '0 18 390 426',
+        viewBox: '0 18 390 370',
         content: (
           <>
             <Small x={16} y={72}>business time</Small>
             <Small x={16} y={205}>load time</Small>
-            <Line d={`M${narrowCutoff} 44 V419`} tone="stage" dashed />
+            <Line d={`M${narrowCutoff} 44 V376`} tone="stage" dashed />
             <Small x={narrowCutoff} y={30} anchor="middle" size={9}>cutoff · end of {CUTOFF}</Small>
             <Line d={`M${narrowLeft} 120 H${narrowRight}`} />
             {dayTicks(120, 148, narrowLeft, narrowRight, 9)}
             {axisMarkers(BUSINESS_GROUPS, 120, narrowLeft, narrowRight, 9)}
             <Line d={`M${narrowLeft} 300 H${narrowRight}`} />
-            {dayTicks(300, 408, narrowLeft, narrowRight, 9)}
+            {dayTicks(300, 350, narrowLeft, narrowRight, 9)}
             {axisMarkers(LOAD_GROUPS, 300, narrowLeft, narrowRight, 9, true)}
             {loadTimeLabels(LOAD_GROUPS, narrowLeft, narrowRight, 330, 8.5)}
           </>
