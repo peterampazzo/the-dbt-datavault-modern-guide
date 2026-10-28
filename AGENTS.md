@@ -24,6 +24,7 @@ Run lint, test and build before pushing. CI (`.github/workflows/ci.yml`) runs th
 
 - `src/chapters/`: one file per chapter, registered in `src/chapters/index.ts` (order = navigation order). Each chapter wraps its content in `<Chapter>` (`src/components/Chapter.tsx`): the chapter root is a generated cover, every `<Section>` is one page at `/#/<chapter>/<section-id>`, and `/#/<chapter>/recap` is the generated recap. Keep `ChapterHeader`, `Section` and optional `RecapExtras` as direct children of `<Chapter>`. The "Show as one page" switch (`src/lib/reading.ts`) renders the cover, sections and recap as one scroll. e2e helpers open routes as one page unless `{ paged: true }`.
 - `src/components/`: shared UI (`CodeBlock` Shiki, `DataTable`, `Prose`, `Decomposition`, `Layout`). `src/components/ui/` is shadcn (Base UI).
+- `src/components/drawing/`: explainer drawings. Each is a short `.tsx` file of inline SVG built from `kit.tsx` (`Card`, `Line`, `Badge`, `Mono`, `Small`, `Note`) inside `<Drawing>`, which takes a wide layout and a stacked phone layout. Keep labels as real text, colours as theme classes (`Tone`), a `title` and `desc` that say what the drawing shows, and values taken from `dataset.ts`/`engine.ts`, not typed in. Drawings are static: no motion.
 - `src/lib/dv/hash.ts`: datavault4dbt-compatible hashing.
 - `src/lib/dv/dataset.ts`: the three-batch fictional TPC-H-style dataset and its `STORY`.
 - `src/lib/dv/engine.ts`: stage/hub/link/satellite/PIT simulation, with tests in `engine.test.ts`.

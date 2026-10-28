@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
+import { PersistentStagingDrawing } from '@/components/drawing/PersistentStagingDrawing'
 import { Term } from '@/components/Term'
 import { CodeBlock } from '@/components/CodeBlock'
 import { SNIPPETS } from '@/lib/dv/models'
@@ -301,6 +302,7 @@ function Replay() {
         keyPoint="Two copies are useful; two competing sources of truth are not."
       >
         <P><strong>Two copies are fine, two sources of truth are not.</strong> Persistent staging is append-only evidence: what each source sent and when. Never change it to match a later model. The raw vault is a derived, organised view by business key that can be rebuilt from that evidence.</P>
+        <PersistentStagingDrawing />
         <section aria-label="Bank statements and ledger comparison" tabIndex={0} className="max-w-full overflow-x-auto rounded-xl border">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/60">

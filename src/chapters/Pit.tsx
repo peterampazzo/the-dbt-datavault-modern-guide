@@ -3,6 +3,7 @@ import { Term } from '@/components/Term'
 import { useMemo } from 'react'
 import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
+import { PitDrawing } from '@/components/drawing/PitDrawing'
 import { DataTable } from '@/components/DataTable'
 import { CodeBlock } from '@/components/CodeBlock'
 import { Slider } from '@/components/ui/slider'
@@ -25,6 +26,13 @@ export default function Pit() {
         title={<>Business vault: snapshots and <Term id="pit">PITs</Term></>}
         lead="Asking 'what did customer 3 look like on 2 January?' means finding the right version in every satellite. A point-in-time table precomputes those pointers per snapshot."
       />
+      <Section
+        title="A photo of one date"
+        lead="Think of a PIT as a photo of every satellite taken at one snapshot date."
+        keyPoint="A PIT row points at the satellite versions valid at its snapshot; it does not copy their values."
+      >
+        <PitDrawing />
+      </Section>
       <Section
         title="Drag the snapshot"
         lead="Move the snapshot date to see the PIT pointers select the valid row from each satellite."

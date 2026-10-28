@@ -5,6 +5,7 @@ import { Boxes, GitBranch, Layers, Scale, Workflow } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code, RecapExtras } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { Decomposition } from '@/components/Decomposition'
+import { HubLinkSatDrawing } from '@/components/drawing/HubLinkSatDrawing'
 import { cn } from '@/lib/utils'
 import { Link } from 'react-router'
 import { BATCHES } from '@/lib/dv/dataset'
@@ -385,6 +386,7 @@ export default function WhatIsDataVault() {
         lead="Compare what hubs, links and satellites store and the rules each follows."
         keyPoint="A hub stores identity, a link stores a relationship, and a satellite stores descriptive history."
       >
+        <HubLinkSatDrawing />
         <div className="grid gap-4 md:grid-cols-3">
           {BLOCKS.map((b) => (
             <motion.div key={b.name} whileHover={{ y: -4 }} className={cn('rounded-2xl border bg-gradient-to-b to-transparent p-5', b.tone)}>
