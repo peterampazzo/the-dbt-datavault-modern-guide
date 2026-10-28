@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
-import { ChapterHeader, Code, Section } from '@/components/Prose'
+import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { SNIPPETS } from '@/lib/dv/models'
 import { EMAIL_HASHDIFFS } from '@/lib/primer/email-hashdiffs'
@@ -273,6 +274,7 @@ export default function ModernWay() {
         keyPoint="The target changes the connection and output location; it does not change the model's business rules."
       >
         <Targets />
+        <P className="mx-auto mt-6">See how dbt connects to a profile in the <Link className="text-sky-700 underline dark:text-sky-400" to="/dbt-primer/profiles-yml-how-dbt-connects">Primer’s profiles.yml page</Link>.</P>
       </Section>
 
       <Section

@@ -21,6 +21,7 @@ const blurbs: Record<string, string> = {
   replay: 'Persistent staging preserves the source deliveries; the raw vault is a derived view of them.',
   'one-lake': 'Open Delta files can hold source history while different Spark engines read them in place.',
   'modern-way': 'A model change moves through a branch, pull request, CI, review, merge and deployment.',
+  scheduling: 'Deliveries trigger runs; dbt preserves dependency order, tests and output gates.',
   'from-sql-server': 'Compare seven hand-written loading patterns with dbt models and metadata.',
   'hash-parity': 'Compare legacy and datavault4dbt hash settings with fixed business-key vectors.',
   'business-vault': 'Keep reusable precedence and calculations in a business vault above the raw history.',

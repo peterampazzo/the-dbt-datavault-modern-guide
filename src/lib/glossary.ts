@@ -169,6 +169,30 @@ const GLOSSARY_DATA = [
     chapter: 'business-vault',
   },
   {
+    id: 'manifest',
+    term: 'Manifest',
+    definition: 'manifest.json records dbt project resources, dependencies and metadata for a run.',
+    chapter: 'dbt-primer',
+  },
+  {
+    id: 'profile',
+    term: 'Profile',
+    definition: 'A dbt profile supplies one or more named connection outputs for a run.',
+    chapter: 'dbt-primer',
+  },
+  {
+    id: 'orchestrator',
+    term: 'Orchestrator',
+    definition: 'A tool that starts and coordinates jobs while dbt builds its own model dependency graph.',
+    chapter: 'scheduling',
+  },
+  {
+    id: 'write-audit-publish',
+    term: 'Write, audit, publish',
+    definition: 'A release pattern that builds privately, checks the result, then exposes it to readers.',
+    chapter: 'scheduling',
+  },
+  {
     id: 'ref-function',
     term: 'ref()',
     definition: 'ref() names another dbt model and adds its dependency to the build graph.',

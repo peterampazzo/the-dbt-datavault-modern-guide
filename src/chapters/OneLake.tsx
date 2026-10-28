@@ -136,6 +136,7 @@ export default function OneLake() {
         <ul className="ml-5 list-disc space-y-2 text-sm leading-6">
           <li>Use plain Spark SQL where possible; put engine-specific syntax in named macros and vars.</li>
           <li>Set one global hash rule and run a cross-engine unit test proving identical hashkeys from identical business keys.</li>
+          <li>Access rules belong to a reading path: a row filter defined in one engine doesn't protect reads of the same files through another engine, or copies such as derived tables and exported reports. Check what each path enforces; on Fabric, see <a className="text-sky-700 underline dark:text-sky-400" href="https://learn.microsoft.com/en-us/fabric/onelake/security/read-secured-data" target="_blank" rel="noreferrer">OneLake security</a>.</li>
         </ul>
         <P>Fabric Spark support is being added upstream to datavault4dbt; check the <a className="text-sky-700 underline dark:text-sky-400" href="https://github.com/ScalefreeCOM/datavault4dbt/releases" target="_blank" rel="noreferrer">package release notes</a> for the available version and adapter combination. Install the package through <Code>packages.yml</Code> like any dbt package, and keep the same global hashing vars on both engines.</P>
       </Section>

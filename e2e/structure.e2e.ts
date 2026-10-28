@@ -15,7 +15,7 @@ test('Start here remembers the practitioner path and updates next links and cont
   await expect(page.getByRole('button', { name: 'I know Data Vault, new to dbt' })).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('link', { name: 'Start this path: I know Data Vault, new to dbt' }).click()
 
-  await expect(page.getByText(/Chapter 3 of 17/)).toBeVisible()
+  await expect(page.getByText(/Chapter 3 of 18/)).toBeVisible()
   await page.getByRole('button', { name: 'Contents' }).click()
   const contents = page.getByRole('dialog', { name: 'Contents' })
   await expect(contents.getByRole('heading', { name: 'Part 1: The method' })).toBeVisible()
@@ -46,6 +46,8 @@ test('Start here remembers the practitioner path and updates next links and cont
   await page.goto('/#/one-lake/recap')
   await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next: Working the modern way' })).toBeVisible()
   await page.goto('/#/modern-way/recap')
+  await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next: Running dbt on a schedule' })).toBeVisible()
+  await page.goto('/#/scheduling/recap')
   await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next: From a hand-written SQL Server vault' })).toBeVisible()
   await page.goto('/#/from-sql-server/recap')
   await expect(page.locator('#chapter-recap').getByRole('link', { name: 'Next: Hash parity and restoring history' })).toBeVisible()

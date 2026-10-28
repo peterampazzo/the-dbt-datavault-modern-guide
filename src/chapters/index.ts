@@ -472,6 +472,39 @@ export const CHAPTERS = [
     Component: lazy(() => import('./ModernWay')),
   },
   {
+    slug: 'scheduling',
+    title: 'Running dbt on a schedule',
+    short: 'Scheduling',
+    minutes: 8,
+    part: 4,
+    audience: 'essential',
+    summary: [
+      'An orchestrator starts dbt when a delivery lands; dbt owns model dependencies, order and tests.',
+      'Build and audit new results before publishing them to readers.',
+      'Run retained deliveries oldest first and give each table one writer.',
+    ],
+    recap: [
+      'The scheduler starts work; dbt builds its dependency graph and runs model tests.',
+      'A successful build does not prove business totals or publish checked results automatically.',
+      'Process deliveries oldest first, avoid overlapping vault runs and keep one writer per table.',
+    ],
+    quiz: [
+      {
+        q: 'What decides the order of models inside a dbt build?',
+        options: ['The scheduler’s task order', 'The dbt dependency graph', 'The arrival time of query results'],
+        answer: 1,
+        why: 'The orchestrator starts the run; dbt uses model dependencies to order work inside it.',
+      },
+      {
+        q: 'When should readers see a new build?',
+        options: ['As soon as a model starts writing', 'Only after the audit passes and publish runs', 'Whenever the scheduler exits'],
+        answer: 1,
+        why: 'A separate publish step keeps the prior result visible until the new one passes its checks.',
+      },
+    ],
+    Component: lazy(() => import('./Scheduling')),
+  },
+  {
     slug: 'from-sql-server',
     title: 'From a hand-written SQL Server vault',
     short: 'Legacy patterns',
