@@ -86,7 +86,7 @@ export default function OneLake() {
         lead={<>Map customer, nation and orders onto the <Term id="medallion">medallion architecture</Term>, from source systems to reporting.</>}
         keyPoint="Landing and persistent staging preserve source data; stage, vault and mart models are derived and rebuildable."
       >
-        <p className="mb-4 max-w-full whitespace-normal font-mono text-xs text-foreground">
+        <p data-figure-caption className="mb-4 max-w-full whitespace-normal font-mono text-xs text-foreground">
           sources → landing + persistent staging (Bronze) → dv_stage (Silver) → raw_vault (Silver) → business_vault (Silver) → marts (Gold)
         </p>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

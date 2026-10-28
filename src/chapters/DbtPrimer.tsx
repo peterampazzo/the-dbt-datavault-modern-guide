@@ -302,7 +302,8 @@ function JinjaCompile() {
   const file = compiled ? PRIMER.compiled_round_amount : PRIMER.round_amount_macro
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <fieldset className="flex gap-2">
         <legend className="sr-only">Show Jinja or compiled SQL</legend>
         <button type="button" aria-pressed={!compiled} onClick={() => setCompiled(false)} className={cn('rounded-lg border px-3 py-2 text-sm', !compiled ? 'border-sky-600 bg-sky-500/10' : 'bg-card/50')}>
@@ -314,8 +315,9 @@ function JinjaCompile() {
       </fieldset>
       {!compiled && <CodeBlock title={PRIMER.round_amount_usage.path} code={PRIMER.round_amount_usage.code} lang={PRIMER.round_amount_usage.lang} />}
       <CodeBlock title={file.path} code={file.code} lang={file.lang} />
+      </div>
       {!compiled && <P>The macro definition lives in its own file; this model calls it with <Code>{`{{ round_amount('c_acctbal') }}`}</Code>.</P>}
-    </div>
+    </>
   )
 }
 
@@ -421,7 +423,8 @@ function IncrementalPlayer() {
   const highlight = active.highlight ? [5, 6] : []
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <ol aria-label="Incremental build steps" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {INCREMENTAL_STEPS.map((item, index) => (
           <li key={item.title} aria-current={step === index ? 'step' : undefined} className={cn('rounded-lg border px-3 py-2 text-sm', step === index ? 'border-sky-600 bg-sky-500/10' : 'bg-card/50')}>
@@ -455,10 +458,11 @@ function IncrementalPlayer() {
           </button>
         </div>
       </div>
-      <p className="max-w-3xl text-sm leading-6">
+      </div>
+      <P>
         Continue with <Link to="/replay" className="text-foreground underline underline-offset-2">Replay</Link> to compare a changed model against the history still available.
-      </p>
-    </div>
+      </P>
+    </>
   )
 }
 
@@ -472,7 +476,8 @@ function TestsAndDocs() {
   const passes = failingRows.length === 0
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -511,11 +516,12 @@ having count(*) > 1`}
         stepIds={['unique-fails', 'unique-passes']}
         activeStepId={duplicate ? 'unique-fails' : 'unique-passes'}
       />
+      </div>
       <P>
         <Code>dbt docs generate</Code> builds project documentation and lineage. Explore the guide’s{' '}
         <Link to="/dbt-project" className="text-foreground underline underline-offset-2">Lineage chapter</Link>.
       </P>
-    </div>
+    </>
   )
 }
 

@@ -29,7 +29,7 @@ export function ChapterHeader({ title, lead }: { title: ReactNode; lead: ReactNo
         initial={{ y: 8 }}
         animate={{ y: 0 }}
         transition={{ delay: 0.15 }}
-        className="mt-5 max-w-3xl font-serif text-lg leading-7 text-muted-foreground"
+        className="mt-5 max-w-3xl font-serif text-lg leading-7 text-foreground/90"
       >
         {lead}
       </motion.p>
@@ -65,17 +65,17 @@ export function Section({
   sectionId?: string
 }) {
   return (
-    <section id={!title ? sectionId : undefined} tabIndex={!title ? -1 : undefined} className={cn('mb-12', className)}>
+    <section id={!title ? sectionId : undefined} tabIndex={!title ? -1 : undefined} data-reading-section className={cn('mb-12', className)}>
       {title && (
         <h2 id={slugify(title)} tabIndex={-1} className="mx-auto mb-4 max-w-[40rem] scroll-mt-20 font-serif text-3xl font-semibold tracking-tight outline-none">
           {pageNumber && <span aria-hidden className="mr-2 font-sans text-sm font-normal tabular-nums text-muted-foreground">{pageNumber}</span>}
           {title}
         </h2>
       )}
-      {lead && <p className="mb-5 max-w-3xl font-serif text-[1.2rem] leading-8 text-muted-foreground">{lead}</p>}
+      {lead && <p className="mb-5 max-w-3xl font-serif text-lg leading-7 text-foreground/90">{lead}</p>}
       {children}
       {keyPoint && (
-        <p className="mt-6 max-w-3xl text-sm leading-6">
+        <p className="mt-6 max-w-3xl font-serif text-lg leading-7 text-foreground/90">
           <strong>Key point:</strong> {keyPoint}
         </p>
       )}
@@ -99,8 +99,8 @@ export function Callout({ kind = 'info', title, children }: { kind?: 'info' | 'w
   }[kind]
   return (
     <div className={cn('my-6 max-w-3xl rounded-xl border px-5 py-4', tone)}>
-      <div className="mb-1 font-semibold">{title}</div>
-      <div className="text-sm leading-6 text-foreground/80">{children}</div>
+      <div className="mb-1 font-sans font-semibold">{title}</div>
+      <div className="font-serif text-lg leading-7 text-foreground/90">{children}</div>
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { useCallback, useState, useSyncExternalStore } from 'react'
 
 /** Reader progress kept in localStorage: last place read, finished chapters and interactive state. */
 export type Progress = {
-  last?: { slug: string; section?: string; sectionTitle?: string }
+  last?: { slug: string; section?: string; sectionTitle?: string; sectionNumber?: number }
   done: string[]
   state: Record<string, unknown>
 }
@@ -43,10 +43,10 @@ export function useProgress() {
   return useSyncExternalStore(subscribe, () => cache)
 }
 
-export function setLast(slug: string, section?: string, sectionTitle?: string) {
+export function setLast(slug: string, section?: string, sectionTitle?: string, sectionNumber?: number) {
   const l = cache.last
-  if (l?.slug === slug && l.section === section) return
-  write({ ...cache, last: { slug, section, sectionTitle } })
+  if (l?.slug === slug && l.section === section && l.sectionTitle === sectionTitle && l.sectionNumber === sectionNumber) return
+  write({ ...cache, last: { slug, section, sectionTitle, sectionNumber } })
 }
 
 export function markDone(slug: string) {

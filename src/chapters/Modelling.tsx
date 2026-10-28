@@ -447,7 +447,8 @@ function KeyFinder() {
   }
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <fieldset className="border-0 p-0">
         <legend className="mb-2 text-sm font-semibold">Pick a customer column to test</legend>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -488,10 +489,6 @@ function KeyFinder() {
       <output aria-live="polite" data-testid="key-profile-feedback" className="block rounded-xl border bg-muted/30 p-4 text-sm leading-6">
         {feedback[column]}
       </output>
-      <p className="text-sm leading-6">
-            A good business key is what the business uses to identify a thing (for example, a customer number on invoices): unique, stable and shared across systems, not an
-        internal ID only one database understands.
-      </p>
       <div className="grid min-w-0 items-start gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,1.2fr)]">
         <div className="rounded-xl border bg-card/60 p-4">
           <h3 className="font-semibold">What your hub would look like</h3>
@@ -504,14 +501,19 @@ function KeyFinder() {
           <DataTable title={`Candidate hub rows · ${column}`} tone="hub" rows={profile.hubRows} columns={[column, 'hk_customer_h']} maxHeight="max-h-52" />
         </div>
       </div>
+      </div>
+      <P>
+        A good business key is what the business uses to identify a thing (for example, a customer number on invoices): unique, stable and shared across systems, not an
+        internal ID only one database understands.
+      </P>
       {column !== 'c_custkey' && (
         <Callout kind="tip" title="Got it wrong? Nothing is lost.">
           Keep every delivery in persistent staging, change the key in the model and run <Code>dbt build --full-refresh</Code>. dbt can rebuild hubs, links and satellites
           from the retained deliveries. With truncated landing, the same rebuild would be lossy. <Link to="/replay" className="text-sky-700 underline underline-offset-4 dark:text-sky-400">See the Replay lab.</Link>
         </Callout>
       )}
-      <p className="font-medium">You don’t have to get the model right the first time: keep raw deliveries, keep the model as code, change your mind, rebuild.</p>
-    </div>
+      <P>You don’t have to get the model right the first time: keep raw deliveries, keep the model as code, change your mind, rebuild.</P>
+    </>
   )
 }
 
@@ -615,7 +617,7 @@ export default function Modelling() {
         keyPoint="A hub holds a business key and its hashkey, load date and record source—not descriptive attributes."
       >
         <Stepper group="Hubs" />
-        <p className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each business key.</p>
+        <p data-figure-caption className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each business key.</p>
       </Section>
       <Section
         title="Find the business key yourself"
@@ -630,7 +632,7 @@ export default function Modelling() {
         keyPoint="A link records a relationship as a new combination of participating hub keys."
       >
         <Stepper group="Links" />
-        <p className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each relationship.</p>
+        <p data-figure-caption className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each relationship.</p>
       </Section>
       <Section
         title="Step through the satellites"
@@ -638,7 +640,7 @@ export default function Modelling() {
         keyPoint="Satellites attach to one hub or link and keep new versions when their payload changes."
       >
         <Stepper group="Satellites" />
-        <p className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each payload.</p>
+        <p data-figure-caption className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each payload.</p>
       </Section>
 
       <Section

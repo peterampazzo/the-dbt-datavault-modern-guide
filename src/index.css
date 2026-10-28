@@ -192,7 +192,10 @@ main section > [data-codeblock] + :is(p, ul, ol) {
   margin-top: 1rem;
 }
 
-main section > :is(p, ul, ol, blockquote, dl) {
+main section[data-reading-section] > :is(p:not([data-figure-caption]), blockquote, dl:not(.grid), ul:not(.grid):not(.flex), ol:not(.grid):not(.flex)),
+main section[data-reading-section] > :is(ul:not(.grid):not(.flex), ol:not(.grid):not(.flex)) > li,
+main section[data-reading-section] > dl:not(.grid) :is(dt, dd) {
+  @apply font-serif text-lg leading-7 text-foreground/90;
   margin-inline: auto;
   max-width: 40rem;
 }

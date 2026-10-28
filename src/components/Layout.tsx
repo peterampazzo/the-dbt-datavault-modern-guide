@@ -40,15 +40,17 @@ function useSections(pathname: string) {
     let io: IntersectionObserver | undefined
     let seen = ''
     const scan = () => {
-      const hs = [...main.querySelectorAll<HTMLElement>('h2[id]')]
+      const hs = [...main.querySelectorAll<HTMLElement>('h2[id], #recap-heading')]
       const ids = hs.map((h) => h.id).join(' ')
       if (ids === seen) return
       seen = ids
-      setSections(hs.map((h) => ({ id: h.id, title: h.textContent ?? '' })))
+      setSections(hs.map((h) => ({ id: h.id === 'recap-heading' ? 'recap' : h.id, title: h.textContent ?? '' })))
       io?.disconnect()
       io = new IntersectionObserver(
         (entries) => {
-          for (const e of entries) if (e.isIntersecting) setActive({ path: pathname, id: e.target.id })
+          for (const e of entries) {
+            if (e.isIntersecting) setActive({ path: pathname, id: e.target.id === 'recap-heading' ? 'recap' : e.target.id })
+          }
         },
         { rootMargin: '0px 0px -70% 0px' },
       )
@@ -81,7 +83,18 @@ export function Layout() {
   const published = usePages()
   const chapterPages = chapter && published.slug === chapter.slug ? published.pages : []
   const currentPage = mode === 'paged' ? (pageSeg ?? '') : active
+  const currentPageIndex = chapterPages.findIndex((page) => page.id === currentPage)
+  const pageNumber = currentPage && currentPage !== 'recap' && currentPageIndex > 0
+    ? `${idx + 1}.${currentPageIndex}`
+    : undefined
   const toc = useRef<HTMLDialogElement>(null)
+
+  const openContents = () => {
+    const dialog = toc.current
+    if (!dialog) return
+    dialog.showModal()
+    requestAnimationFrame(() => dialog.querySelector<HTMLElement>('a[aria-current="page"]')?.scrollIntoView({ block: 'center' }))
+  }
 
   useEffect(() => {
     toc.current?.close()
@@ -94,8 +107,14 @@ export function Layout() {
   }, [chapter, pathname, search, navigate])
 
   useEffect(() => {
-    if (chapter && mode === 'scroll') setLast(chapter.slug, active, sections.find((s) => s.id === active)?.title)
-  }, [chapter, active, sections, mode])
+    if (chapter && mode === 'scroll') {
+      const pageIndex = published.slug === chapter.slug
+        ? published.pages.findIndex((page) => page.id === active)
+        : -1
+      const sectionNumber = active && active !== 'recap' && pageIndex > 0 ? pageIndex : undefined
+      setLast(chapter.slug, active, sections.find((s) => s.id === active)?.title, sectionNumber)
+    }
+  }, [chapter, active, sections, mode, published.pages, published.slug])
 
   return (
     <div className="min-h-svh bg-background text-foreground">
@@ -107,9 +126,21 @@ export function Layout() {
             <span className="sr-only sm:not-sr-only">The dbt + Data Vault guide</span>
           </Link>
           <Link to="/about" className="inline-flex min-h-11 items-center rounded-md px-2 text-sm font-medium hover:bg-muted">About</Link>
-          <Button variant="ghost" className="min-h-11" aria-haspopup="dialog" onClick={() => toc.current?.showModal()}>
+          <Button variant="ghost" className="min-h-11" aria-haspopup="dialog" onClick={openContents}>
             <List aria-hidden /> Contents
           </Button>
+          {chapter && (
+            <div className="min-w-0 flex-1 truncate text-xs leading-5 text-foreground/80">
+              <span className="hidden truncate md:inline">{idx + 1} · {chapter.title.split(':')[0]}</span>
+              <span className="md:hidden">{pageNumber ?? (currentPage === 'recap' ? 'Recap' : String(idx + 1))}</span>
+              {pageNumber && currentPage && (
+                <span className="ml-2 hidden truncate text-muted-foreground md:inline">
+                  {pageNumber} {chapterPages[currentPageIndex]?.title}
+                </span>
+              )}
+              {currentPage === 'recap' && <span className="ml-2 hidden text-muted-foreground md:inline">Recap</span>}
+            </div>
+          )}
           <div className="ml-auto flex items-center gap-1">
             <Button
               variant="ghost"
@@ -252,7 +283,7 @@ export function Layout() {
           <Suspense fallback={<div className="h-96 rounded-xl motion-safe:animate-pulse bg-muted/40" />}>
             <Outlet />
           </Suspense>
-          {!chapter && (
+          {!chapter && pathname !== '/' && (
             <div className="mt-16 flex justify-end gap-4 border-t pt-6">
               <Link to={`/${CHAPTERS[0].slug}`} className="group flex items-center gap-2 text-sm font-medium hover:text-sky-400">
                 {CHAPTERS[0].title} <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />

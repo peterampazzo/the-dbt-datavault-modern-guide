@@ -154,7 +154,8 @@ function SourceToReports() {
   const [selected, setSelected] = useState(0)
   const stop = SOURCE_STOPS[selected]
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <ol aria-label="From source systems to reports" className="grid grid-cols-2 gap-2 md:grid-cols-5">
         {SOURCE_STOPS.map(({ title }, index) => (
           <li key={title}>
@@ -236,15 +237,17 @@ function SourceToReports() {
           <li>What did we know on date X?</li>
         </ul>
       </div>
-      <p className="max-w-3xl font-medium">Data Vault is the design for the integration step.</p>
-    </div>
+      </div>
+      <P>Data Vault is the design for the integration step.</P>
+    </>
   )
 }
 
 function FabricArchitecture() {
   const [view, setView] = useState<'generic' | 'fabric'>('generic')
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0">
         <legend className="sr-only">Choose architecture view</legend>
         <button type="button" aria-pressed={view === 'generic'} onClick={() => setView('generic')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
@@ -278,18 +281,21 @@ function FabricArchitecture() {
               <p className="mt-2 text-sm leading-5">Use a lakehouse or a warehouse for reporting models.</p>
             </li>
           </ol>
-          <p className="text-sm leading-6">
-            Use one lakehouse with several schemas where lakehouse schemas are enabled in your workspace, or one lakehouse per layer when you want separate permissions.
-            Either way, dbt writes each model layer to its own schema with <Code>+schema</Code>. A custom <Code>generate_schema_name</Code> macro avoids prefixing those
-            names with the target schema.
-          </p>
           <div className="grid gap-3 lg:grid-cols-2">
             <CodeBlock title="dbt_project.yml · model schemas" code={SNIPPETS.dbt_project_layer_schemas.code} lang="yaml" />
             <CodeBlock title="macros/generate_schema_name.sql" code={SNIPPETS.generate_schema_name.code} lang="sql" />
           </div>
         </>
       )}
-    </div>
+      </div>
+      {view === 'fabric' && (
+        <P>
+          Use one lakehouse with several schemas where lakehouse schemas are enabled in your workspace, or one lakehouse per layer when you want separate permissions.
+          Either way, dbt writes each model layer to its own schema with <Code>+schema</Code>. A custom <Code>generate_schema_name</Code> macro avoids prefixing those
+          names with the target schema.
+        </P>
+      )}
+    </>
   )
 }
 

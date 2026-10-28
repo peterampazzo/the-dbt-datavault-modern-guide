@@ -46,7 +46,7 @@ test('a page address survives a reload and Continue returns to it', async ({ pag
   await page.reload()
   await expect(h2(page, 'Where it sits')).toBeVisible()
   await page.goto('/#/')
-  await page.getByRole('link', { name: /Continue: What is Data Vault, Where it sits/ }).click()
+  await page.getByRole('link', { name: /Continue: chapter 1, 1\.\d+ Where it sits/ }).click()
   await expect(page).toHaveURL(/where-it-sits$/)
   await expect(h2(page, 'Where it sits')).toBeVisible()
 })

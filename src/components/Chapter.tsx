@@ -99,7 +99,7 @@ export function Chapter({ children }: { children: ReactNode }) {
       setLast(chapter.slug, 'recap', 'Recap')
       markDone(chapter.slug)
     } else if (activeContentTitle) {
-      setLast(chapter.slug, activeContentId || undefined, activeContentTitle)
+      setLast(chapter.slug, activeContentId || undefined, activeContentTitle, cur)
     } else if (cur === coverIndex) {
       setLast(chapter.slug, undefined, chapter.title)
     }
@@ -170,7 +170,7 @@ export function Chapter({ children }: { children: ReactNode }) {
   )
 
   const recap = (
-    <section id="chapter-recap" aria-labelledby="recap-heading" className="scroll-mt-20">
+    <section id="chapter-recap" aria-labelledby="recap-heading" data-reading-section className="scroll-mt-20">
       <h1 id="recap-heading" tabIndex={-1} className="mx-auto mb-5 max-w-[40rem] font-serif text-4xl font-semibold tracking-tight outline-none">Recap</h1>
       <ol className="mb-8 max-w-3xl list-decimal space-y-3 pl-6 leading-7">
         {chapter.recap.map((point) => <li key={point}>{point}</li>)}

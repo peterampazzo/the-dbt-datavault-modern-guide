@@ -18,7 +18,7 @@ test('Term definitions open by keyboard and close with Escape', async ({ page })
 
 test('glossary filtering narrows terms and About renders its sources and versions', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('link', { name: 'Browse the glossary' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Glossary', exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'About this guide' }).first()).toBeVisible()
   await page.goto('/#/glossary')
   const filter = page.getByRole('searchbox', { name: 'Filter terms' })
