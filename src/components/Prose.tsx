@@ -68,7 +68,7 @@ export function Section({
     <section id={!title ? sectionId : undefined} tabIndex={!title ? -1 : undefined} className={cn('mb-12', className)}>
       {title && (
         <h2 id={slugify(title)} tabIndex={-1} className="mx-auto mb-4 max-w-[40rem] scroll-mt-20 font-serif text-3xl font-semibold tracking-tight outline-none">
-          {pageNumber && <span aria-hidden className="mr-2 font-sans text-base tabular-nums text-muted-foreground">{pageNumber}</span>}
+          {pageNumber && <span aria-hidden className="mr-2 font-sans text-sm font-normal tabular-nums text-muted-foreground">{pageNumber}</span>}
           {title}
         </h2>
       )}
