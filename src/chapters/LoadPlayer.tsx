@@ -163,7 +163,7 @@ function Player() {
     prev ? (prev.tables.customer_h.filter((row) => !isGhost(row)).map((row) => String(row.ldts)).sort().at(-1) ?? '—') : '— (first run)'
 
   return (
-    <div className="min-w-0 rounded-2xl border bg-card/30 p-3 md:p-6">
+    <div className="min-w-0 border-t pt-6">
       <div data-testid="load-player-controls" className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div role="tablist" aria-label="Delivery batch" className="flex flex-wrap gap-1">

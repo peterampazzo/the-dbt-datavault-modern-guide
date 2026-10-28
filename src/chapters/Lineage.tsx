@@ -105,7 +105,7 @@ export default function Lineage() {
         keyPoint="dbt’s ref() dependencies connect landed data to stages, vault models, business-vault helpers and the mart."
       >
         <div
-          className="h-[34rem] overflow-hidden rounded-2xl border bg-card/30"
+          className="h-[34rem] overflow-hidden border-t pt-6"
           onKeyDown={(e) => {
             const node = (e.target as HTMLElement).closest<HTMLElement>('.react-flow__node')
             if (node?.dataset.id && (e.key === 'Enter' || e.key === ' ')) {

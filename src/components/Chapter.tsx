@@ -147,16 +147,16 @@ export function Chapter({ children }: { children: ReactNode }) {
   }, [mode, chapter.slug])
 
   const cover = (
-    <>
+    <div className="mx-auto max-w-[40rem]">
       {header}
-      <p className="mx-auto mb-3 flex w-fit rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">{audienceText[chapter.audience]}</p>
+      <p className="mb-3 flex w-fit rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">{audienceText[chapter.audience]}</p>
       <section aria-labelledby="chapter-pages-heading" className="max-w-3xl">
         <h2 id="chapter-pages-heading" className="mb-3 text-lg font-semibold">Pages in this chapter</h2>
         <ol className="space-y-2">
           {pages.map((page, index) => (
             <li key={page.id || 'page-one'}>
               <Link to={href(index + 1)} className="inline-flex items-baseline gap-2 rounded underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <span className="font-mono text-sm text-muted-foreground">{index + 1}.</span>
+                <span className="font-sans text-sm tabular-nums text-muted-foreground">{index + 1}.</span>
                 {page.title}
               </Link>
             </li>
@@ -166,7 +166,7 @@ export function Chapter({ children }: { children: ReactNode }) {
           Start <ArrowRight aria-hidden className="size-4" />
         </Link>
       </section>
-    </>
+    </div>
   )
 
   const recap = (

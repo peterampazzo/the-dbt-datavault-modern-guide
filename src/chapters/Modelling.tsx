@@ -529,7 +529,7 @@ function Stepper({ group }: { group: StepGroup }) {
   const s = STEPS[step]
 
   return (
-    <div className="rounded-2xl border bg-card/30 p-4 md:p-6">
+    <div className="border-t pt-6">
       <div className="mb-5 flex flex-wrap items-center gap-2">
         <div className="font-medium">Step {position + 1} of {steps.length} · {group}</div>
         <label className="flex w-full min-w-0 flex-wrap items-center gap-2 text-sm sm:w-auto">
@@ -562,7 +562,7 @@ function Stepper({ group }: { group: StepGroup }) {
 
       <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mb-5 min-h-[6.5rem]">
-          <div className="font-mono text-xs text-muted-foreground">Step {s.code} · {s.group}</div>
+          <div className="font-sans text-xs tabular-nums text-muted-foreground">Step {s.code} · {s.group}</div>
           <div className="mt-1 text-xl font-semibold">{s.title}</div>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-foreground/80">{s.body}</p>
           {step >= 8 && (

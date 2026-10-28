@@ -97,7 +97,7 @@ function WorkflowComparison() {
       </fieldset>
 
       {view === 'ssis' && (
-        <div className="space-y-3 rounded-xl border bg-card/50 p-3">
+        <div className="space-y-3 border-t pt-6">
           <div>
             <h3 className="mb-2 text-sm font-semibold">Control flow</h3>
             <div className="flex flex-wrap items-center gap-2">

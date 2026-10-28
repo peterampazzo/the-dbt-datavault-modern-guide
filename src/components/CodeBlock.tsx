@@ -79,11 +79,10 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
               onClick={onLineClick ? () => onLineClick(n) : undefined}
               className={cn(
                 'relative flex pr-4',
-                on && 'bg-sky-500/10',
+                on && 'border-l border-sky-400 bg-sky-500/10',
                 onLineClick && 'cursor-pointer hover:bg-muted/60',
               )}
             >
-              {on && <motion.span layoutId={undefined} className="absolute inset-y-0 left-0 w-0.5 bg-sky-400" />}
               <span className={cn('w-10 shrink-0 select-none pr-3 text-right', on ? 'text-foreground/80' : 'text-muted-foreground')}>{n}</span>
               <span className="whitespace-pre">
                 {line.map((t, j) => (

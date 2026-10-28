@@ -64,7 +64,7 @@ function ChangePlayer() {
           </li>
         ))}
       </ol>
-      <section aria-live="polite" aria-label={`Step ${step + 1}: ${current.title}`} className="min-h-32 rounded-xl border bg-card/50 p-4">
+      <section aria-live="polite" aria-label={`Step ${step + 1}: ${current.title}`} className="min-h-32 border-t pt-6">
         <h3 className="font-semibold">Step {step + 1} of {CHANGE_STEPS.length} · {current.title}</h3>
         <p className="mt-2 max-w-3xl text-sm leading-6">{current.description}</p>
 
@@ -131,7 +131,7 @@ function ChangePlayer() {
         )}
 
         {step === 5 && (
-          <blockquote className="mt-4 max-w-2xl rounded-lg border-l-4 border-sky-600 bg-sky-500/5 px-4 py-3 text-sm">
+          <blockquote className="mt-4 max-w-2xl rounded-xl border border-sky-600 bg-sky-500/5 px-4 py-3 text-sm">
             “payload and hashdiff columns match”
           </blockquote>
         )}

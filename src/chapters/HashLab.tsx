@@ -39,7 +39,7 @@ function Lab() {
   const set = (id: number, patch: Partial<Input>) => setInputs((xs) => xs.map((x) => (x.id === id ? { ...x, ...patch } : x)))
 
   return (
-    <div className="grid gap-6 rounded-2xl border bg-card/30 p-5 lg:grid-cols-[20rem_1fr]">
+    <div className="grid gap-6 border-t pt-6 lg:grid-cols-[20rem_1fr]">
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
           <Toggle value={kind} options={['hashkey', 'hashdiff']} onChange={setKind} />
@@ -136,7 +136,7 @@ function DiffFlip() {
   const after = dvHash(Object.values(p), { kind: 'hashdiff' }).hash
   const changed = before !== after
   return (
-    <div className="grid gap-6 rounded-2xl border bg-card/30 p-5 lg:grid-cols-2">
+    <div className="grid gap-6 border-t pt-6 lg:grid-cols-2">
       <div className="space-y-2">
         <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Today's delivery for customer 1</div>
         {(Object.keys(BASE) as (keyof Payload)[]).map((k) => (

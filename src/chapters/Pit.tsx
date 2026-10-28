@@ -30,7 +30,7 @@ export default function Pit() {
         lead="Move the snapshot date to see the PIT pointers select the valid row from each satellite."
         keyPoint="A PIT row identifies the satellite versions valid for one tracked key at one snapshot."
       >
-        <div className="rounded-2xl border bg-card/30 p-5">
+        <div className="border-t pt-6">
           <div className="mb-6 flex flex-wrap items-center gap-6">
             <div className="w-full max-w-md">
               <Slider aria-label="Snapshot date" value={[i]} min={0} max={SNAPSHOTS.length - 1} step={1} onValueChange={(v) => setI(Array.isArray(v) ? v[0] : (v as number))} />

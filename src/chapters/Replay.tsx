@@ -136,7 +136,7 @@ function ReplayLab({ initialChange }: { initialChange: ReplayChange }) {
         </button>
       </fieldset>
 
-      <output aria-live="polite" className="block rounded-lg border-l-4 border-sky-600 bg-sky-50 px-4 py-3 font-medium dark:bg-sky-950/40">
+      <output aria-live="polite" className="block rounded-xl border border-sky-600 bg-sky-50 px-4 py-3 font-medium dark:bg-sky-950/40">
         {verdictText}
       </output>
 

@@ -11,8 +11,8 @@ export function ChapterHeader({ title, lead }: { title: ReactNode; lead: ReactNo
   const chapter = CHAPTERS[n - 1]
   const part = PARTS.find((entry) => entry.n === chapter.part)
   return (
-    <header className="mx-auto mb-12 max-w-[40rem] text-center">
-      <motion.div initial={{ y: 8 }} animate={{ y: 0 }} className="mb-2 font-mono text-sm text-sky-700 dark:text-sky-400">
+    <header className="mx-auto mb-12 max-w-[40rem]">
+      <motion.div initial={{ y: 8 }} animate={{ y: 0 }} className="mb-2 font-sans text-sm tabular-nums text-sky-700 dark:text-sky-400">
         Chapter {n} of {CHAPTERS.length} · Part {chapter.part}: {part?.title} · about {chapter.minutes} min
       </motion.div>
       <motion.h1
@@ -68,11 +68,11 @@ export function Section({
     <section id={!title ? sectionId : undefined} tabIndex={!title ? -1 : undefined} className={cn('mb-12', className)}>
       {title && (
         <h2 id={slugify(title)} tabIndex={-1} className="mx-auto mb-4 max-w-[40rem] scroll-mt-20 font-serif text-3xl font-semibold tracking-tight outline-none">
-          {pageNumber && <span aria-hidden className="mr-2 font-mono text-base text-muted-foreground">{pageNumber}</span>}
+          {pageNumber && <span aria-hidden className="mr-2 font-sans text-base tabular-nums text-muted-foreground">{pageNumber}</span>}
           {title}
         </h2>
       )}
-      {lead && <p className="mb-5 max-w-3xl font-serif text-base leading-7 text-muted-foreground">{lead}</p>}
+      {lead && <p className="mb-5 max-w-3xl font-serif text-[1.2rem] leading-8 text-muted-foreground">{lead}</p>}
       {children}
       {keyPoint && (
         <p className="mt-6 max-w-3xl text-sm leading-6">
@@ -98,7 +98,7 @@ export function Callout({ kind = 'info', title, children }: { kind?: 'info' | 'w
     tip: 'border-emerald-500/40 bg-emerald-500/5',
   }[kind]
   return (
-    <div className={cn('my-6 max-w-3xl rounded-xl border-l-4 px-5 py-4', tone)}>
+    <div className={cn('my-6 max-w-3xl rounded-xl border px-5 py-4', tone)}>
       <div className="mb-1 font-semibold">{title}</div>
       <div className="text-sm leading-6 text-foreground/80">{children}</div>
     </div>

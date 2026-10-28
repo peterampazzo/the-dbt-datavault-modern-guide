@@ -155,7 +155,7 @@ export function Layout() {
           }}
         >
           <div className="mb-3 flex items-center justify-between px-2">
-            <h2 id="toc-heading" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Contents</h2>
+            <h2 id="toc-heading" className="text-xs font-medium text-muted-foreground">Contents</h2>
             <Button variant="ghost" size="icon" aria-label="Close contents" onClick={() => toc.current?.close()}>
               <X />
             </Button>
@@ -165,7 +165,7 @@ export function Layout() {
             if (chapters.length === 0) return null
             return (
               <section key={part.n} aria-labelledby={`part-${part.n}-heading`} className="mb-5">
-                <h3 id={`part-${part.n}-heading`} className="mb-1 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h3 id={`part-${part.n}-heading`} className="mb-1 px-2 text-xs font-semibold text-foreground/70">
                   Part {part.n}: {part.title}
                 </h3>
                 <ol className="space-y-0.5">
@@ -187,7 +187,7 @@ export function Layout() {
                               {isActive && (
                                 <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-muted" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
                               )}
-                              <span className={cn('relative font-mono text-xs', isActive ? 'text-foreground' : 'text-muted-foreground')}>{String(i + 1).padStart(2, '0')}</span>
+                              <span className={cn('relative font-sans text-xs tabular-nums', isActive ? 'text-foreground' : 'text-muted-foreground')}>{String(i + 1).padStart(2, '0')}</span>
                               <span className="relative min-w-0 flex-1">{c.title}</span>
                               {refresher && <span className="relative text-[10px] text-muted-foreground">refresher</span>}
                               {progress.done.includes(c.slug) && (
@@ -228,7 +228,7 @@ export function Layout() {
             )
           })}
           <div className="mt-8 space-y-1.5 px-2 text-xs text-muted-foreground">
-            <div className="font-medium uppercase tracking-wider">Legend</div>
+            <div className="font-medium">Legend</div>
             {[
               ['bg-sky-500', 'Hub', '_h'],
               ['bg-emerald-500', 'Link', '_l'],
@@ -259,7 +259,7 @@ export function Layout() {
               </Link>
             </div>
           )}
-          <footer className="mt-12 border-t pt-5">
+          <footer className="mx-auto mt-12 max-w-[40rem] border-t pt-5">
             <nav aria-label="Guide information" className="flex flex-wrap gap-4 text-sm">
               <Link to="/about" className="inline-flex min-h-11 items-center underline underline-offset-4">About this guide</Link>
               <Link to="/glossary" className="inline-flex min-h-11 items-center underline underline-offset-4">Glossary</Link>

@@ -155,6 +155,17 @@ main p {
   max-width: 75ch;
 }
 
+main p,
+main li {
+  text-wrap: pretty;
+}
+
+main h1,
+main h2,
+main h3 {
+  text-wrap: balance;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
