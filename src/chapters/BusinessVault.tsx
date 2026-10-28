@@ -3,9 +3,9 @@ import { Link } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
 import { DataTable } from '@/components/DataTable'
-import { Callout, ChapterHeader, P, Section } from '@/components/Prose'
+import { Callout, ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
-import { integratedCustomer, isGhost, orderTotals, shopCustomerSatellite, simulate, type CustomerPrecedence, type Row } from '@/lib/dv/engine'
+import { integratedCustomer, isGhost, orderTotals, pit, shopCustomerSatellite, simulate, type CustomerPrecedence, type Row } from '@/lib/dv/engine'
 import { MODEL, SNIPPETS } from '@/lib/dv/models'
 
 const run = simulate()[2]
@@ -77,6 +77,62 @@ function IntegratedCustomers({ precedence }: { precedence: CustomerPrecedence })
   )
 }
 
+function CustomerGrainExample() {
+  const [scope, setScope] = useState<'all' | 'latest'>('all')
+  const data = useMemo(() => {
+    const alice = run.source.customer.find((row) => String(row.c_name).startsWith('Alice'))
+    const hub = run.tables.customer_h.find((row) => row.c_custkey === alice?.c_custkey && !isGhost(row))
+    const customerHash = String(hub?.hk_customer_h)
+    const satellites = new Map(run.tables.customer_n_s.map((row) => [`${row.hk_customer_h}|${row.ldts}`, row] as const))
+    const snapshots = pit(run.tables)
+      .filter((row) => String(row.c_custkey) === String(alice?.c_custkey))
+      .sort((a, b) => String(a.sdts).localeCompare(String(b.sdts)))
+      .map((row) => ({
+        sdts: String(row.sdts),
+        segment: String(satellites.get(`${row.customer_n_s_hk}|${row.customer_n_s_ldts}`)?.c_mktsegment),
+      }))
+    const orderKeys = new Map(run.tables.order_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_order_h), String(row.o_orderkey)] as const))
+    const orders = run.tables.order_customer_nh_l
+      .filter((row) => !isGhost(row) && String(row.hk_customer_h) === customerHash)
+      .map((row) => ({ key: String(orderKeys.get(String(row.hk_order_h))), total: Number(row.o_totalprice) }))
+      .sort((a, b) => Number(a.key) - Number(b.key))
+    return { name: String(alice?.c_name), snapshots, orders }
+  }, [])
+  const selectedSnapshots = scope === 'all' ? data.snapshots : data.snapshots.slice(-1)
+  const joinedRows = selectedSnapshots.flatMap((snapshot) => data.orders.map((order) => ({ snapshot, order })))
+  const total = joinedRows.reduce((sum, row) => sum + row.order.total, 0)
+
+  return (
+    <div className="border-t pt-6">
+      <div role="group" aria-label="Choose the report snapshot scope" className="mb-4 flex flex-wrap gap-2">
+        <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          All snapshots
+        </button>
+        <button type="button" aria-pressed={scope === 'latest'} onClick={() => setScope('latest')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          One snapshot (latest)
+        </button>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-xl border p-4">
+          <h3 className="mb-2 text-sm font-semibold">{data.name}’s PIT / dimension rows</h3>
+          <ul className="space-y-1 text-xs">
+            {selectedSnapshots.map((row) => <li key={row.sdts}><code>{row.sdts}</code> · {row.segment}</li>)}
+          </ul>
+        </div>
+        <div className="rounded-xl border p-4">
+          <h3 className="mb-2 text-sm font-semibold">{data.name}’s orders</h3>
+          <ul className="space-y-1 text-xs">
+            {data.orders.map((row) => <li key={row.key}>Order <code>{row.key}</code> · {row.total}</li>)}
+          </ul>
+        </div>
+      </div>
+      <p className="mt-4 text-sm leading-6">
+        {selectedSnapshots.length} PIT rows × {data.orders.length} orders = {joinedRows.length} joined rows. Summed order total: {total}.
+      </p>
+    </div>
+  )
+}
+
 export default function BusinessVault() {
   const [precedence, setPrecedence] = useState<CustomerPrecedence>(PRECEDENCES[0].value)
   const totals = useMemo(() => orderTotals(run.tables), [])
@@ -98,6 +154,16 @@ export default function BusinessVault() {
             </tbody>
           </table>
         </div>
+      </Section>
+
+      <Section
+        title="One grain, one time rule per report"
+        lead={<><Term id="grain">Grain</Term> describes what one row represents. <Code>dim_customer</Code> has one row per customer per <Code>sdts</Code>.</>}
+        keyPoint="Without choosing a snapshot, each order joins once to every snapshot row for its customer."
+      >
+        <P>Joining all of a customer’s dimension snapshots to orders counts each order once per snapshot. Choose the report’s time rule before adding the rows.</P>
+        <CustomerGrainExample />
+        <CodeBlock title="Singular test for the dimension grain" lang="sql" code={SNIPPETS.dim_customer_grain_test.code} />
       </Section>
 
       <Section title="Precedence toggle" lead={<><Term id="precedence">Precedence</Term> chooses which source wins when both have a non-null profile value. Each cell shows its winning source.</>} keyPoint="Precedence belongs in a business-vault model, not in a raw satellite.">
@@ -136,12 +202,12 @@ export default function BusinessVault() {
         </div>
       </Section>
 
-      <Section title="Views first; one snapshot control for every PIT" lead="Use views for derived end dates and current flags. A control snapshot table gives every PIT the same reporting clock." keyPoint="A business date says when something happened; a load date says when the warehouse received it. Keep both.">
+      <Section title="Views first; one snapshot control for every PIT" lead="Use views for derived end dates and current flags. A control snapshot table gives every PIT the same reporting clock." keyPoint={<><Term id="business-date">Business date</Term> says when something happened; a load date says when the warehouse received it. Keep both.</>}>
         <P>
           A PIT is a set of pointers at a snapshot date. Keep one <code>control_snap_v1</code> policy for those snapshots rather than letting each PIT invent a calendar.
         </P>
         <P>
-          The business date comes from the source event, such as an order date. The load date comes from the delivery. A late delivery can change what the warehouse knew without changing the event’s business date.
+          The <Term id="business-date">business date</Term> comes from the source event, such as an order date. The load date comes from the delivery. A late delivery can change what the warehouse knew without changing the event’s business date.
         </P>
         <Link className="font-medium text-sky-700 underline dark:text-sky-400" to="/pit">Review snapshots and PIT pointers →</Link>
       </Section>

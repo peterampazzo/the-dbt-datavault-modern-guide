@@ -529,6 +529,11 @@ export function simulate(opts: SimOptions = {}): BatchRun[] {
   return runs
 }
 
+export function oneShotEffSat(): Row[] {
+  const stagedDeliveries = BATCHES.flatMap((_, index) => stageCustomer(sourceFor(index).customer))
+  return loadEffSat([], stagedDeliveries, 'hk_customer_nation_l', BATCHES.at(-1)!).rows
+}
+
 export type CustomerPrecedence =
   | readonly ['crm/customer', 'shop/customer']
   | readonly ['shop/customer', 'crm/customer']

@@ -11,6 +11,7 @@ import { Link } from 'react-router'
 import { BATCHES } from '@/lib/dv/dataset'
 import { CodeBlock } from '@/components/CodeBlock'
 import { SNIPPETS } from '@/lib/dv/models'
+import { simulate } from '@/lib/dv/engine'
 
 const CHANGES = [
   { icon: Boxes, title: 'New sources', text: 'New internal systems, external feeds, acquisitions and mergers.' },
@@ -310,6 +311,69 @@ const COMPARE = [
   ['Reporting', 'Needs marts on top', 'Directly from the warehouse'],
 ]
 
+function CustomerHistory() {
+  const runs = simulate()
+  const [view, setView] = useState<'report' | 'source' | 'vault'>('report')
+  const alice = runs[0].source.customer.find((row) => String(row.c_name).startsWith('Alice'))
+  const aliceName = String(alice?.c_name)
+  const reportRow = runs[1].source.customer.find((row) => row.c_name === alice?.c_name)
+  const currentRow = runs.at(-1)!.source.customer.find((row) => row.c_name === alice?.c_name)
+  const versions = runs.at(-1)!.tables.customer_n_s
+    .filter((row) => row.c_name === alice?.c_name)
+    .sort((a, b) => String(a.ldts).localeCompare(String(b.ldts)))
+  const options = [
+    { id: 'report', label: 'Report on 2 Jan' },
+    { id: 'source', label: 'Source today' },
+    { id: 'vault', label: 'With a vault' },
+  ] as const
+
+  return (
+    <div className="border-t pt-6">
+      <div role="group" aria-label="Choose which customer history to see" className="mb-4 flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            aria-pressed={view === option.id}
+            onClick={() => setView(option.id)}
+            className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+      {view === 'report' && reportRow && (
+        <p className="text-sm leading-6">
+          {aliceName}’s segment on {runs[1].ldts}: <strong>{String(reportRow.c_mktsegment)}</strong>.
+        </p>
+      )}
+      {view === 'source' && currentRow && (
+        <p className="text-sm leading-6">
+          The current source row for {aliceName} says <strong>{String(currentRow.c_mktsegment)}</strong> at {runs.at(-1)!.ldts}; it has no previous segment value.
+        </p>
+      )}
+      {view === 'vault' && (
+        <div className="overflow-x-auto rounded-xl border">
+          <table className="w-full text-left text-sm">
+            <caption className="sr-only">{aliceName}’s customer_n_s versions</caption>
+            <thead className="bg-muted/60">
+              <tr><th scope="col" className="px-3 py-2">ldts</th><th scope="col" className="px-3 py-2">c_mktsegment</th></tr>
+            </thead>
+            <tbody>
+              {versions.map((row) => (
+                <tr key={String(row.ldts)} className="border-t">
+                  <td className="break-all px-3 py-2 font-mono text-xs">{String(row.ldts)}</td>
+                  <td className="px-3 py-2">{String(row.c_mktsegment)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function WhatIsDataVault() {
   return (
     <Chapter>
@@ -343,6 +407,8 @@ export default function WhatIsDataVault() {
             </div>
           ))}
         </div>
+        <P>The source shows the row it knows now; the vault keeps the versions it knew then.</P>
+        <CustomerHistory />
       </Section>
 
       <Section

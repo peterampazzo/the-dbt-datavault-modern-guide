@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type KeyboardEvent } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
@@ -6,8 +6,8 @@ import { PersistentStagingDrawing } from '@/components/drawing/PersistentStaging
 import { VacuumDrawing } from '@/components/drawing/VacuumDrawing'
 import { Term } from '@/components/Term'
 import { CodeBlock } from '@/components/CodeBlock'
-import { SNIPPETS } from '@/lib/dv/models'
-import { REPLAY_TABLES, replay, short, type ReplayChange, type ReplayRowDiff, type ReplayCellStatus } from '@/lib/dv/engine'
+import { MODEL, SNIPPETS } from '@/lib/dv/models'
+import { oneShotEffSat, REPLAY_TABLES, replay, short, simulate, type ReplayChange, type ReplayRowDiff, type ReplayCellStatus } from '@/lib/dv/engine'
 
 const changes: Record<ReplayChange, string> = {
   none: 'No change',
@@ -95,8 +95,8 @@ function ReplayLab({ initialChange }: { initialChange: ReplayChange }) {
   }
 
   return (
-    <div className="space-y-5">
-      <fieldset className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2">
+    <div className="space-y-1.5">
+      <fieldset className="grid gap-3 rounded-xl border bg-card p-3 sm:grid-cols-2">
         <legend className="sr-only">Replay lab controls</legend>
         <div>
           <label className="mb-2 block text-sm font-medium" htmlFor="landing-toggle">Landing data</label>
@@ -250,6 +250,179 @@ const losses = [
   ['A changed model split', 'Moving address and name into separate satellites needs their old source values to rebuild both histories.', undefined],
 ] as const
 
+const REBUILD_MODELS = downstreamModels('customer_n_s')
+const RAW_VAULT_MODELS = Object.values(MODEL)
+  .filter((model) => new Set(['hub', 'link', 'sat']).has(model.layer))
+  .map((model) => model.name)
+const REPLAY_STAGE_INPUTS = upstreamModels(RAW_VAULT_MODELS)
+  .filter((name) => MODEL[name].layer === 'stage')
+
+function downstreamModels(root: string) {
+  const selected = new Set([root])
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const model of Object.values(MODEL)) {
+      if (!selected.has(model.name) && model.deps.some((dependency) => selected.has(dependency))) {
+        selected.add(model.name)
+        changed = true
+      }
+    }
+  }
+  return Object.values(MODEL).filter((model) => selected.has(model.name)).map((model) => model.name)
+}
+
+function upstreamModels(roots: string[]) {
+  const selected = new Set(roots)
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const name of [...selected]) {
+      for (const dependency of MODEL[name].deps) {
+        if (!selected.has(dependency)) {
+          selected.add(dependency)
+          changed = true
+        }
+      }
+    }
+  }
+  return Object.values(MODEL).filter((model) => selected.has(model.name)).map((model) => model.name)
+}
+
+const REPLAY_CHOICES = [
+  { id: 'rerun', label: 'Rerun' },
+  { id: 'rebuild', label: 'Rebuild' },
+  { id: 'ordered', label: 'Replay in order' },
+] as const
+
+type ReplayChoice = (typeof REPLAY_CHOICES)[number]['id']
+
+function EffectivityComparison() {
+  const result = useMemo(() => {
+    const runs = simulate()
+    const chiara = runs[0].source.customer.find((row) => row.c_name === 'Chiara Rossi')
+    const italy = runs[0].source.nation.find((row) => row.n_name === 'Italy')
+    const chiaraItaly = runs[0].stage.stg_customer.find(
+      (row) => row.c_custkey === chiara?.c_custkey && row.c_nationkey === italy?.n_nationkey,
+    )
+    const linkKey = chiaraItaly?.hk_customer_nation_l
+    const ordered = linkKey === undefined
+      ? []
+      : runs.at(-1)!.tables.customer_nation_es
+          .filter((row) => row.hk_customer_nation_l === linkKey)
+          .sort((a, b) => String(a.ldts).localeCompare(String(b.ldts)))
+    const oneShot = linkKey === undefined
+      ? undefined
+      : oneShotEffSat().find((row) => row.hk_customer_nation_l === linkKey)
+    return { name: chiara?.c_name, nation: italy?.n_name, ordered, oneShot }
+  }, [])
+
+  return (
+    <div className="mt-6 border-t pt-6">
+      <h3 className="mb-3 text-base font-semibold">One-shot effectivity</h3>
+      <p className="mb-4 text-sm leading-6">
+        {String(result.name)}’s {String(result.nation)} link changes in the ordered simulation, but a single union load sees the link as present.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-xl border p-4">
+          <h4 className="mb-2 text-sm font-semibold">Ordered simulate()</h4>
+          <ul className="space-y-1 text-sm">
+            {result.ordered.map((row) => (
+              <li key={String(row.ldts)}>
+                <code>{String(row.ldts)}</code>: {row.is_active ? 'active' : 'inactive'}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-xl border p-4">
+          <h4 className="mb-2 text-sm font-semibold">One-shot union</h4>
+          <p className="text-sm">
+            {result.oneShot ? (result.oneShot.is_active ? 'Active' : 'Inactive') : 'No row'}
+            {result.oneShot && <> at <code>{String(result.oneShot.ldts)}</code></>}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ReplayChoices() {
+  const [choice, setChoice] = useState<ReplayChoice>('rerun')
+
+  function moveTab(event: KeyboardEvent<HTMLButtonElement>, current: number) {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+    event.preventDefault()
+    const direction = event.key === 'ArrowRight' ? 1 : -1
+    const nextIndex = (current + direction + REPLAY_CHOICES.length) % REPLAY_CHOICES.length
+    const next = REPLAY_CHOICES[nextIndex]
+    setChoice(next.id)
+    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[nextIndex]?.focus()
+  }
+
+  const panelId = `replay-choice-${choice}-panel`
+  const tabId = `replay-choice-${choice}-tab`
+
+  return (
+    <div className="max-w-3xl">
+      <div role="tablist" aria-label="Choose a recovery operation" className="flex flex-wrap gap-1">
+        {REPLAY_CHOICES.map((option, index) => (
+          <button
+            key={option.id}
+            id={`replay-choice-${option.id}-tab`}
+            type="button"
+            role="tab"
+            aria-selected={choice === option.id}
+            aria-controls={`replay-choice-${option.id}-panel`}
+            tabIndex={choice === option.id ? 0 : -1}
+            onClick={() => setChoice(option.id)}
+            onKeyDown={(event) => moveTab(event, index)}
+            className="rounded-md border px-3 py-2 text-sm aria-selected:bg-primary aria-selected:text-primary-foreground"
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id={panelId} aria-labelledby={tabId} tabIndex={0} className="mt-4 space-y-3">
+        {choice === 'rerun' && (
+          <>
+            <CodeBlock title="Retry the failed run" lang="bash" code="dbt retry" />
+            <p className="text-sm leading-6">
+              A retry can continue after a half-failed run because raw-vault loads are insert-only; already-loaded rows are skipped.
+            </p>
+            <p className="text-sm leading-6">
+              <strong>Possible scope from the previous <code>customer_n_s+</code> selection:</strong> <code className="whitespace-normal">{REBUILD_MODELS.join(' ')}</code>
+            </p>
+            <p className="text-sm leading-6"><strong>Wrong choice:</strong> when model logic changed and earlier rows need to be rebuilt under the new logic.</p>
+          </>
+        )}
+        {choice === 'rebuild' && (
+          <>
+            <CodeBlock title="Rebuild the edited model and its descendants" lang="bash" code="dbt build --full-refresh --select customer_n_s+" />
+            <p className="text-sm leading-6">
+              With complete inputs, the <code>+</code> selects the edited <code>customer_n_s</code> and every downstream model: <code className="whitespace-normal">{REBUILD_MODELS.join(' ')}</code>.
+            </p>
+            <p className="text-sm leading-6"><strong>Wrong choice:</strong> when retained staging is incomplete, because a full refresh cannot recreate missing deliveries.</p>
+          </>
+        )}
+        {choice === 'ordered' && (
+          <>
+            <CodeBlock title="Illustrative ordered replay loop" lang="bash" code={SNIPPETS.ordered_replay.code} />
+            <CodeBlock title="Filter each stage model to one delivery" lang="sql" code={SNIPPETS.ordered_replay.stageFilter} />
+            <p className="text-sm leading-6">
+              <Term id="ordered-replay">Ordered replay</Term> loads every delivery from persistent staging, oldest first, into a separate target. Validate it with the “Prove it” fingerprint, then switch readers.
+            </p>
+            <p className="text-sm leading-6">
+              <strong>Raw-vault models:</strong> <code className="whitespace-normal">{RAW_VAULT_MODELS.join(' ')}</code>
+              <br /><strong>Stage inputs:</strong> <code className="whitespace-normal">{REPLAY_STAGE_INPUTS.join(' ')}</code>
+            </p>
+            <p className="text-sm leading-6"><strong>Wrong choice:</strong> when persistent staging has already lost a delivery, because replay cannot restore missing evidence.</p>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function Replay() {
   const location = useLocation()
   const initialChange = changeFromSearch(location.search) ?? 'none'
@@ -263,6 +436,9 @@ function Replay() {
         keyPoint="A full refresh can only rebuild what the landing layer still contains."
       >
         <ReplayLab key={`${location.pathname}${location.search}`} initialChange={initialChange} />
+        <P className="mb-0">
+          A new attribute needs a written history decision: fill its history from persistent staging, as the lab’s rebuild demonstrates, or start it empty from the next delivery.
+        </P>
       </Section>
       <Section
         title="What truncated landing loses"
@@ -330,6 +506,14 @@ function Replay() {
       >
         <P>Keep production untouched. Build from persistent staging with <Code>dbt build --full-refresh --target dev</Code>, then compare each raw-vault table’s row count and hash-of-hashes with the corresponding production table. A match means one history in two shapes; a mismatch points to missing data, different rules or an unreproducible build.</P>
         <CodeBlock title="Ad-hoc Spark SQL analysis · repeat per table" code={SNIPPETS.vault_fingerprint.code} />
+      </Section>
+      <Section
+        title="Rerun, rebuild or replay?"
+        lead="Choose the recovery path that matches the failure, the model change and the history still available."
+        keyPoint="Retry a run, rebuild changed logic or replay retained deliveries in order."
+      >
+        <ReplayChoices />
+        <EffectivityComparison />
       </Section>
       <Section
         title="Until you’re replay-safe"

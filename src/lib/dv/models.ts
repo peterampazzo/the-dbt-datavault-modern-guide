@@ -1,5 +1,6 @@
 /** The dbt project this guide is built around: model files as you would write them with datavault4dbt. */
 
+import { BATCHES } from './dataset'
 import { orderTotals, simulate } from './engine'
 
 export type Layer = 'seed' | 'stage' | 'hub' | 'link' | 'sat' | 'bv' | 'mart'
@@ -601,6 +602,22 @@ SELECT
     count(*) AS row_count,
     sha2(concat_ws('||', sort_array(collect_list(row_hash))), 256) AS table_hash
 FROM row_hashes`,
+  },
+  ordered_replay: {
+    name: 'ordered_replay',
+    code: `# Illustrative loop: replay retained deliveries oldest first
+for delivery_ldts in \\
+  ${BATCHES.map((ldts) => `'${ldts}'`).join(' \\\n  ')}; do
+  dbt build --target replay --select raw_vault --vars "{delivery_ldts: '$delivery_ldts'}"
+done`,
+    stageFilter: `WHERE ldts = '{{ var("delivery_ldts") }}'`,
+  },
+  dim_customer_grain_test: {
+    name: 'dim_customer_grain_test',
+    code: `select hk_customer_d, sdts, count(*) as duplicate_rows
+from {{ ref('dim_customer') }}
+group by hk_customer_d, sdts
+having count(*) > 1`,
   },
   dbt_project_raw_vault: {
     name: 'dbt_project_raw_vault',

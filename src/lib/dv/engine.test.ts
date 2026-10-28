@@ -4,6 +4,7 @@ import {
   END,
   integratedCustomer,
   isGhost,
+  oneShotEffSat,
   orderTotals,
   pit,
   replay,
@@ -56,6 +57,20 @@ describe('simulate', () => {
     expect(es).toHaveLength(5 + 4 + 2)
   })
 
+  it('keeps Chiara’s Italy link active when effectivity is loaded from a union', () => {
+    const chiara = runs[0].source.customer.find((row) => row.c_name === 'Chiara Rossi')!
+    const italy = runs[0].source.nation.find((row) => row.n_name === 'Italy')!
+    expect(chiara.c_nationkey).toBe(italy.n_nationkey)
+
+    const italyLink = runs[0].stage.stg_customer.find((row) => row.c_custkey === chiara.c_custkey)!
+    const linkKey = italyLink.hk_customer_nation_l
+    const ordered = last.customer_nation_es.find((row) => row.hk_customer_nation_l === linkKey && row.is_active === false)
+    const oneShot = oneShotEffSat().find((row) => row.hk_customer_nation_l === linkKey)
+
+    expect(ordered).toBeDefined()
+    expect(oneShot?.is_active).toBe(true)
+  })
+
   it('re-inserts the whole multi-active set on change', () => {
     expect(real(last.customer_phone_ma_s)).toHaveLength(3 + 3 + 1)
   })
@@ -78,6 +93,33 @@ describe('simulate', () => {
     const daniel = p.find((r) => r.c_custkey === 4 && r.sdts === '2024-01-04 07:00:00')!
     expect(daniel.customer_n_s_ldts).toBe('2024-01-01 06:00:00')
     expect(daniel.customer_phone_ma_s_hk).toBe(UNKNOWN_KEY)
+  })
+
+  it('keeps business dates on order-customer links for cutoff filtering', () => {
+    const orderKeys = new Map(last.order_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_order_h), String(row.o_orderkey)] as const))
+    const orders = real(last.order_customer_nh_l)
+    const byBusinessDate = orders
+      .filter((row) => String(row.o_orderdate) <= '2023-12-31')
+      .map((row) => orderKeys.get(String(row.hk_order_h)))
+      .sort()
+    const byLoadDate = orders.filter((row) => String(row.ldts).slice(0, 10) <= '2023-12-31')
+
+    expect(byBusinessDate).toEqual(['101', '102', '103'])
+    expect(byLoadDate).toHaveLength(0)
+  })
+
+  it('multiplies Alice’s order totals across PIT snapshots until one snapshot is selected', () => {
+    const aliceSnapshots = pit(last).filter((row) => row.c_custkey === 1)
+    const aliceOrders = real(last.order_customer_nh_l).filter((row) => row.hk_customer_h === hk(1))
+    const allSnapshotRows = aliceSnapshots.flatMap((snapshot) => aliceOrders.map((order) => ({ snapshot, order })))
+    const latestSnapshotRows = aliceOrders
+
+    expect(aliceSnapshots).toHaveLength(4)
+    expect(aliceOrders).toHaveLength(2)
+    expect(allSnapshotRows).toHaveLength(8)
+    expect(allSnapshotRows.reduce((sum, row) => sum + Number(row.order.o_totalprice), 0)).toBe(1240)
+    expect(latestSnapshotRows).toHaveLength(2)
+    expect(latestSnapshotRows.reduce((sum, row) => sum + Number(row.o_totalprice), 0)).toBe(310)
   })
 })
 

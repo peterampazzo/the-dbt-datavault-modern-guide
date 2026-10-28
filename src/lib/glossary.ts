@@ -233,6 +233,30 @@ const GLOSSARY_DATA = [
     chapter: 'one-lake',
   },
   {
+    id: 'business-date',
+    term: 'Business date',
+    definition: 'The date an event happened in the business, independent of when the vault loaded it.',
+    chapter: 'pit',
+  },
+  {
+    id: 'cutoff',
+    term: 'Cutoff',
+    definition: 'The date or time boundary used to decide which rows a report includes.',
+    chapter: 'pit',
+  },
+  {
+    id: 'grain',
+    term: 'Grain',
+    definition: 'The level of detail represented by one row in a table or report.',
+    chapter: 'business-vault',
+  },
+  {
+    id: 'ordered-replay',
+    term: 'Ordered replay',
+    definition: 'Reprocessing retained deliveries one at a time in chronological load-date order.',
+    chapter: 'replay',
+  },
+  {
     id: 'precedence',
     term: 'Precedence',
     definition: 'Precedence is the declared order used to choose among available source values.',

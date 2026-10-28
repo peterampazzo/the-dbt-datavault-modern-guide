@@ -87,8 +87,8 @@ export function RecapExtras({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-export function P({ children }: { children: ReactNode }) {
-  return <p className="mb-4 max-w-3xl font-serif text-lg leading-7 text-foreground/90">{children}</p>
+export function P({ children, className }: { children: ReactNode; className?: string }) {
+  return <p className={cn('mb-4 max-w-3xl font-serif text-lg leading-7 text-foreground/90', className)}>{children}</p>
 }
 
 export function Callout({ kind = 'info', title, children }: { kind?: 'info' | 'warn' | 'tip'; title: string; children: ReactNode }) {
