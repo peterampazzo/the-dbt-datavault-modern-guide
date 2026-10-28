@@ -584,7 +584,13 @@ export const MODEL = Object.fromEntries(MODELS.map((m) => [m.name, m])) as Recor
 
 const ORDER_TOTAL_RUN = simulate()[2]
 const ORDER_TOTAL_EVENTS = ORDER_TOTAL_RUN.tables.order_customer_nh_l.filter((row) => !row.__ghost)
-const ORDER_TOTAL_EXPECTED = orderTotals(ORDER_TOTAL_RUN.tables)
+const ORDER_TOTAL_TEST_EXPECTED = orderTotals(ORDER_TOTAL_RUN.tables).map((row) => ({
+  hk_customer_h: row.hk_customer_h,
+  ldts: row.ldts,
+  order_count: row.order_count,
+  total_price: row.total_price,
+  hd_customer_order_total_s: row.hd_customer_order_total_s,
+}))
 
 export const SNIPPETS = {
   vault_fingerprint: {
@@ -674,6 +680,8 @@ WHERE precedence = 1`,
   },
   customer_order_total_unit_test: {
     name: 'customer_order_total_unit_test',
+    givenRows: ORDER_TOTAL_EVENTS,
+    expectedRows: ORDER_TOTAL_TEST_EXPECTED,
     code: `unit_tests:
   - name: customer_order_total_s_totals
     model: customer_order_total_s
@@ -683,13 +691,22 @@ WHERE precedence = 1`,
 ${ORDER_TOTAL_EVENTS.map((row) => `          - ${JSON.stringify(row)}`).join('\n')}
     expect:
       rows:
-${ORDER_TOTAL_EXPECTED.map((row) => `          - ${JSON.stringify({
-  hk_customer_h: row.hk_customer_h,
-  ldts: row.ldts,
-  order_count: row.order_count,
-  total_price: row.total_price,
-  hd_customer_order_total_s: row.hd_customer_order_total_s,
-})}`).join('\n')}`,
+${ORDER_TOTAL_TEST_EXPECTED.map((row) => `          - ${JSON.stringify(row)}`).join('\n')}`,
+  },
+  dim_customer_contract: {
+    name: 'dim_customer_contract',
+    code: `models:
+  - name: dim_customer
+    config:
+      contract:
+        enforced: true
+    columns:
+      - {name: hk_customer_d, data_type: string}
+      - {name: sdts, data_type: timestamp}
+      - {name: c_name, data_type: string}
+      - {name: c_address, data_type: string}
+      - {name: c_mktsegment, data_type: string}
+      - {name: mobile_phone, data_type: string}`,
   },
   business_rules_in_business_vault: {
     name: 'business_rules_in_business_vault',

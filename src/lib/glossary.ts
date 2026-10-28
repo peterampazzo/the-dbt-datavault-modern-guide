@@ -163,6 +163,12 @@ const GLOSSARY_DATA = [
     chapter: 'dbt-primer',
   },
   {
+    id: 'model-contract',
+    term: 'Model contract',
+    definition: 'A model contract checks a model’s declared column names and data types when it is built.',
+    chapter: 'business-vault',
+  },
+  {
     id: 'ref-function',
     term: 'ref()',
     definition: 'ref() names another dbt model and adds its dependency to the build graph.',

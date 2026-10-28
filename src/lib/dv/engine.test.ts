@@ -197,6 +197,27 @@ describe('business vault', () => {
     expect(totals.find((row) => row.hk_customer_h === hk(1) && row.order_count === 1)?.hd_customer_order_total_s)
       .toBe(dvHash([1, 250], { kind: 'hashdiff' }).hash)
   })
+
+  it('uses the selected aggregate for cumulative order totals', () => {
+    const alice = runs[2].source.customer.find((row) => String(row.c_name).startsWith('Alice'))
+    const aliceHub = runs[2].tables.customer_h.find((row) => row.c_custkey === alice?.c_custkey && !isGhost(row))
+    const aliceKey = String(aliceHub?.hk_customer_h)
+    const aliceOrders = runs[2].tables.order_customer_nh_l.filter(
+      (row) => !isGhost(row) && String(row.hk_customer_h) === aliceKey,
+    )
+    const latestLdts = [...new Set(aliceOrders.map((row) => String(row.ldts)))].sort().at(-1)
+    const latestOrders = aliceOrders.filter((row) => !latestLdts || String(row.ldts) <= latestLdts)
+    const expectedSum = latestOrders.reduce((sum, row) => sum + Number(row.o_totalprice ?? 0), 0)
+    const expectedMax = latestOrders.reduce(
+      (maximum, row) => Math.max(maximum, Number(row.o_totalprice ?? 0)),
+      Number.NEGATIVE_INFINITY,
+    )
+    const totals = orderTotals(runs[2].tables, { aggregate: 'max' })
+    const latestTotal = totals.find((row) => String(row.hk_customer_h) === aliceKey && String(row.ldts) === latestLdts)
+
+    expect(latestTotal?.total_price).toBe(expectedMax)
+    expect(latestTotal?.total_price).not.toBe(expectedSum)
+  })
 })
 
 describe('replay', () => {

@@ -133,6 +133,99 @@ function CustomerGrainExample() {
   )
 }
 
+function CustomerOrderTotalTest() {
+  const [aggregate, setAggregate] = useState<'sum' | 'max'>('sum')
+  const test = SNIPPETS.customer_order_total_unit_test
+  const expectedRows = test.expectedRows
+  const actualRows = useMemo(
+    () => orderTotals({ order_customer_nh_l: test.givenRows }, { aggregate }),
+    [aggregate, test.givenRows],
+  )
+  const actualByKey = new Map(actualRows.map((row) => [`${row.hk_customer_h}|${row.ldts}`, row]))
+  const customerIds = new Map(
+    run.tables.customer_h
+      .filter((row) => !isGhost(row))
+      .map((row) => [String(row.hk_customer_h), String(row.c_custkey)] as const),
+  )
+  const matches = expectedRows.length === actualRows.length && expectedRows.every((expected) => {
+    const actual = actualByKey.get(`${expected.hk_customer_h}|${expected.ldts}`)
+    return actual
+      && actual.order_count === expected.order_count
+      && actual.total_price === expected.total_price
+      && actual.hd_customer_order_total_s === expected.hd_customer_order_total_s
+  })
+
+  return (
+    <div className="mx-auto max-w-[48rem] border-t pt-6">
+      <fieldset className="mb-4">
+        <legend className="sr-only">Choose the order total logic</legend>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            aria-pressed={aggregate === 'sum'}
+            onClick={() => setAggregate('sum')}
+            className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+          >
+            Model as written (sum)
+          </button>
+          <button
+            type="button"
+            aria-pressed={aggregate === 'max'}
+            onClick={() => setAggregate('max')}
+            className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+          >
+            Logic broken (max)
+          </button>
+        </div>
+      </fieldset>
+      <div className="mb-4 max-h-48 overflow-auto">
+        <CodeBlock title="Existing unit test" code={test.code} lang="yaml" />
+      </div>
+      <div className="mb-3 flex items-center gap-2">
+        <span className="text-sm font-medium">Expected vs actual</span>
+        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${matches ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200' : 'bg-rose-500/15 text-rose-800 dark:text-rose-200'}`}>
+          {matches ? 'PASS' : 'FAIL'}
+        </span>
+      </div>
+      <div className="overflow-auto rounded-xl border" tabIndex={0} aria-label="Expected and actual order totals">
+        <table className="w-full min-w-[42rem] border-collapse text-xs">
+          <thead>
+            <tr className="bg-muted/60">
+              <th className="px-2 py-1 text-left">Customer</th>
+              <th className="px-2 py-1 text-left">Load date</th>
+              <th className="px-2 py-1 text-right">Expected count</th>
+              <th className="px-2 py-1 text-right">Actual count</th>
+              <th className="px-2 py-1 text-right">Expected total</th>
+              <th className="px-2 py-1 text-right">Actual total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {expectedRows.map((expected) => {
+              const actual = actualByKey.get(`${expected.hk_customer_h}|${expected.ldts}`)
+              const rowMatches = actual
+                && actual.order_count === expected.order_count
+                && actual.total_price === expected.total_price
+                && actual.hd_customer_order_total_s === expected.hd_customer_order_total_s
+              return (
+                <tr key={`${expected.hk_customer_h}|${expected.ldts}`} className={`border-t ${rowMatches ? '' : 'bg-rose-500/10'}`}>
+                  <th scope="row" className="whitespace-nowrap px-2 py-1 text-left font-medium">
+                    Customer {customerIds.get(String(expected.hk_customer_h)) ?? '—'}
+                  </th>
+                  <td className="whitespace-nowrap px-2 py-1 font-mono">{String(expected.ldts)}</td>
+                  <td className="px-2 py-1 text-right">{String(expected.order_count)}</td>
+                  <td className="px-2 py-1 text-right">{String(actual?.order_count ?? '—')}</td>
+                  <td className="px-2 py-1 text-right">{String(expected.total_price)}</td>
+                  <td className="px-2 py-1 text-right">{String(actual?.total_price ?? '—')}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export default function BusinessVault() {
   const [precedence, setPrecedence] = useState<CustomerPrecedence>(PRECEDENCES[0].value)
   const totals = useMemo(() => orderTotals(run.tables), [])
@@ -199,6 +292,19 @@ export default function BusinessVault() {
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <div className="max-h-72 overflow-auto"><CodeBlock title="models/business_vault/customer_order_total_s.sql" code={MODEL.customer_order_total_s.code} /></div>
           <div className="max-h-72 overflow-auto"><CodeBlock title="unit_tests/customer_order_total_s.yml" code={SNIPPETS.customer_order_total_unit_test.code} lang="yaml" /></div>
+        </div>
+      </Section>
+
+      <Section title="A passing run should prove an expected result" lead="Unit tests compare model output with fixed expected rows.">
+        <P>
+          <Code>not_null</Code> and <Code>unique</Code> tests can pass even when logic is wrong. A unit test fixes inputs and expected rows to catch that.
+        </P>
+        <CustomerOrderTotalTest />
+        <P>
+          A <Term id="model-contract">model contract</Term> makes dbt check column names and types when it builds the model. dbt-fabricspark 1.13 enforces this for Delta tables and views, but marks not_null, unique, primary-key, foreign-key and check constraints as “not enforced”, so keep data tests for those.
+        </P>
+        <div className="mx-auto max-w-[48rem]">
+          <CodeBlock title="Contract for dim_customer" lang="yaml" code={SNIPPETS.dim_customer_contract.code} />
         </div>
       </Section>
 

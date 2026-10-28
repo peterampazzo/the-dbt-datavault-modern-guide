@@ -501,6 +501,12 @@ export const CHAPTERS = [
         answer: 1,
         why: 'Persistent staging keeps every delivery and its load context.',
       },
+      {
+        q: 'When does a temp-table step make sense as its own dbt model?',
+        options: ['When it is reused, tested or expensive', 'Every temp table must be a model', 'Only when it ends in an UPDATE'],
+        answer: 0,
+        why: 'A meaningful step can be a model; a one-use step can stay as a CTE.',
+      },
     ],
     Component: lazy(() => import('./FromSqlServer')),
   },
@@ -562,10 +568,14 @@ export const CHAPTERS = [
         why: 'Precedence is a reusable business rule, so it belongs above the raw source history.',
       },
       {
-        q: 'What does a computed satellite preserve?',
-        options: ['Only the latest total', 'Changes to a derived measure over load time', 'A mutable copy maintained by MERGE'],
-        answer: 1,
-        why: 'An insert-only computed satellite records each changed result with its load timestamp.',
+        q: 'What does a computed satellite preserve, and what do contracts and unit tests check?',
+        options: [
+          'Changed derived measures; contracts check names and types, unit tests compare expected rows',
+          'Only the latest total; contracts check business rules, unit tests check column names',
+          'A mutable copy; contracts and unit tests both check only null values',
+        ],
+        answer: 0,
+        why: 'An insert-only computed satellite records changed results; a contract checks model shape, and a unit test checks expected values.',
       },
       {
         q: 'What happens when all of Alice’s dimension snapshots join to her orders?',
