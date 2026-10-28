@@ -248,7 +248,7 @@ export function Layout() {
             </ul>
           </nav>
         </dialog>
-        <main className="relative mx-auto w-full max-w-[60rem] px-5 py-12 md:px-8">
+        <main className="relative mx-auto w-full max-w-[84rem] px-5 py-12 md:px-10">
           <Suspense fallback={<div className="h-96 rounded-xl motion-safe:animate-pulse bg-muted/40" />}>
             <Outlet />
           </Suspense>
