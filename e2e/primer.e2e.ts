@@ -52,6 +52,7 @@ test('primer pages request no DuckDB assets before a reader starts a live panel'
 
 test('4.6 live playback follows the static steps and stays accessible on mobile', async ({ page }) => {
   test.setTimeout(120_000)
+  await page.setViewportSize({ width: 375, height: 812 })
   await open(page, 'dbt-primer/incremental-and-full-refresh')
   await page.getByRole('region', { name: 'count(*) · Batch 1 · first run' })
     .locator('xpath=..')
@@ -72,7 +73,6 @@ test('4.6 live playback follows the static steps and stays accessible on mobile'
   await next.click()
   await checkLiveCounts(7, 7)
 
-  await page.setViewportSize({ width: 375, height: 812 })
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0)
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG).analyze()
   expect(violations.map((violation) => violation.id)).toEqual([])

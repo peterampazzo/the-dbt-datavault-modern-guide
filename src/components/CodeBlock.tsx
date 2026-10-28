@@ -58,7 +58,7 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
   const hl = new Set(highlight)
 
   return (
-    <div className={cn('overflow-hidden rounded-xl border bg-card/60 text-[13px] leading-6 shadow-sm', className)}>
+    <div className={cn('overflow-hidden rounded-xl border bg-card/60 text-[13px] leading-5 shadow-sm', className)}>
       {title && (
         <div className="flex items-center gap-2 border-b px-4 py-2 font-mono text-xs text-muted-foreground">
           <span className="flex gap-1.5">

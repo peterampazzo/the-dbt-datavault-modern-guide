@@ -12,12 +12,12 @@ export function ChapterHeader({ title, lead }: { title: ReactNode; lead: ReactNo
   const part = PARTS.find((entry) => entry.n === chapter.part)
   return (
     <header className="mx-auto mb-12 max-w-[40rem] text-center">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-2 font-mono text-sm text-sky-700 dark:text-sky-400">
+      <motion.div initial={{ y: 8 }} animate={{ y: 0 }} className="mb-2 font-mono text-sm text-sky-700 dark:text-sky-400">
         Chapter {n} of {CHAPTERS.length} · Part {chapter.part}: {part?.title} · about {chapter.minutes} min
       </motion.div>
       <motion.h1
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ y: 12 }}
+        animate={{ y: 0 }}
         transition={{ delay: 0.05 }}
         id="chapter-title"
         tabIndex={-1}
@@ -26,10 +26,10 @@ export function ChapterHeader({ title, lead }: { title: ReactNode; lead: ReactNo
         {title}
       </motion.h1>
       <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ y: 8 }}
+        animate={{ y: 0 }}
         transition={{ delay: 0.15 }}
-        className="mt-5 max-w-3xl font-serif text-xl leading-8 text-muted-foreground"
+        className="mt-5 max-w-3xl font-serif text-lg leading-7 text-muted-foreground"
       >
         {lead}
       </motion.p>
@@ -65,14 +65,14 @@ export function Section({
   sectionId?: string
 }) {
   return (
-    <section id={!title ? sectionId : undefined} tabIndex={!title ? -1 : undefined} className={cn('mb-14', className)}>
+    <section id={!title ? sectionId : undefined} tabIndex={!title ? -1 : undefined} className={cn('mb-12', className)}>
       {title && (
-        <h2 id={slugify(title)} tabIndex={-1} className="mx-auto mb-5 max-w-[40rem] scroll-mt-20 font-serif text-3xl font-semibold tracking-tight outline-none">
+        <h2 id={slugify(title)} tabIndex={-1} className="mx-auto mb-4 max-w-[40rem] scroll-mt-20 font-serif text-3xl font-semibold tracking-tight outline-none">
           {pageNumber && <span aria-hidden className="mr-2 font-mono text-base text-muted-foreground">{pageNumber}</span>}
           {title}
         </h2>
       )}
-      {lead && <p className="mb-6 max-w-3xl font-serif text-lg leading-8 text-muted-foreground">{lead}</p>}
+      {lead && <p className="mb-5 max-w-3xl font-serif text-base leading-7 text-muted-foreground">{lead}</p>}
       {children}
       {keyPoint && (
         <p className="mt-6 max-w-3xl text-sm leading-6">
@@ -88,7 +88,7 @@ export function RecapExtras({ children }: { children: ReactNode }) {
 }
 
 export function P({ children }: { children: ReactNode }) {
-  return <p className="mb-5 max-w-3xl font-serif text-[1.15rem] leading-[1.8] text-foreground/90">{children}</p>
+  return <p className="mb-4 max-w-3xl font-serif text-lg leading-7 text-foreground/90">{children}</p>
 }
 
 export function Callout({ kind = 'info', title, children }: { kind?: 'info' | 'warn' | 'tip'; title: string; children: ReactNode }) {

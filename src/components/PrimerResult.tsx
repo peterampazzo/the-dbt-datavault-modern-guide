@@ -22,7 +22,7 @@ export function PrimerResult({
         <h3 className="font-mono text-sm font-medium text-foreground">{title}</h3>
         {summary && <p className="mt-1 text-xs leading-5 text-foreground">{summary}</p>}
       </div>
-      <div className="max-w-full overflow-x-auto">
+      <div tabIndex={0} className="max-w-full overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
         <table className="w-full border-collapse text-left text-sm">
           <thead className="bg-muted/30">
             <tr>

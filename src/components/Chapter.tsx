@@ -202,7 +202,7 @@ export function Chapter({ children }: { children: ReactNode }) {
           <div className="mt-10 border-t pt-8">{recap}</div>
         </>
       ) : (
-        <motion.div key={activePage.id || 'cover'} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+        <motion.div key={activePage.id || 'cover'} initial={{ y: 6 }} animate={{ y: 0 }} transition={{ duration: 0.2 }}>
           {cur === coverIndex ? cover : cur === recapIndex ? recap : activeContent ? renderPage(activeContent, cur) : null}
         </motion.div>
       )}
