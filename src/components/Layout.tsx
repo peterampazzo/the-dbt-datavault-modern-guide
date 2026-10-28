@@ -1,6 +1,6 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { ArrowRight, BookOpen, Moon, ScrollText, Sun, Check } from 'lucide-react'
+import { ArrowRight, BookOpen, Moon, ScrollText, Sun, Check, List, X } from 'lucide-react'
 import { motion } from 'motion/react'
 import { CHAPTERS, PARTS } from '@/chapters'
 import { cn } from '@/lib/utils'
@@ -9,7 +9,7 @@ import { setLast, useProgress } from '@/lib/progress'
 import { getOptionalRefresherSlugs, setReadingMode, usePages, useReadingMode, useReadingPath } from '@/lib/reading'
 
 function useTheme() {
-  const [dark, setDark] = useState(() => localStorage.getItem('theme') !== 'light')
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
     localStorage.setItem('theme', dark ? 'dark' : 'light')
@@ -81,6 +81,11 @@ export function Layout() {
   const published = usePages()
   const chapterPages = chapter && published.slug === chapter.slug ? published.pages : []
   const currentPage = mode === 'paged' ? (pageSeg ?? '') : active
+  const toc = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    toc.current?.close()
+  }, [pathname])
 
   useEffect(() => {
     const s = new URLSearchParams(search).get('s')
@@ -94,7 +99,7 @@ export function Layout() {
 
   return (
     <div className="min-h-svh bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-0 -z-0 bg-[radial-gradient(60rem_30rem_at_80%_-10%,rgba(56,189,248,0.08),transparent),radial-gradient(40rem_30rem_at_-10%_110%,rgba(245,158,11,0.06),transparent)]" />
+      <div className="pointer-events-none fixed inset-0 -z-0 hidden dark:block bg-[radial-gradient(60rem_30rem_at_80%_-10%,rgba(56,189,248,0.08),transparent),radial-gradient(40rem_30rem_at_-10%_110%,rgba(245,158,11,0.06),transparent)]" />
       <header className="sticky top-0 z-40 overflow-x-hidden border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-[90rem] items-center gap-3 px-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
@@ -102,25 +107,9 @@ export function Layout() {
             <span className="sr-only sm:not-sr-only">The dbt + Data Vault guide</span>
           </Link>
           <Link to="/about" className="inline-flex min-h-11 items-center rounded-md px-2 text-sm font-medium hover:bg-muted">About</Link>
-          <nav className="ml-4 flex w-0 min-w-0 flex-1 gap-1 overflow-x-auto lg:hidden">
-            {CHAPTERS.map((c, i) => (
-              <NavLink
-                key={c.slug}
-                to={`/${c.slug}`}
-                className={({ isActive }) =>
-                  cn('whitespace-nowrap rounded-md px-2 py-1 text-xs', isActive ? 'bg-muted font-medium' : 'text-muted-foreground')
-                }
-              >
-                {i + 1}. {c.short}
-                {progress.done.includes(c.slug) && (
-                  <>
-                    <Check aria-hidden className="ml-1 inline size-3 text-emerald-700 dark:text-emerald-400" />
-                    <span className="sr-only"> (done)</span>
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
+          <Button variant="ghost" className="min-h-11" aria-haspopup="dialog" onClick={() => toc.current?.showModal()}>
+            <List aria-hidden /> Contents
+          </Button>
           <div className="ml-auto flex items-center gap-1">
             <Button
               variant="ghost"
@@ -156,9 +145,21 @@ export function Layout() {
           <div className="h-full bg-sky-500 transition-[width] duration-500" style={{ width: `${(doneCount / CHAPTERS.length) * 100}%` }} />
         </div>
       </header>
-      <div className="relative mx-auto flex max-w-[90rem]">
-        <aside className="sticky top-14 hidden h-[calc(100svh-3.5rem)] w-64 shrink-0 overflow-y-auto border-r px-3 py-6 lg:block">
-          <div className="mb-3 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Chapters</div>
+      <div className="relative">
+        <dialog
+          ref={toc}
+          aria-labelledby="toc-heading"
+          className="toc-drawer overflow-y-auto px-3 py-5"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) toc.current?.close()
+          }}
+        >
+          <div className="mb-3 flex items-center justify-between px-2">
+            <h2 id="toc-heading" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Contents</h2>
+            <Button variant="ghost" size="icon" aria-label="Close contents" onClick={() => toc.current?.close()}>
+              <X />
+            </Button>
+          </div>
           {PARTS.map((part) => {
             const chapters = CHAPTERS.map((c, i) => ({ chapter: c, index: i })).filter(({ chapter: c }) => c.part === part.n)
             if (chapters.length === 0) return null
@@ -246,8 +247,8 @@ export function Layout() {
               <li><Link to="/about" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">About this guide</Link></li>
             </ul>
           </nav>
-        </aside>
-        <main className="relative min-w-0 flex-1 px-4 py-10 md:px-10">
+        </dialog>
+        <main className="relative mx-auto w-full max-w-[60rem] px-5 py-12 md:px-8">
           <Suspense fallback={<div className="h-96 rounded-xl motion-safe:animate-pulse bg-muted/40" />}>
             <Outlet />
           </Suspense>

@@ -149,7 +149,7 @@ export function Chapter({ children }: { children: ReactNode }) {
   const cover = (
     <>
       {header}
-      <p className="mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">{audienceText[chapter.audience]}</p>
+      <p className="mx-auto mb-3 flex w-fit rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">{audienceText[chapter.audience]}</p>
       <section aria-labelledby="chapter-pages-heading" className="max-w-3xl">
         <h2 id="chapter-pages-heading" className="mb-3 text-lg font-semibold">Pages in this chapter</h2>
         <ol className="space-y-2">
@@ -171,7 +171,7 @@ export function Chapter({ children }: { children: ReactNode }) {
 
   const recap = (
     <section id="chapter-recap" aria-labelledby="recap-heading" className="scroll-mt-20">
-      <h1 id="recap-heading" tabIndex={-1} className="mb-5 text-3xl font-semibold tracking-tight outline-none">Recap</h1>
+      <h1 id="recap-heading" tabIndex={-1} className="mx-auto mb-5 max-w-[40rem] font-serif text-4xl font-semibold tracking-tight outline-none">Recap</h1>
       <ol className="mb-8 max-w-3xl list-decimal space-y-3 pl-6 leading-7">
         {chapter.recap.map((point) => <li key={point}>{point}</li>)}
       </ol>
@@ -210,7 +210,7 @@ export function Chapter({ children }: { children: ReactNode }) {
       {mode === 'paged' ? (
         <nav
           aria-label="Pages"
-          className="mt-10 border-t bg-background/90 py-3 backdrop-blur max-lg:sticky max-lg:bottom-0 max-lg:z-30 max-lg:-mx-4 max-lg:px-4 md:max-lg:-mx-10 md:max-lg:px-10"
+          className="mx-auto mt-12 max-w-[40rem] border-t bg-background/90 py-3 backdrop-blur max-lg:sticky max-lg:bottom-0 max-lg:z-30 max-lg:-mx-4 max-lg:px-4 md:max-lg:-mx-10 md:max-lg:px-10"
         >
           <div className="flex items-center justify-between gap-3">
             {cur > coverIndex ? (
@@ -241,7 +241,7 @@ export function Chapter({ children }: { children: ReactNode }) {
           </ol>
         </nav>
       ) : (
-        <nav aria-label="Chapters" className="mt-10 flex justify-between gap-4 border-t pt-6">
+        <nav aria-label="Chapters" className="mx-auto mt-12 flex max-w-[40rem] justify-between gap-4 border-t pt-6">
           {previousChapter ? <PageLink to={`/${previousChapter.slug}`} dir="prev" label={previousChapter.title} /> : <span />}
           {nextChapter && <PageLink to={`/${nextChapter.slug}`} dir="next" label={nextChapter.title} primary />}
         </nav>
