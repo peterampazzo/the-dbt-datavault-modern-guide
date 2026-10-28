@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { PersistentStagingDrawing } from '@/components/drawing/PersistentStagingDrawing'
+import { VacuumDrawing } from '@/components/drawing/VacuumDrawing'
 import { Term } from '@/components/Term'
 import { CodeBlock } from '@/components/CodeBlock'
 import { SNIPPETS } from '@/lib/dv/models'
@@ -342,6 +343,7 @@ function Replay() {
           <li>Delta time travel can undo an accident only until <Code>VACUUM</Code>; it is not persistent staging.</li>
           <li>Plan how persistent staging can delete personal data, for example by partitioning it by subject or delivery.</li>
         </ul>
+        <VacuumDrawing />
         <p className="mt-4 text-sm leading-6">
           Read the official <a className="text-sky-700 underline dark:text-sky-400" href="https://docs.getdbt.com/reference/resource-configs/full_refresh" target="_blank" rel="noreferrer">dbt full-refresh config</a>, <a className="text-sky-700 underline dark:text-sky-400" href="https://docs.delta.io/delta-batch.html#query-an-older-snapshot-of-a-table-time-travel" target="_blank" rel="noreferrer">Delta time travel</a> and <a className="text-sky-700 underline dark:text-sky-400" href="https://docs.delta.io/delta-utility/#vacuum" target="_blank" rel="noreferrer">VACUUM</a> documentation.
         </p>
