@@ -103,7 +103,7 @@ function CustomerGrainExample() {
   const total = joinedRows.reduce((sum, row) => sum + row.order.total, 0)
 
   return (
-    <div className="border-t pt-6">
+    <div className="mx-auto max-w-[48rem] border-t pt-6">
       <div role="group" aria-label="Choose the report snapshot scope" className="mb-4 flex flex-wrap gap-2">
         <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
           All snapshots

@@ -105,6 +105,7 @@ export function Drawing({
   wide,
   narrow,
   caption,
+  className,
 }: {
   id: string
   title: string
@@ -112,9 +113,10 @@ export function Drawing({
   wide: { viewBox: string; content: ReactNode }
   narrow: { viewBox: string; content: ReactNode }
   caption?: ReactNode
+  className?: string
 }) {
   return (
-    <figure data-drawing={id} className="mx-auto my-6 max-w-[48rem]">
+    <figure data-drawing={id} className={cn('mx-auto my-6 max-w-[48rem]', className)}>
       <Svg id={`${id}-wide`} viewBox={wide.viewBox} title={title} desc={desc} className="hidden md:block">
         {wide.content}
       </Svg>

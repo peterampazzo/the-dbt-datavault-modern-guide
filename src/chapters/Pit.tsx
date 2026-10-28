@@ -18,35 +18,32 @@ function dayBefore(value: string) {
   return date.toISOString().slice(0, 10)
 }
 
-function OrdersByTime() {
+function orderTimeData(runs: ReturnType<typeof simulate>) {
+  const tables = runs.at(-1)!.tables
+  const orderKeys = new Map(tables.order_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_order_h), String(row.o_orderkey)] as const))
+  const customerKeys = new Map(tables.customer_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_customer_h), String(row.c_custkey)] as const))
+  const rows = tables.order_customer_nh_l
+    .filter((row) => !isGhost(row))
+    .map((row) => ({
+      orderKey: String(orderKeys.get(String(row.hk_order_h))),
+      customerKey: String(customerKeys.get(String(row.hk_customer_h))),
+      businessDate: String(row.o_orderdate),
+      ldts: String(row.ldts),
+    }))
+    .sort((a, b) => Number(a.orderKey) - Number(b.orderKey))
+  return { rows, cutoff: dayBefore(runs[0].ldts), firstLoad: runs[0].ldts }
+}
+
+function OrdersByTime({ data }: { data: ReturnType<typeof orderTimeData> }) {
   const [meaning, setMeaning] = useState<'ldts' | 'business'>('ldts')
-  const data = useMemo(() => {
-    const runs = simulate()
-    const tables = runs.at(-1)!.tables
-    const orderKeys = new Map(tables.order_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_order_h), String(row.o_orderkey)] as const))
-    const customerKeys = new Map(tables.customer_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_customer_h), String(row.c_custkey)] as const))
-    const rows = tables.order_customer_nh_l
-      .filter((row) => !isGhost(row))
-      .map((row) => ({
-        orderKey: String(orderKeys.get(String(row.hk_order_h))),
-        customerKey: String(customerKeys.get(String(row.hk_customer_h))),
-        businessDate: String(row.o_orderdate),
-        ldts: String(row.ldts),
-      }))
-      .sort((a, b) => Number(a.orderKey) - Number(b.orderKey))
-    return { rows, cutoff: dayBefore(runs[0].ldts), firstLoad: runs[0].ldts }
-  }, [])
   const included = (row: (typeof data.rows)[number]) => meaning === 'ldts'
     ? row.ldts.slice(0, 10) <= data.cutoff
     : row.businessDate <= data.cutoff
   const includedCount = data.rows.filter(included).length
 
   return (
-    <div className="border-t pt-5">
+    <div className="border-t pt-4">
       <TimeAxesDrawing />
-      <p className="mb-4 text-sm leading-6">
-        A <Term id="cutoff">cutoff</Term> includes rows whose selected date is on or before the boundary. First vault load: <code>{data.firstLoad}</code>.
-      </p>
       <div role="group" aria-label="Choose the date meaning" className="mb-4 flex flex-wrap gap-2">
         <button type="button" aria-pressed={meaning === 'ldts'} onClick={() => setMeaning('ldts')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
           By load date (ldts)
@@ -93,8 +90,10 @@ function OrdersByTime() {
 }
 
 export default function Pit() {
-  const tables = useMemo(() => simulate()[2].tables, [])
+  const runs = useMemo(() => simulate(), [])
+  const tables = runs[2].tables
   const all = useMemo(() => pit(tables), [tables])
+  const timeData = useMemo(() => orderTimeData(runs), [runs])
   const [i, setI] = usePersistentState('pit.snapshot', 1)
   const sdts = SNAPSHOTS[i]
   const rows = all.filter((r) => r.sdts === sdts)
@@ -163,10 +162,12 @@ export default function Pit() {
       </Section>
       <Section
         title="What we knew vs what was true"
-        lead={<><Term id="ldts">ldts</Term> is when the vault learned something; a <Term id="business-date">business date</Term> (<Code>o_orderdate</Code>) is when the order happened in the business. <Code>o_orderdate</Code> is stored on the order-customer link in the vault.</>}
+        lead={<><Term id="ldts">ldts</Term> is when the vault learned something; a <Term id="business-date">business date</Term> (<Code>o_orderdate</Code>) is when the order happened in the business.</>}
         keyPoint="A PIT answers what the vault knew at a load-time snapshot; a business-date filter answers which events happened by a chosen date."
       >
-        <OrdersByTime />
+        <P><Code>o_orderdate</Code> is stored on the order-customer link in the vault.</P>
+        <P><Term id="cutoff">A cutoff</Term> includes rows whose selected date is on or before the boundary. First vault load: <Code>{timeData.firstLoad}</Code>.</P>
+        <OrdersByTime data={timeData} />
         <Callout kind="info" title="Choose the time meaning before you join">
           PIT and <Code>sat_v1</Code> windows follow load dates. Business dates are payload you filter in a mart; they do not change the satellite versions a PIT points to.
         </Callout>

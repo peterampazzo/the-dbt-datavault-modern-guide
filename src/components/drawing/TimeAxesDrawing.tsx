@@ -3,10 +3,17 @@ import { isGhost, simulate } from '@/lib/dv/engine'
 
 const DAY = 24 * 60 * 60 * 1000
 
-function dayBefore(value: string) {
+type Order = { key: string; businessDate: string; ldts: string }
+type OrderGroup = { date: string; orders: Order[] }
+
+function addDays(value: string, count: number) {
   const date = new Date(`${value.slice(0, 10)}T00:00:00Z`)
-  date.setUTCDate(date.getUTCDate() - 1)
+  date.setUTCDate(date.getUTCDate() + count)
   return date.toISOString().slice(0, 10)
+}
+
+function dayBefore(value: string) {
+  return addDays(value, -1)
 }
 
 function millis(value: string) {
@@ -18,9 +25,9 @@ function millis(value: string) {
 }
 
 const RUNS = simulate()
-const TABLES = RUNS[0].tables
+const TABLES = RUNS.at(-1)!.tables
 const ORDER_KEYS = new Map(TABLES.order_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_order_h), String(row.o_orderkey)] as const))
-const ORDERS = TABLES.order_customer_nh_l
+const ORDERS: Order[] = TABLES.order_customer_nh_l
   .filter((row) => !isGhost(row))
   .map((row) => ({
     key: String(ORDER_KEYS.get(String(row.hk_order_h))),
@@ -28,79 +35,134 @@ const ORDERS = TABLES.order_customer_nh_l
     ldts: String(row.ldts),
   }))
   .sort((a, b) => Number(a.key) - Number(b.key))
-  .slice(0, 2)
 const CUTOFF = dayBefore(RUNS[0].ldts)
-const RANGE_START = Math.min(...ORDERS.flatMap((row) => [millis(row.businessDate), millis(row.ldts)])) - DAY
-const RANGE_END = Math.max(...ORDERS.flatMap((row) => [millis(row.businessDate), millis(row.ldts)])) + DAY * 2
+const ORDER_DATES = ORDERS.flatMap((order) => [order.businessDate, order.ldts.slice(0, 10)]).sort()
+const FIRST_DAY = ORDER_DATES[0]
+const LAST_DAY = ORDER_DATES.at(-1)!
+const RANGE_START = millis(FIRST_DAY)
+const RANGE_END = millis(addDays(LAST_DAY, 1))
+const DAY_TICKS = Array.from(
+  { length: Math.round((RANGE_END - RANGE_START) / DAY) },
+  (_, index) => addDays(FIRST_DAY, index),
+)
+
+function groupOrders(dateOf: (order: Order) => string): OrderGroup[] {
+  const groups = new Map<string, Order[]>()
+  for (const order of ORDERS) {
+    const date = dateOf(order)
+    groups.set(date, [...(groups.get(date) ?? []), order])
+  }
+  return [...groups].map(([date, orders]) => ({ date, orders }))
+}
+
+const BUSINESS_GROUPS = groupOrders((order) => order.businessDate)
+const LOAD_GROUPS = groupOrders((order) => order.ldts.slice(0, 10))
 
 function position(value: string, left: number, right: number) {
   return left + ((millis(value) - RANGE_START) / (RANGE_END - RANGE_START)) * (right - left)
 }
 
-function axisMarkers(axis: 'businessDate' | 'ldts', y: number, left: number, right: number) {
-  return ORDERS.map((order, index) => {
-    const x = position(order[axis], left, right)
-    const offset = axis === 'ldts' ? (index === 0 ? -11 : 11) : 0
-    const pointY = y + offset
-    const keyY = axis === 'ldts' && offset > 0 ? pointY + 17 : pointY - 14
-    const dateY = axis === 'ldts' && offset > 0 ? pointY + 30 : pointY - 27
+function dayPosition(date: string, left: number, right: number) {
+  return position(`${date}T12:00:00`, left, right)
+}
+
+function dayLabel(date: string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+    .format(new Date(`${date}T00:00:00Z`))
+}
+
+function dayTicks(y: number, labelY: number, left: number, right: number, size: number) {
+  return DAY_TICKS.map((date) => {
+    const x = dayPosition(date, left, right)
     return (
-      <g key={`${axis}-${order.key}`}>
-        {offset !== 0 && <Line d={`M${x} ${y} L${x} ${pointY}`} tone="hub" />}
-        <circle cx={x} cy={pointY} r={5} className="fill-sky-700 dark:fill-sky-300" />
-        <Mono x={x} y={keyY} anchor="middle" size={11} bold>{order.key}</Mono>
-        <Small x={x} y={dateY} anchor="middle" size={axis === 'ldts' ? 9 : 10}>
-          {axis === 'businessDate' ? order.businessDate : order.ldts}
-        </Small>
+      <g key={`${y}-${date}`}>
+        <Line d={`M${x} ${y - 6} V${y + 6}`} />
+        <Small x={x} y={labelY} anchor="middle" size={size}>{dayLabel(date)}</Small>
       </g>
     )
   })
 }
 
-const drawingTitle = 'Business dates and load dates can fall on different sides of a cutoff'
-const drawingDesc = `Orders ${ORDERS.map((row) => row.key).join(' and ')} have business dates before the cutoff and load timestamps after it. The cutoff is the end of ${CUTOFF}.`
+function axisMarkers(groups: OrderGroup[], y: number, left: number, right: number, size: number, stagger = false) {
+  return groups.map((group, index) => {
+    const x = dayPosition(group.date, left, right)
+    const anchor = stagger ? 'start' : 'middle'
+    const labelX = x + (stagger ? 8 : 0)
+    const labelY = y - 20 - (stagger ? index * 18 : 0)
+    return (
+      <g key={`${y}-${group.date}`}>
+        {stagger && <Line d={`M${x} ${y - 5} V${labelY + 4}`} tone="hub" />}
+        <circle cx={x} cy={y} r={5} className="fill-sky-700 dark:fill-sky-300" />
+        <Mono x={labelX} y={labelY} anchor={anchor} size={size} bold>{group.orders.map((order) => order.key).join(' · ')}</Mono>
+      </g>
+    )
+  })
+}
+
+function timestampLabels(groups: OrderGroup[], left: number, right: number, narrow: boolean) {
+  return groups.map((group, index) => {
+    const x = dayPosition(group.date, left, right)
+    const anchor = index === 0 ? 'start' : index === groups.length - 1 ? 'end' : 'middle'
+    const labelX = x + (anchor === 'start' ? 8 : anchor === 'end' ? -8 : 0)
+    const y = narrow ? 327 + index * 21 : index % 2 === 0 ? 300 : 318
+    const timestamps = [...new Set(group.orders.map((order) => order.ldts))].join(' · ')
+    return <Small key={group.date} x={labelX} y={y} anchor={anchor} size={narrow ? 8.5 : 9.5}>{timestamps}</Small>
+  })
+}
+
+const drawingTitle = `${ORDERS.length} orders on shared business-time and load-time axes`
+const drawingDesc =
+  `All ${ORDERS.length} orders are grouped by date on the same day scale from ${dayLabel(FIRST_DAY)} to ${dayLabel(LAST_DAY)}. ` +
+  `The dashed cutoff marks the end of ${CUTOFF} on both axes; load markers show their simulated timestamps.`
 
 export function TimeAxesDrawing() {
-  const wideLeft = 185
-  const wideRight = 800
-  const wideCutoff = position(`${CUTOFF}T23:59:59`, wideLeft, wideRight)
+  const wideLeft = 150
+  const wideRight = 805
+  const wideCutoff = position(`${addDays(CUTOFF, 1)}T00:00:00`, wideLeft, wideRight)
   const narrowLeft = 45
-  const narrowRight = 375
-  const narrowCutoff = position(`${CUTOFF}T23:59:59`, narrowLeft, narrowRight)
+  const narrowRight = 378
+  const narrowCutoff = position(`${addDays(CUTOFF, 1)}T00:00:00`, narrowLeft, narrowRight)
 
   return (
     <Drawing
       id="time-axes"
       title={drawingTitle}
       desc={drawingDesc}
-      caption="One order can be old in business time and new to the vault."
+      className="my-3"
+      caption="The same cutoff can include a business date but exclude the later load date."
       wide={{
-        viewBox: '0 0 820 330',
+        viewBox: '0 22 820 356',
         content: (
           <>
-            <Small x={20} y={143}>business time</Small>
-            <Small x={20} y={268}>load time</Small>
-            <Line d="M185 150 H800" />
-            <Line d="M185 275 H800" />
-            <Line d={`M${wideCutoff} 55 V320`} tone="stage" dashed />
-            <Small x={wideCutoff} y={38} anchor="middle">cutoff · {CUTOFF}</Small>
-            {axisMarkers('businessDate', 150, wideLeft, wideRight)}
-            {axisMarkers('ldts', 275, wideLeft, wideRight)}
+            <Small x={20} y={74}>business time</Small>
+            <Small x={20} y={207}>load time</Small>
+            <Line d={`M${wideCutoff} 48 V365`} tone="stage" dashed />
+            <Small x={wideCutoff} y={34} anchor="middle" size={10}>cutoff · end of {CUTOFF}</Small>
+            <Line d={`M${wideLeft} 120 H${wideRight}`} />
+            {dayTicks(120, 148, wideLeft, wideRight, 10)}
+            {axisMarkers(BUSINESS_GROUPS, 120, wideLeft, wideRight, 10)}
+            <Line d={`M${wideLeft} 276 H${wideRight}`} />
+            {dayTicks(276, 353, wideLeft, wideRight, 10)}
+            {axisMarkers(LOAD_GROUPS, 276, wideLeft, wideRight, 10, true)}
+            {timestampLabels(LOAD_GROUPS, wideLeft, wideRight, false)}
           </>
         ),
       }}
       narrow={{
-        viewBox: '0 0 390 420',
+        viewBox: '0 18 390 426',
         content: (
           <>
-            <Small x={18} y={72}>business time</Small>
-            <Small x={18} y={250}>load time</Small>
-            <Line d="M45 130 H375" />
-            <Line d="M45 310 H375" />
-            <Line d={`M${narrowCutoff} 88 V370`} tone="stage" dashed />
-            <Small x={narrowCutoff} y={34} anchor="middle" size={10}>cutoff · {CUTOFF}</Small>
-            {axisMarkers('businessDate', 130, narrowLeft, narrowRight)}
-            {axisMarkers('ldts', 310, narrowLeft, narrowRight)}
+            <Small x={16} y={72}>business time</Small>
+            <Small x={16} y={205}>load time</Small>
+            <Line d={`M${narrowCutoff} 44 V419`} tone="stage" dashed />
+            <Small x={narrowCutoff} y={30} anchor="middle" size={9}>cutoff · end of {CUTOFF}</Small>
+            <Line d={`M${narrowLeft} 120 H${narrowRight}`} />
+            {dayTicks(120, 148, narrowLeft, narrowRight, 9)}
+            {axisMarkers(BUSINESS_GROUPS, 120, narrowLeft, narrowRight, 9)}
+            <Line d={`M${narrowLeft} 300 H${narrowRight}`} />
+            {dayTicks(300, 408, narrowLeft, narrowRight, 9)}
+            {axisMarkers(LOAD_GROUPS, 300, narrowLeft, narrowRight, 9, true)}
+            {timestampLabels(LOAD_GROUPS, narrowLeft, narrowRight, true)}
           </>
         ),
       }}

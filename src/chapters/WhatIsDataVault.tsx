@@ -328,7 +328,7 @@ function CustomerHistory() {
   ] as const
 
   return (
-    <div className="border-t pt-6">
+    <div className="mx-auto max-w-[48rem] border-t pt-6">
       <div role="group" aria-label="Choose which customer history to see" className="mb-4 flex flex-wrap gap-2">
         {options.map((option) => (
           <button
@@ -407,7 +407,7 @@ export default function WhatIsDataVault() {
             </div>
           ))}
         </div>
-        <P>The source shows the row it knows now; the vault keeps the versions it knew then.</P>
+        <P className="mt-6">The source shows the row it knows now; the vault keeps the versions it knew then.</P>
         <CustomerHistory />
       </Section>
 

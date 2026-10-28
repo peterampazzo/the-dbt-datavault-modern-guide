@@ -57,18 +57,27 @@ describe('simulate', () => {
     expect(es).toHaveLength(5 + 4 + 2)
   })
 
-  it('keeps Chiara’s Italy link active when effectivity is loaded from a union', () => {
+  it('keeps both of Chiara’s links active when effectivity is loaded from a union', () => {
     const chiara = runs[0].source.customer.find((row) => row.c_name === 'Chiara Rossi')!
     const italy = runs[0].source.nation.find((row) => row.n_name === 'Italy')!
     expect(chiara.c_nationkey).toBe(italy.n_nationkey)
 
-    const italyLink = runs[0].stage.stg_customer.find((row) => row.c_custkey === chiara.c_custkey)!
-    const linkKey = italyLink.hk_customer_nation_l
-    const ordered = last.customer_nation_es.find((row) => row.hk_customer_nation_l === linkKey && row.is_active === false)
-    const oneShot = oneShotEffSat().find((row) => row.hk_customer_nation_l === linkKey)
+    const germany = runs[0].source.nation.find((row) => row.n_name === 'Germany')!
+    const links = new Map(
+      runs.flatMap((run) => run.stage.stg_customer)
+        .filter((row) => row.c_custkey === chiara.c_custkey)
+        .map((row) => [row.c_nationkey, row.hk_customer_nation_l] as const),
+    )
+    const italyLink = links.get(italy.n_nationkey)
+    const germanyLink = links.get(germany.n_nationkey)
+    const orderedItaly = last.customer_nation_es.filter((row) => row.hk_customer_nation_l === italyLink)
+    const orderedGermany = last.customer_nation_es.filter((row) => row.hk_customer_nation_l === germanyLink)
+    const oneShot = oneShotEffSat()
 
-    expect(ordered).toBeDefined()
-    expect(oneShot?.is_active).toBe(true)
+    expect(orderedItaly.map((row) => row.is_active)).toEqual([true, false])
+    expect(orderedGermany.map((row) => row.is_active)).toEqual([true])
+    expect(oneShot.find((row) => row.hk_customer_nation_l === italyLink)?.is_active).toBe(true)
+    expect(oneShot.find((row) => row.hk_customer_nation_l === germanyLink)?.is_active).toBe(true)
   })
 
   it('re-inserts the whole multi-active set on change', () => {

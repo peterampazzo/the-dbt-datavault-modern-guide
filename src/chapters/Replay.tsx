@@ -301,48 +301,55 @@ function EffectivityComparison() {
   const result = useMemo(() => {
     const runs = simulate()
     const chiara = runs[0].source.customer.find((row) => row.c_name === 'Chiara Rossi')
-    const italy = runs[0].source.nation.find((row) => row.n_name === 'Italy')
-    const chiaraItaly = runs[0].stage.stg_customer.find(
-      (row) => row.c_custkey === chiara?.c_custkey && row.c_nationkey === italy?.n_nationkey,
+    const nations = new Map(runs[0].source.nation.map((row) => [row.n_nationkey, row.n_name] as const))
+    const linkNations = new Map(
+      runs.flatMap((run) => run.stage.stg_customer)
+        .filter((row) => row.c_custkey === chiara?.c_custkey)
+        .map((row) => [row.hk_customer_nation_l, String(nations.get(row.c_nationkey))] as const),
     )
-    const linkKey = chiaraItaly?.hk_customer_nation_l
-    const ordered = linkKey === undefined
-      ? []
-      : runs.at(-1)!.tables.customer_nation_es
-          .filter((row) => row.hk_customer_nation_l === linkKey)
-          .sort((a, b) => String(a.ldts).localeCompare(String(b.ldts)))
-    const oneShot = linkKey === undefined
-      ? undefined
-      : oneShotEffSat().find((row) => row.hk_customer_nation_l === linkKey)
-    return { name: chiara?.c_name, nation: italy?.n_name, ordered, oneShot }
+    const ordered = runs.at(-1)!.tables.customer_nation_es
+    const oneShot = oneShotEffSat()
+    const links = [...linkNations].map(([linkKey, nation]) => ({
+      linkKey,
+      nation,
+      ordered: ordered
+        .filter((row) => row.hk_customer_nation_l === linkKey)
+        .sort((a, b) => String(a.ldts).localeCompare(String(b.ldts))),
+      oneShot: oneShot.find((row) => row.hk_customer_nation_l === linkKey),
+    }))
+    return { links }
   }, [])
 
   return (
-    <div className="mt-6 border-t pt-6">
-      <h3 className="mb-3 text-base font-semibold">One-shot effectivity</h3>
-      <p className="mb-4 text-sm leading-6">
-        {String(result.name)}’s {String(result.nation)} link changes in the ordered simulation, but a single union load sees the link as present.
-      </p>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border p-4">
-          <h4 className="mb-2 text-sm font-semibold">Ordered simulate()</h4>
-          <ul className="space-y-1 text-sm">
-            {result.ordered.map((row) => (
-              <li key={String(row.ldts)}>
-                <code>{String(row.ldts)}</code>: {row.is_active ? 'active' : 'inactive'}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-xl border p-4">
-          <h4 className="mb-2 text-sm font-semibold">One-shot union</h4>
-          <p className="text-sm">
-            {result.oneShot ? (result.oneShot.is_active ? 'Active' : 'Inactive') : 'No row'}
-            {result.oneShot && <> at <code>{String(result.oneShot.ldts)}</code></>}
-          </p>
+    <>
+      <P className="mt-6">Loaded at once, the effectivity satellite sees both links in the same load, so it can't tell that Chiara moved.</P>
+      <div className="mx-auto mt-6 max-w-[48rem] border-t pt-6">
+        <h3 className="mb-3 text-base font-semibold">Why order matters for effectivity</h3>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border p-4">
+            <h4 className="mb-2 text-sm font-semibold">Loaded one delivery at a time</h4>
+            <ul className="space-y-1 text-sm">
+              {result.links.flatMap((link) => link.ordered.map((row) => (
+                <li key={`${link.nation}-${String(row.ldts)}`}>
+                  {link.nation}: <code>{String(row.ldts)}</code> · {row.is_active ? 'active' : 'inactive'}
+                </li>
+              )))}
+            </ul>
+          </div>
+          <div className="rounded-xl border p-4">
+            <h4 className="mb-2 text-sm font-semibold">All deliveries loaded at once</h4>
+            <ul className="space-y-1 text-sm">
+              {result.links.map((link) => (
+                <li key={link.nation}>
+                  {link.nation}: {link.oneShot?.is_active ? 'active' : 'inactive'}
+                  {link.oneShot && <> at <code>{String(link.oneShot.ldts)}</code></>}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -390,7 +397,7 @@ function ReplayChoices() {
               A retry can continue after a half-failed run because raw-vault loads are insert-only; already-loaded rows are skipped.
             </p>
             <p className="text-sm leading-6">
-              <strong>Possible scope from the previous <code>customer_n_s+</code> selection:</strong> <code className="whitespace-normal">{REBUILD_MODELS.join(' ')}</code>
+              <strong>Touches:</strong> only the models that failed or were skipped in the previous run (after a <Code>customer_n_s+</Code> run, some of: <code className="whitespace-normal">{REBUILD_MODELS.join(' ')}</code>)
             </p>
             <p className="text-sm leading-6"><strong>Wrong choice:</strong> when model logic changed and earlier rows need to be rebuilt under the new logic.</p>
           </>
@@ -436,9 +443,6 @@ function Replay() {
         keyPoint="A full refresh can only rebuild what the landing layer still contains."
       >
         <ReplayLab key={`${location.pathname}${location.search}`} initialChange={initialChange} />
-        <P className="mb-0">
-          A new attribute needs a written history decision: fill its history from persistent staging, as the lab’s rebuild demonstrates, or start it empty from the next delivery.
-        </P>
       </Section>
       <Section
         title="What truncated landing loses"
@@ -472,6 +476,7 @@ function Replay() {
             </tbody>
           </table>
         </section>
+        <P>A new attribute needs a written history decision: fill its history from persistent staging if the deliveries were kept, as the lab’s rebuild demonstrates, or start it empty from the next delivery.</P>
       </Section>
       <Section
         title="Two histories, one record"
