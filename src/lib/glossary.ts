@@ -69,7 +69,7 @@ const GLOSSARY_DATA = [
   {
     id: 'ghost-record',
     term: 'Ghost record',
-    definition: 'A ghost record is a reserved unknown or error row; a late-arriving dimension is a real record delivered late, like Hana (#8).',
+    definition: 'A ghost record is a reserved unknown or error row that keeps joins predictable. It is not a late-arriving dimension, which is a real record delivered late.',
     aka: 'Unknown or error row',
     chapter: 'dv-names',
   },
