@@ -11,7 +11,7 @@ describe('reading paths', () => {
   })
 
   it('orders the practitioner path and exposes adjacent chapters', () => {
-    expect(getPathOrder('dv-practitioner')).toEqual(['dv-names', 'dbt-primer', 'dbt', 'load-player', 'replay', 'one-lake', 'modern-way', 'from-sql-server', 'hash-parity', 'business-vault', 'migration-checklist'])
+    expect(getPathOrder('dv-practitioner')).toEqual(['dv-names', 'dbt-primer', 'dbt', 'load-player', 'replay', 'one-lake', 'modern-way', 'scheduling', 'from-sql-server', 'hash-parity', 'business-vault', 'migration-checklist'])
     expect(getFirstPathChapter('dv-practitioner')).toBe('dv-names')
     expect(getNextPathChapter('dv-names', 'dv-practitioner')).toBe('dbt-primer')
     expect(getNextPathChapter('dbt-primer', 'dv-practitioner')).toBe('dbt')
@@ -19,7 +19,7 @@ describe('reading paths', () => {
     expect(getNextPathChapter('load-player', 'dv-practitioner')).toBe('replay')
     expect(getNextPathChapter('replay', 'dv-practitioner')).toBe('one-lake')
     expect(getNextPathChapter('one-lake', 'dv-practitioner')).toBe('modern-way')
-    expect(getNextPathChapter('modern-way', 'dv-practitioner')).toBe('from-sql-server')
+    expect(getNextPathChapter('modern-way', 'dv-practitioner')).toBe('scheduling')
     expect(getPreviousPathChapter('dbt-primer', 'dv-practitioner')).toBe('dv-names')
     expect(getPreviousPathChapter('dbt', 'dv-practitioner')).toBe('dbt-primer')
     expect(getPreviousPathChapter('modern-way', 'dv-practitioner')).toBe('one-lake')
