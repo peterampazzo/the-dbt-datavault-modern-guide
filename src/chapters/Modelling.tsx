@@ -244,7 +244,7 @@ const reveal = (step: number) => ({
   rel: step >= 4 && step < 6,
   links: step >= 6,
   attr: step >= 7,
-  sats: step >= 9,
+  sats: step >= 8,
 })
 
 function SourceCard({

@@ -20,7 +20,7 @@ const GROUPS: { label: string; models: string[] }[] = [
 const KEYS: Record<string, string> = {
   "materialized='view'": 'Stages are views: always recomputed from the landed data, never stored.',
   "materialized='incremental'": 'Vault tables are incremental. dbt creates them on the first run and only inserts new rows afterwards.',
-  source_model: 'The relation(s) to read from. In a stage this is the landed source; in vault entities it is a stage.',
+  source_model: 'The model this one reads from: a landed raw table for a stage, a stage model for a hub, link or satellite.',
   'ldts:': 'Column holding the load timestamp: when the warehouse received the row.',
   'rsrc:': 'Column holding the record source: which system and feed the row came from.',
   hashed_columns: 'Every hashkey and hashdiff the stage computes. The macro generates the trim, upper-case, concatenation and MD5 logic for you.',
@@ -34,7 +34,7 @@ const KEYS: Record<string, string> = {
   foreign_hashkeys: 'The hub hashkeys this link connects.',
   'payload:': 'Non-historized links carry their immutable event attributes directly.',
   parent_hashkey: 'The hub (or link) this satellite describes.',
-  src_hashdiff: 'The hashdiff column compared against the latest satellite row to decide whether to insert.',
+  src_hashdiff: 'Names the hashdiff column the stage already calculated; the satellite compares it to detect changes.',
   src_payload: 'The descriptive attributes stored in the satellite.',
   'datavault4dbt.': 'The macro call. It reads the YAML and generates the full SQL for the platform you run on.',
 }

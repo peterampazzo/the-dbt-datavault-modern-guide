@@ -132,10 +132,13 @@ export default function Pit() {
               sdts = <span className="text-violet-700 dark:text-violet-400">{sdts}</span>
             </motion.div>
           </div>
+          <P>
+            <Code>hk_customer_d</Code> is a dimension key per customer per snapshot, derived from <Code>hk_customer_h</Code> and the snapshot date, so it will not match <Code>hk_customer_h</Code>.
+          </P>
           <DataTable
             title="customer_pit"
             tone="bv"
-            rows={rows.map((r) => ({ c_custkey: r.c_custkey, sdts: r.sdts, hk_customer_d: r.hk_customer_d, ldts_customer_n_s: r.customer_n_s_ldts, ldts_customer_phone_ma_s: r.customer_phone_ma_s_hk === UNKNOWN_KEY ? '(unknown)' : r.customer_phone_ma_s_ldts }))}
+            rows={rows.map((r) => ({ c_custkey: r.c_custkey, sdts: r.sdts, hk_customer_h: r.hk_customer_h, hk_customer_d: r.hk_customer_d, ldts_customer_n_s: r.customer_n_s_ldts, ldts_customer_phone_ma_s: r.customer_phone_ma_s_hk === UNKNOWN_KEY ? '(unknown)' : r.customer_phone_ma_s_ldts }))}
           />
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             <DataTable

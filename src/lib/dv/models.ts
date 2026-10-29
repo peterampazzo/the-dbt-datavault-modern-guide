@@ -78,7 +78,9 @@ hashed_columns:
         - n_nationkey
     hd_nation_n_s:
         is_hashdiff: true
-        columns: [n_name, n_region]
+        columns:
+            - n_name
+            - n_region
 {%- endset -%}
 
 {{ datavault4dbt.stage(yaml_metadata=yaml_metadata) }}`,
@@ -126,7 +128,9 @@ hashed_columns:
         - c_custkey
     hd_customer_phone_ma_s:
         is_hashdiff: true
-        columns: [phone_type, phone_number]
+        columns:
+            - phone_type
+            - phone_number
 multi_active_config:
     multi_active_key: 'phone_type'
     main_hashkey_column: 'hk_customer_h'
@@ -148,9 +152,13 @@ source_model: 'raw_orders'
 ldts: 'ldts'
 rsrc: 'rsrc'
 hashed_columns:
-    hk_order_h: [o_orderkey]
-    hk_customer_h: [o_custkey]
-    hk_order_customer_nh_l: [o_orderkey, o_custkey]
+    hk_order_h:
+        - o_orderkey
+    hk_customer_h:
+        - o_custkey
+    hk_order_customer_nh_l:
+        - o_orderkey
+        - o_custkey
 {%- endset -%}
 
 {{ datavault4dbt.stage(yaml_metadata=yaml_metadata) }}`,

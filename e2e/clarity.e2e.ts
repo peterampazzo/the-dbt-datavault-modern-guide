@@ -124,7 +124,7 @@ test('batch 3 keeps each phase result and focused table within one viewport', as
     await expect(result).toContainText(current.summary)
     await expectInViewport(result)
     for (const tableName of current.tables) {
-      const table = page.getByRole('region', { name: tableName })
+      const table = page.getByRole('region', { name: tableName, exact: true })
       await expect(table).toBeVisible()
       await expectInViewport(table.getByRole('row').first())
       await expectInViewport(table.getByRole('row').nth(1))

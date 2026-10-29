@@ -15,7 +15,7 @@ const NAMES: Record<number, string> = { 1: 'Alice', 2: 'Bruno', 3: 'Chiara', 4: 
 
 function Timeline({ rows }: { rows: Row[] }) {
   const [hover, setHover] = useState<Row | null>(null)
-  const col = (ts: string) => (ts === END ? 3 : Math.max(0, BATCHES.indexOf(ts as (typeof BATCHES)[number])))
+  const col = (ts: string) => (ts === END ? 3 : Math.max(0, BATCHES.findIndex((batch) => batch.slice(0, 10) === ts.slice(0, 10))))
   const byKey = new Map<string, Row[]>()
   rows.filter((r) => !isGhost(r)).forEach((r) => byKey.set(String(r.c_name).split(' ')[0], [...(byKey.get(String(r.c_name).split(' ')[0]) ?? []), r]))
   return (
@@ -36,7 +36,7 @@ function Timeline({ rows }: { rows: Row[] }) {
           <div className="relative h-6">
             {versions.map((v, i) => {
               const start = col(String(v.ldts))
-              const end = String(v.ledts) === END ? 3 : start + 1
+              const end = col(String(v.ledts))
               return (
                 <motion.button
                   type="button"

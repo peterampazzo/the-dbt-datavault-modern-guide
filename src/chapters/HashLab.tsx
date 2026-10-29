@@ -230,7 +230,7 @@ export default function HashLab() {
           </Callout>
           <Callout kind="warn" title="Ghost keys">
             All-NULL input maps to <Code>0000…</Code> (the unknown record) and the error record is <Code>ffff…</Code>. Both are inserted as ghost records so joins never
-            lose rows.
+            lose rows. A ghost record is a reserved unknown or error row; a late-arriving dimension is a real record delivered late, like Hana (#8).
           </Callout>
         </div>
       </Section>

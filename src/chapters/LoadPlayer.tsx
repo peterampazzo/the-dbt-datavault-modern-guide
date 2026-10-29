@@ -160,6 +160,16 @@ function Player() {
       maxHeight="max-h-64"
     />
   )
+  const phoneStageTable = () => (
+    <DataTable
+      title="stg_customer_phone"
+      tone="stage"
+      rows={run.stage.stg_customer_phone}
+      hideGhosts={!showGhosts}
+      columns={['c_custkey', 'phone_type', 'phone_number', 'hk_customer_h', 'hd_customer_phone_ma_s', 'ldts']}
+      maxHeight="max-h-64"
+    />
+  )
   const highWaterMark =
     prev ? (prev.tables.customer_h.filter((row) => !isGhost(row)).map((row) => String(row.ldts)).sort().at(-1) ?? '—') : '— (first run)'
 
@@ -250,6 +260,7 @@ function Player() {
       <div data-testid={`phase-tables-${phase}`} className="mt-3 grid min-w-0 gap-4 lg:grid-cols-2">
         {phase === 0 && sourceTable()}
         {phase === 1 && stageTable()}
+        {phase === 1 && phoneStageTable()}
         {phase === 2 && targetTable(TARGETS[0])}
         {phase === 3 && targetTable(TARGETS[1])}
         {phase === 4 && targetTable(TARGETS[2])}
