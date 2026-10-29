@@ -163,6 +163,36 @@ const GLOSSARY_DATA = [
     chapter: 'dbt-primer',
   },
   {
+    id: 'model-contract',
+    term: 'Model contract',
+    definition: 'A model contract checks a model’s declared column names and data types when it is built.',
+    chapter: 'business-vault',
+  },
+  {
+    id: 'manifest',
+    term: 'Manifest',
+    definition: 'manifest.json records dbt project resources, dependencies and metadata for a run.',
+    chapter: 'dbt-primer',
+  },
+  {
+    id: 'profile',
+    term: 'Profile',
+    definition: 'A dbt profile supplies one or more named connection outputs for a run.',
+    chapter: 'dbt-primer',
+  },
+  {
+    id: 'orchestrator',
+    term: 'Orchestrator',
+    definition: 'A tool that starts and coordinates jobs while dbt builds its own model dependency graph.',
+    chapter: 'scheduling',
+  },
+  {
+    id: 'write-audit-publish',
+    term: 'Write, audit, publish',
+    definition: 'A release pattern that builds privately, checks the result, then exposes it to readers.',
+    chapter: 'scheduling',
+  },
+  {
     id: 'ref-function',
     term: 'ref()',
     definition: 'ref() names another dbt model and adds its dependency to the build graph.',
@@ -231,6 +261,30 @@ const GLOSSARY_DATA = [
     term: 'Lakehouse',
     definition: 'A lakehouse combines data-lake storage with warehouse-style tables and queries.',
     chapter: 'one-lake',
+  },
+  {
+    id: 'business-date',
+    term: 'Business date',
+    definition: 'The date an event happened in the business, independent of when the vault loaded it.',
+    chapter: 'pit',
+  },
+  {
+    id: 'cutoff',
+    term: 'Cutoff',
+    definition: 'The date or time boundary used to decide which rows a report includes.',
+    chapter: 'pit',
+  },
+  {
+    id: 'grain',
+    term: 'Grain',
+    definition: 'The level of detail represented by one row in a table or report.',
+    chapter: 'business-vault',
+  },
+  {
+    id: 'ordered-replay',
+    term: 'Ordered replay',
+    definition: 'Reprocessing retained deliveries one at a time in chronological load-date order.',
+    chapter: 'replay',
   },
   {
     id: 'precedence',

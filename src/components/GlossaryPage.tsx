@@ -20,10 +20,10 @@ export function GlossaryPage() {
   }, [hash])
 
   return (
-    <article className="mx-auto max-w-4xl">
+    <article className="mx-auto max-w-3xl">
       <header className="mb-8 max-w-[75ch]">
-        <h1 className="text-4xl font-semibold tracking-tight">Glossary</h1>
-        <p className="mt-3 text-muted-foreground">Plain definitions for the terms used in this guide.</p>
+        <h1 className="font-serif text-4xl font-semibold tracking-tight">Glossary</h1>
+        <p className="mt-3 font-serif text-lg leading-7 text-muted-foreground">Plain definitions for the terms used in this guide.</p>
       </header>
       <div className="mb-6 max-w-xl">
         <label htmlFor="glossary-filter" className="mb-2 block text-sm font-medium">Filter terms</label>
@@ -54,8 +54,8 @@ export function GlossaryPage() {
         <dl className="space-y-5">
           {entries.map((entry) => (
             <div id={entry.id} key={entry.id} className="scroll-mt-20 border-b pb-4">
-              <dt className="text-lg font-semibold">{entry.term}</dt>
-              <dd className="mt-1 max-w-[75ch] leading-7 text-foreground/85">{entry.definition}</dd>
+              <dt className="font-serif text-lg font-semibold leading-7">{entry.term}</dt>
+              <dd className="mt-1 max-w-[75ch] font-serif text-lg leading-7 text-foreground/90">{entry.definition}</dd>
               {entry.aka && <dd className="mt-1 text-sm text-muted-foreground">Also called: {entry.aka}</dd>}
               <dd className="mt-2">
                 <Link to={`/${entry.chapter}`} className="inline-flex min-h-6 items-center text-sm text-sky-700 underline underline-offset-4 dark:text-sky-400">

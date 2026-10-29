@@ -298,7 +298,7 @@ export default function BuildWithDbt() {
           <div>
             <P>
               dbt resolves the <Code>ref()</Code> graph and runs everything in order: views for the stages first, then hubs, links and satellites. In practice you'd
-              trigger this from an orchestrator after every source delivery.
+              <Link className="text-sky-700 underline dark:text-sky-400" to="/scheduling">trigger this from an orchestrator</Link> after every source delivery.
             </P>
             <P>
               The next chapters open up what happens inside these runs: how the hashes are built, what each load inserts and skips, and how history is queried.

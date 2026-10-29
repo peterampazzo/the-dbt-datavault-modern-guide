@@ -7,7 +7,7 @@ const h2 = (page: import('@playwright/test').Page, name: string) => page.locator
 
 test('the cover starts a paged chapter and content pages stay separate', async ({ page }) => {
   await page.goto('/#/dbt')
-  await expect(page.getByText(/Chapter 5 of 17 · Part 2: Building it with dbt · about/)).toBeVisible()
+  await expect(page.getByText(/Chapter 5 of 18 · Part 2: Building it with dbt · about/)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Building it with dbt', exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: 'In 30 seconds' })).toBeVisible()
   await expect(page.getByText('Essential', { exact: true })).toBeVisible()
@@ -46,7 +46,7 @@ test('a page address survives a reload and Continue returns to it', async ({ pag
   await page.reload()
   await expect(h2(page, 'Where it sits')).toBeVisible()
   await page.goto('/#/')
-  await page.getByRole('link', { name: /Continue: What is Data Vault, Where it sits/ }).click()
+  await page.getByRole('link', { name: /Continue: chapter 1, 1\.\d+ Where it sits/ }).click()
   await expect(page).toHaveURL(/where-it-sits$/)
   await expect(h2(page, 'Where it sits')).toBeVisible()
 })
@@ -88,7 +88,7 @@ test('"Show as one page" is remembered', async ({ page }) => {
 
 test('chapter 3 is the Data Vault name bridge', async ({ page }) => {
   await open(page, 'dv-names', { paged: true })
-  await expect(page.getByText(/Chapter 3 of 17 · Part 1: The method · about/)).toBeVisible()
+  await expect(page.getByText(/Chapter 3 of 18 · Part 1: The method · about/)).toBeVisible()
   await expect(page.getByRole('heading', { name: "Data Vault in this guide's names" })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Start' })).toBeVisible()
   await page.getByRole('link', { name: 'Start' }).click()

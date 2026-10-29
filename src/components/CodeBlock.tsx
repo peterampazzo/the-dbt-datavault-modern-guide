@@ -3,7 +3,7 @@ import type { ThemedToken } from 'shiki/core'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 
-type Lang = 'sql' | 'yaml' | 'bash'
+type Lang = 'sql' | 'yaml' | 'bash' | 'python' | 'text'
 
 let highlighterPromise: Promise<import('shiki/core').HighlighterCore> | null = null
 function getHighlighter() {
@@ -14,7 +14,12 @@ function getHighlighter() {
     ])
     return createHighlighterCore({
       themes: [import('shiki/themes/github-light-default.mjs'), import('shiki/themes/github-dark-default.mjs')],
-      langs: [import('shiki/langs/sql.mjs'), import('shiki/langs/yaml.mjs'), import('shiki/langs/bash.mjs')],
+      langs: [
+        import('shiki/langs/sql.mjs'),
+        import('shiki/langs/yaml.mjs'),
+        import('shiki/langs/bash.mjs'),
+        import('shiki/langs/python.mjs'),
+      ],
       engine: createJavaScriptRegexEngine(),
     })
   })()
@@ -34,6 +39,7 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
   const [tokens, setTokens] = useState<ThemedToken[][] | null>(null)
 
   useEffect(() => {
+    if (lang === 'text') return
     let alive = true
     getHighlighter().then((h) => {
       if (!alive) return
@@ -58,7 +64,7 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
   const hl = new Set(highlight)
 
   return (
-    <div className={cn('overflow-hidden rounded-xl border bg-card/60 text-[13px] leading-6 shadow-sm', className)}>
+    <div data-codeblock className={cn('overflow-hidden rounded-xl border bg-card/60 text-[13px] leading-5 shadow-sm', className)}>
       {title && (
         <div className="flex items-center gap-2 border-b px-4 py-2 font-mono text-xs text-muted-foreground">
           <span className="flex gap-1.5">
@@ -79,11 +85,10 @@ export function CodeBlock({ code, lang = 'sql', title, highlight = [], onLineCli
               onClick={onLineClick ? () => onLineClick(n) : undefined}
               className={cn(
                 'relative flex pr-4',
-                on && 'bg-sky-500/10',
+                on && 'border-l border-sky-400 bg-sky-500/10',
                 onLineClick && 'cursor-pointer hover:bg-muted/60',
               )}
             >
-              {on && <motion.span layoutId={undefined} className="absolute inset-y-0 left-0 w-0.5 bg-sky-400" />}
               <span className={cn('w-10 shrink-0 select-none pr-3 text-right', on ? 'text-foreground/80' : 'text-muted-foreground')}>{n}</span>
               <span className="whitespace-pre">
                 {line.map((t, j) => (

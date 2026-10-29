@@ -74,7 +74,7 @@ export function Decomposition({ auto = false, className }: { auto?: boolean; cla
   }
 
   return (
-    <div className={cn('relative rounded-2xl border bg-card/30 p-5', className)}>
+    <div className={cn('relative border-t pt-6', className)}>
       <div className="mb-4 flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
           {split ? 'Data Vault: identity, relationship and context are separated' : 'Classic model: one customer table holds everything'}

@@ -1,18 +1,99 @@
 import { Chapter } from '@/components/Chapter'
 import { Term } from '@/components/Term'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
+import { PitDrawing } from '@/components/drawing/PitDrawing'
 import { DataTable } from '@/components/DataTable'
 import { CodeBlock } from '@/components/CodeBlock'
 import { Slider } from '@/components/ui/slider'
-import { pit, simulate, SNAPSHOTS, UNKNOWN_KEY } from '@/lib/dv/engine'
+import { isGhost, pit, simulate, SNAPSHOTS, UNKNOWN_KEY } from '@/lib/dv/engine'
 import { MODEL } from '@/lib/dv/models'
 import { usePersistentState } from '@/lib/progress'
+import { TimeAxesDrawing } from '@/components/drawing/TimeAxesDrawing'
+
+function dayBefore(value: string) {
+  const date = new Date(`${value.slice(0, 10)}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() - 1)
+  return date.toISOString().slice(0, 10)
+}
+
+function orderTimeData(runs: ReturnType<typeof simulate>) {
+  const tables = runs.at(-1)!.tables
+  const orderKeys = new Map(tables.order_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_order_h), String(row.o_orderkey)] as const))
+  const customerKeys = new Map(tables.customer_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_customer_h), String(row.c_custkey)] as const))
+  const rows = tables.order_customer_nh_l
+    .filter((row) => !isGhost(row))
+    .map((row) => ({
+      orderKey: String(orderKeys.get(String(row.hk_order_h))),
+      customerKey: String(customerKeys.get(String(row.hk_customer_h))),
+      businessDate: String(row.o_orderdate),
+      ldts: String(row.ldts),
+    }))
+    .sort((a, b) => Number(a.orderKey) - Number(b.orderKey))
+  return { rows, cutoff: dayBefore(runs[0].ldts), firstLoad: runs[0].ldts }
+}
+
+function OrdersByTime({ data }: { data: ReturnType<typeof orderTimeData> }) {
+  const [meaning, setMeaning] = useState<'ldts' | 'business'>('ldts')
+  const included = (row: (typeof data.rows)[number]) => meaning === 'ldts'
+    ? row.ldts.slice(0, 10) <= data.cutoff
+    : row.businessDate <= data.cutoff
+  const includedCount = data.rows.filter(included).length
+
+  return (
+    <div className="border-t pt-4">
+      <TimeAxesDrawing />
+      <div role="group" aria-label="Choose the date meaning" className="mb-4 flex flex-wrap gap-2">
+        <button type="button" aria-pressed={meaning === 'ldts'} onClick={() => setMeaning('ldts')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          By load date (ldts)
+        </button>
+        <button type="button" aria-pressed={meaning === 'business'} onClick={() => setMeaning('business')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          By business date (o_orderdate)
+        </button>
+      </div>
+      <p className="mb-2 text-sm font-medium">Cutoff: end of {data.cutoff}</p>
+      <div className="rounded-xl border">
+        <table data-testid="orders-by-time" className="w-full table-fixed text-left text-xs">
+          <caption className="sr-only">Orders with business dates and load timestamps</caption>
+          <thead className="bg-muted/60">
+            <tr>
+              <th scope="col" className="w-[4.25rem] break-words px-1.5 py-1.5">Order key</th>
+              <th scope="col" className="w-[4.5rem] break-words px-1.5 py-1.5">Customer</th>
+              <th scope="col" className="w-[6.25rem] break-words px-1.5 py-1.5">o_orderdate</th>
+              <th scope="col" className="break-words px-1.5 py-1.5">ldts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.rows.map((row) => {
+              const qualifies = included(row)
+              return (
+                <tr key={row.orderKey} className={qualifies ? 'border-t-2 border-l-2 border-emerald-700 bg-emerald-500/10 dark:border-emerald-400' : 'border-t'}>
+                  <th scope="row" className="break-words px-1.5 py-1.5 font-medium">
+                    {qualifies && <span aria-hidden="true">✓ </span>}
+                    <span className="sr-only">{qualifies ? 'Included by selected cutoff. ' : ''}</span>{row.orderKey}
+                  </th>
+                  <td className="break-words px-1.5 py-1.5">{row.customerKey}</td>
+                  <td className="break-all px-1.5 py-1.5 font-mono text-[10px]">{row.businessDate}</td>
+                  <td className="break-all px-1.5 py-1.5 font-mono text-[10px]">{row.ldts}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {includedCount} of {data.rows.length} orders meet this time meaning. Included rows have a check and a highlight.
+      </p>
+    </div>
+  )
+}
 
 export default function Pit() {
-  const tables = useMemo(() => simulate()[2].tables, [])
+  const runs = useMemo(() => simulate(), [])
+  const tables = runs[2].tables
   const all = useMemo(() => pit(tables), [tables])
+  const timeData = useMemo(() => orderTimeData(runs), [runs])
   const [i, setI] = usePersistentState('pit.snapshot', 1)
   const sdts = SNAPSHOTS[i]
   const rows = all.filter((r) => r.sdts === sdts)
@@ -26,11 +107,18 @@ export default function Pit() {
         lead="Asking 'what did customer 3 look like on 2 January?' means finding the right version in every satellite. A point-in-time table precomputes those pointers per snapshot."
       />
       <Section
+        title="A photo of one date"
+        lead="Think of a PIT as a photo of every satellite taken at one snapshot date."
+        keyPoint="A PIT row points at the satellite versions valid at its snapshot; it does not copy their values."
+      >
+        <PitDrawing />
+      </Section>
+      <Section
         title="Drag the snapshot"
         lead="Move the snapshot date to see the PIT pointers select the valid row from each satellite."
         keyPoint="A PIT row identifies the satellite versions valid for one tracked key at one snapshot."
       >
-        <div className="rounded-2xl border bg-card/30 p-5">
+        <div className="border-t pt-6">
           <div className="mb-6 flex flex-wrap items-center gap-6">
             <div className="w-full max-w-md">
               <Slider aria-label="Snapshot date" value={[i]} min={0} max={SNAPSHOTS.length - 1} step={1} onValueChange={(v) => setI(Array.isArray(v) ? v[0] : (v as number))} />
@@ -70,6 +158,18 @@ export default function Pit() {
         </div>
         <Callout kind="info" title="Customers without phones">
           When a satellite has no row yet, the PIT points at the <Code>0000…</Code> ghost record instead of NULL. Marts can then use plain inner equi-joins.
+        </Callout>
+      </Section>
+      <Section
+        title="What we knew vs what was true"
+        lead={<><Term id="ldts">ldts</Term> is when the vault learned something; a <Term id="business-date">business date</Term> (<Code>o_orderdate</Code>) is when the order happened in the business.</>}
+        keyPoint="A PIT answers what the vault knew at a load-time snapshot; a business-date filter answers which events happened by a chosen date."
+      >
+        <P><Code>o_orderdate</Code> is stored on the order-customer link in the vault.</P>
+        <P><Term id="cutoff">A cutoff</Term> includes rows whose selected date is on or before the boundary. First vault load: <Code>{timeData.firstLoad}</Code>.</P>
+        <OrdersByTime data={timeData} />
+        <Callout kind="info" title="Choose the time meaning before you join">
+          PIT and <Code>sat_v1</Code> windows follow load dates. Business dates are payload you filter in a mart; they do not change the satellite versions a PIT points to.
         </Callout>
       </Section>
       <Section

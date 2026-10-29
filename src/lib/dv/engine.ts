@@ -529,6 +529,11 @@ export function simulate(opts: SimOptions = {}): BatchRun[] {
   return runs
 }
 
+export function oneShotEffSat(): Row[] {
+  const stagedDeliveries = BATCHES.flatMap((_, index) => stageCustomer(sourceFor(index).customer))
+  return loadEffSat([], stagedDeliveries, 'hk_customer_nation_l', BATCHES.at(-1)!).rows
+}
+
 export type CustomerPrecedence =
   | readonly ['crm/customer', 'shop/customer']
   | readonly ['shop/customer', 'crm/customer']
@@ -575,7 +580,10 @@ export function integratedCustomer(crmSat: Row[], shopSat: Row[], precedence: Cu
 }
 
 /** Build cumulative order totals as an insert-only computed satellite. */
-export function orderTotals(tables: Pick<BatchRun['tables'], 'order_customer_nh_l'>): Row[] {
+export function orderTotals(
+  tables: Pick<BatchRun['tables'], 'order_customer_nh_l'>,
+  { aggregate = 'sum' }: { aggregate?: 'sum' | 'max' } = {},
+): Row[] {
   const orders = tables.order_customer_nh_l.filter((row) => !isGhost(row))
   const snapshots = [...new Set(orders.map((row) => String(row.ldts)))].sort()
   const keys = [...new Set(orders.map((row) => String(row.hk_customer_h)))].sort()
@@ -587,7 +595,9 @@ export function orderTotals(tables: Pick<BatchRun['tables'], 'order_customer_nh_
       const customerOrders = orders.filter((row) => String(row.hk_customer_h) === hkValue && String(row.ldts) <= ldts)
       if (!customerOrders.length) continue
       const orderCount = customerOrders.length
-      const totalPrice = customerOrders.reduce((sum, row) => sum + Number(row.o_totalprice ?? 0), 0)
+      const totalPrice = aggregate === 'sum'
+        ? customerOrders.reduce((sum, row) => sum + Number(row.o_totalprice ?? 0), 0)
+        : customerOrders.reduce((maximum, row) => Math.max(maximum, Number(row.o_totalprice ?? 0)), Number.NEGATIVE_INFINITY)
       const hashdiff = hd(orderCount, totalPrice)
       if (hashdiff === previousHash) continue
       previousHash = hashdiff

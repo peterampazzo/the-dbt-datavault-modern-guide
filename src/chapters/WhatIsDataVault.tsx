@@ -5,11 +5,13 @@ import { Boxes, GitBranch, Layers, Scale, Workflow } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code, RecapExtras } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { Decomposition } from '@/components/Decomposition'
+import { HubLinkSatDrawing } from '@/components/drawing/HubLinkSatDrawing'
 import { cn } from '@/lib/utils'
 import { Link } from 'react-router'
 import { BATCHES } from '@/lib/dv/dataset'
 import { CodeBlock } from '@/components/CodeBlock'
 import { SNIPPETS } from '@/lib/dv/models'
+import { simulate } from '@/lib/dv/engine'
 
 const CHANGES = [
   { icon: Boxes, title: 'New sources', text: 'New internal systems, external feeds, acquisitions and mergers.' },
@@ -154,7 +156,8 @@ function SourceToReports() {
   const [selected, setSelected] = useState(0)
   const stop = SOURCE_STOPS[selected]
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <ol aria-label="From source systems to reports" className="grid grid-cols-2 gap-2 md:grid-cols-5">
         {SOURCE_STOPS.map(({ title }, index) => (
           <li key={title}>
@@ -236,15 +239,17 @@ function SourceToReports() {
           <li>What did we know on date X?</li>
         </ul>
       </div>
-      <p className="font-medium">Data Vault is the design for the integration step.</p>
-    </div>
+      </div>
+      <P>Data Vault is the design for the integration step.</P>
+    </>
   )
 }
 
 function FabricArchitecture() {
   const [view, setView] = useState<'generic' | 'fabric'>('generic')
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0">
         <legend className="sr-only">Choose architecture view</legend>
         <button type="button" aria-pressed={view === 'generic'} onClick={() => setView('generic')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
@@ -278,18 +283,21 @@ function FabricArchitecture() {
               <p className="mt-2 text-sm leading-5">Use a lakehouse or a warehouse for reporting models.</p>
             </li>
           </ol>
-          <p className="text-sm leading-6">
-            Use one lakehouse with several schemas where lakehouse schemas are enabled in your workspace, or one lakehouse per layer when you want separate permissions.
-            Either way, dbt writes each model layer to its own schema with <Code>+schema</Code>. A custom <Code>generate_schema_name</Code> macro avoids prefixing those
-            names with the target schema.
-          </p>
           <div className="grid gap-3 lg:grid-cols-2">
             <CodeBlock title="dbt_project.yml · model schemas" code={SNIPPETS.dbt_project_layer_schemas.code} lang="yaml" />
             <CodeBlock title="macros/generate_schema_name.sql" code={SNIPPETS.generate_schema_name.code} lang="sql" />
           </div>
         </>
       )}
-    </div>
+      </div>
+      {view === 'fabric' && (
+        <P>
+          Use one lakehouse with several schemas where lakehouse schemas are enabled in your workspace, or one lakehouse per layer when you want separate permissions.
+          Either way, dbt writes each model layer to its own schema with <Code>+schema</Code>. A custom <Code>generate_schema_name</Code> macro avoids prefixing those
+          names with the target schema.
+        </P>
+      )}
+    </>
   )
 }
 
@@ -302,6 +310,69 @@ const COMPARE = [
   ['Auditability', 'Built in (ldts, rsrc on every row)', 'Custom engineering'],
   ['Reporting', 'Needs marts on top', 'Directly from the warehouse'],
 ]
+
+function CustomerHistory() {
+  const runs = simulate()
+  const [view, setView] = useState<'report' | 'source' | 'vault'>('report')
+  const alice = runs[0].source.customer.find((row) => String(row.c_name).startsWith('Alice'))
+  const aliceName = String(alice?.c_name)
+  const reportRow = runs[1].source.customer.find((row) => row.c_name === alice?.c_name)
+  const currentRow = runs.at(-1)!.source.customer.find((row) => row.c_name === alice?.c_name)
+  const versions = runs.at(-1)!.tables.customer_n_s
+    .filter((row) => row.c_name === alice?.c_name)
+    .sort((a, b) => String(a.ldts).localeCompare(String(b.ldts)))
+  const options = [
+    { id: 'report', label: 'Report on 2 Jan' },
+    { id: 'source', label: 'Source today' },
+    { id: 'vault', label: 'With a vault' },
+  ] as const
+
+  return (
+    <div className="mx-auto max-w-[48rem] border-t pt-6">
+      <div role="group" aria-label="Choose which customer history to see" className="mb-4 flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            aria-pressed={view === option.id}
+            onClick={() => setView(option.id)}
+            className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+      {view === 'report' && reportRow && (
+        <p className="text-sm leading-6">
+          {aliceName}’s segment on {runs[1].ldts}: <strong>{String(reportRow.c_mktsegment)}</strong>.
+        </p>
+      )}
+      {view === 'source' && currentRow && (
+        <p className="text-sm leading-6">
+          The current source row for {aliceName} says <strong>{String(currentRow.c_mktsegment)}</strong> at {runs.at(-1)!.ldts}; it has no previous segment value.
+        </p>
+      )}
+      {view === 'vault' && (
+        <div className="overflow-x-auto rounded-xl border">
+          <table className="w-full text-left text-sm">
+            <caption className="sr-only">{aliceName}’s customer_n_s versions</caption>
+            <thead className="bg-muted/60">
+              <tr><th scope="col" className="px-3 py-2">ldts</th><th scope="col" className="px-3 py-2">c_mktsegment</th></tr>
+            </thead>
+            <tbody>
+              {versions.map((row) => (
+                <tr key={String(row.ldts)} className="border-t">
+                  <td className="break-all px-3 py-2 font-mono text-xs">{String(row.ldts)}</td>
+                  <td className="px-3 py-2">{String(row.c_mktsegment)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function WhatIsDataVault() {
   return (
@@ -336,6 +407,8 @@ export default function WhatIsDataVault() {
             </div>
           ))}
         </div>
+        <P className="mt-6">The source shows the row it knows now; the vault keeps the versions it knew then.</P>
+        <CustomerHistory />
       </Section>
 
       <Section
@@ -379,6 +452,7 @@ export default function WhatIsDataVault() {
         lead="Compare what hubs, links and satellites store and the rules each follows."
         keyPoint="A hub stores identity, a link stores a relationship, and a satellite stores descriptive history."
       >
+        <HubLinkSatDrawing />
         <div className="grid gap-4 md:grid-cols-3">
           {BLOCKS.map((b) => (
             <motion.div key={b.name} whileHover={{ y: -4 }} className={cn('rounded-2xl border bg-gradient-to-b to-transparent p-5', b.tone)}>

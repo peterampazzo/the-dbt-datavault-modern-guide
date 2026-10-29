@@ -15,6 +15,7 @@ export const ROUTES = [
   { slug: 'replay', title: 'Replay: one history, two shapes' },
   { slug: 'one-lake', title: 'One lake, any engine' },
   { slug: 'modern-way', title: 'Working the modern way' },
+  { slug: 'scheduling', title: 'Running dbt on a schedule' },
   { slug: 'from-sql-server', title: 'From a hand-written SQL Server vault' },
   { slug: 'hash-parity', title: 'Hash parity and restoring history' },
   { slug: 'business-vault', title: 'The modern business vault' },

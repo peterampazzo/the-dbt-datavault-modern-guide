@@ -1,6 +1,6 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { ArrowRight, BookOpen, Moon, ScrollText, Sun, Check } from 'lucide-react'
+import { ArrowRight, BookOpen, Moon, ScrollText, Sun, Check, List, X } from 'lucide-react'
 import { motion } from 'motion/react'
 import { CHAPTERS, PARTS } from '@/chapters'
 import { cn } from '@/lib/utils'
@@ -9,7 +9,7 @@ import { setLast, useProgress } from '@/lib/progress'
 import { getOptionalRefresherSlugs, setReadingMode, usePages, useReadingMode, useReadingPath } from '@/lib/reading'
 
 function useTheme() {
-  const [dark, setDark] = useState(() => localStorage.getItem('theme') !== 'light')
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
     localStorage.setItem('theme', dark ? 'dark' : 'light')
@@ -40,15 +40,17 @@ function useSections(pathname: string) {
     let io: IntersectionObserver | undefined
     let seen = ''
     const scan = () => {
-      const hs = [...main.querySelectorAll<HTMLElement>('h2[id]')]
+      const hs = [...main.querySelectorAll<HTMLElement>('h2[id], #recap-heading')]
       const ids = hs.map((h) => h.id).join(' ')
       if (ids === seen) return
       seen = ids
-      setSections(hs.map((h) => ({ id: h.id, title: h.textContent ?? '' })))
+      setSections(hs.map((h) => ({ id: h.id === 'recap-heading' ? 'recap' : h.id, title: h.textContent ?? '' })))
       io?.disconnect()
       io = new IntersectionObserver(
         (entries) => {
-          for (const e of entries) if (e.isIntersecting) setActive({ path: pathname, id: e.target.id })
+          for (const e of entries) {
+            if (e.isIntersecting) setActive({ path: pathname, id: e.target.id === 'recap-heading' ? 'recap' : e.target.id })
+          }
         },
         { rootMargin: '0px 0px -70% 0px' },
       )
@@ -81,6 +83,22 @@ export function Layout() {
   const published = usePages()
   const chapterPages = chapter && published.slug === chapter.slug ? published.pages : []
   const currentPage = mode === 'paged' ? (pageSeg ?? '') : active
+  const currentPageIndex = chapterPages.findIndex((page) => page.id === currentPage)
+  const pageNumber = currentPage && currentPage !== 'recap' && currentPageIndex > 0
+    ? `${idx + 1}.${currentPageIndex}`
+    : undefined
+  const toc = useRef<HTMLDialogElement>(null)
+
+  const openContents = () => {
+    const dialog = toc.current
+    if (!dialog) return
+    dialog.showModal()
+    requestAnimationFrame(() => dialog.querySelector<HTMLElement>('a[aria-current="page"]')?.scrollIntoView({ block: 'center' }))
+  }
+
+  useEffect(() => {
+    toc.current?.close()
+  }, [pathname])
 
   useEffect(() => {
     const s = new URLSearchParams(search).get('s')
@@ -89,12 +107,18 @@ export function Layout() {
   }, [chapter, pathname, search, navigate])
 
   useEffect(() => {
-    if (chapter && mode === 'scroll') setLast(chapter.slug, active, sections.find((s) => s.id === active)?.title)
-  }, [chapter, active, sections, mode])
+    if (chapter && mode === 'scroll') {
+      const pageIndex = published.slug === chapter.slug
+        ? published.pages.findIndex((page) => page.id === active)
+        : -1
+      const sectionNumber = active && active !== 'recap' && pageIndex > 0 ? pageIndex : undefined
+      setLast(chapter.slug, active, sections.find((s) => s.id === active)?.title, sectionNumber)
+    }
+  }, [chapter, active, sections, mode, published.pages, published.slug])
 
   return (
     <div className="min-h-svh bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-0 -z-0 bg-[radial-gradient(60rem_30rem_at_80%_-10%,rgba(56,189,248,0.08),transparent),radial-gradient(40rem_30rem_at_-10%_110%,rgba(245,158,11,0.06),transparent)]" />
+      <div className="pointer-events-none fixed inset-0 -z-0 hidden dark:block bg-[radial-gradient(60rem_30rem_at_80%_-10%,rgba(56,189,248,0.08),transparent),radial-gradient(40rem_30rem_at_-10%_110%,rgba(245,158,11,0.06),transparent)]" />
       <header className="sticky top-0 z-40 overflow-x-hidden border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-[90rem] items-center gap-3 px-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
@@ -102,25 +126,21 @@ export function Layout() {
             <span className="sr-only sm:not-sr-only">The dbt + Data Vault guide</span>
           </Link>
           <Link to="/about" className="inline-flex min-h-11 items-center rounded-md px-2 text-sm font-medium hover:bg-muted">About</Link>
-          <nav className="ml-4 flex w-0 min-w-0 flex-1 gap-1 overflow-x-auto lg:hidden">
-            {CHAPTERS.map((c, i) => (
-              <NavLink
-                key={c.slug}
-                to={`/${c.slug}`}
-                className={({ isActive }) =>
-                  cn('whitespace-nowrap rounded-md px-2 py-1 text-xs', isActive ? 'bg-muted font-medium' : 'text-muted-foreground')
-                }
-              >
-                {i + 1}. {c.short}
-                {progress.done.includes(c.slug) && (
-                  <>
-                    <Check aria-hidden className="ml-1 inline size-3 text-emerald-700 dark:text-emerald-400" />
-                    <span className="sr-only"> (done)</span>
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
+          <Button variant="ghost" className="min-h-11" aria-haspopup="dialog" onClick={openContents}>
+            <List aria-hidden /> Contents
+          </Button>
+          {chapter && (
+            <div className="min-w-0 flex-1 truncate text-xs leading-5 text-foreground/80">
+              <span className="hidden truncate md:inline">{idx + 1} · {chapter.title.split(':')[0]}</span>
+              <span className="md:hidden">{pageNumber ?? (currentPage === 'recap' ? 'Recap' : String(idx + 1))}</span>
+              {pageNumber && currentPage && (
+                <span className="ml-2 hidden truncate text-muted-foreground md:inline">
+                  {pageNumber} {chapterPages[currentPageIndex]?.title}
+                </span>
+              )}
+              {currentPage === 'recap' && <span className="ml-2 hidden text-muted-foreground md:inline">Recap</span>}
+            </div>
+          )}
           <div className="ml-auto flex items-center gap-1">
             <Button
               variant="ghost"
@@ -156,15 +176,27 @@ export function Layout() {
           <div className="h-full bg-sky-500 transition-[width] duration-500" style={{ width: `${(doneCount / CHAPTERS.length) * 100}%` }} />
         </div>
       </header>
-      <div className="relative mx-auto flex max-w-[90rem]">
-        <aside className="sticky top-14 hidden h-[calc(100svh-3.5rem)] w-64 shrink-0 overflow-y-auto border-r px-3 py-6 lg:block">
-          <div className="mb-3 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Chapters</div>
+      <div className="relative">
+        <dialog
+          ref={toc}
+          aria-labelledby="toc-heading"
+          className="toc-drawer overflow-y-auto px-3 py-5"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) toc.current?.close()
+          }}
+        >
+          <div className="mb-3 flex items-center justify-between px-2">
+            <h2 id="toc-heading" className="text-xs font-medium text-muted-foreground">Contents</h2>
+            <Button variant="ghost" size="icon" aria-label="Close contents" onClick={() => toc.current?.close()}>
+              <X />
+            </Button>
+          </div>
           {PARTS.map((part) => {
             const chapters = CHAPTERS.map((c, i) => ({ chapter: c, index: i })).filter(({ chapter: c }) => c.part === part.n)
             if (chapters.length === 0) return null
             return (
               <section key={part.n} aria-labelledby={`part-${part.n}-heading`} className="mb-5">
-                <h3 id={`part-${part.n}-heading`} className="mb-1 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h3 id={`part-${part.n}-heading`} className="mb-1 px-2 text-xs font-semibold text-foreground/70">
                   Part {part.n}: {part.title}
                 </h3>
                 <ol className="space-y-0.5">
@@ -186,7 +218,7 @@ export function Layout() {
                               {isActive && (
                                 <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-muted" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
                               )}
-                              <span className={cn('relative font-mono text-xs', isActive ? 'text-foreground' : 'text-muted-foreground')}>{String(i + 1).padStart(2, '0')}</span>
+                              <span className={cn('relative font-sans text-xs tabular-nums', isActive ? 'text-foreground' : 'text-muted-foreground')}>{String(i + 1).padStart(2, '0')}</span>
                               <span className="relative min-w-0 flex-1">{c.title}</span>
                               {refresher && <span className="relative text-[10px] text-muted-foreground">refresher</span>}
                               {progress.done.includes(c.slug) && (
@@ -227,7 +259,7 @@ export function Layout() {
             )
           })}
           <div className="mt-8 space-y-1.5 px-2 text-xs text-muted-foreground">
-            <div className="font-medium uppercase tracking-wider">Legend</div>
+            <div className="font-medium">Legend</div>
             {[
               ['bg-sky-500', 'Hub', '_h'],
               ['bg-emerald-500', 'Link', '_l'],
@@ -246,19 +278,19 @@ export function Layout() {
               <li><Link to="/about" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">About this guide</Link></li>
             </ul>
           </nav>
-        </aside>
-        <main className="relative min-w-0 flex-1 px-4 py-10 md:px-10">
+        </dialog>
+        <main className="relative mx-auto w-full max-w-[84rem] px-5 py-12 md:px-10">
           <Suspense fallback={<div className="h-96 rounded-xl motion-safe:animate-pulse bg-muted/40" />}>
             <Outlet />
           </Suspense>
-          {!chapter && (
+          {!chapter && pathname !== '/' && (
             <div className="mt-16 flex justify-end gap-4 border-t pt-6">
               <Link to={`/${CHAPTERS[0].slug}`} className="group flex items-center gap-2 text-sm font-medium hover:text-sky-400">
                 {CHAPTERS[0].title} <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
           )}
-          <footer className="mt-12 border-t pt-5">
+          <footer className="mx-auto mt-12 max-w-[40rem] border-t pt-5">
             <nav aria-label="Guide information" className="flex flex-wrap gap-4 text-sm">
               <Link to="/about" className="inline-flex min-h-11 items-center underline underline-offset-4">About this guide</Link>
               <Link to="/glossary" className="inline-flex min-h-11 items-center underline underline-offset-4">Glossary</Link>

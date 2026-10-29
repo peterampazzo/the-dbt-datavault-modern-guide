@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Plus, X } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
+import { HashdiffDrawing } from '@/components/drawing/HashdiffDrawing'
 import { Button } from '@/components/ui/button'
 import { dvHash, type HashAlg, type HashKind } from '@/lib/dv/hash'
 import { cn } from '@/lib/utils'
@@ -39,7 +40,7 @@ function Lab() {
   const set = (id: number, patch: Partial<Input>) => setInputs((xs) => xs.map((x) => (x.id === id ? { ...x, ...patch } : x)))
 
   return (
-    <div className="grid gap-6 rounded-2xl border bg-card/30 p-5 lg:grid-cols-[20rem_1fr]">
+    <div className="grid gap-6 border-t pt-6 lg:grid-cols-[20rem_1fr]">
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
           <Toggle value={kind} options={['hashkey', 'hashdiff']} onChange={setKind} />
@@ -136,7 +137,7 @@ function DiffFlip() {
   const after = dvHash(Object.values(p), { kind: 'hashdiff' }).hash
   const changed = before !== after
   return (
-    <div className="grid gap-6 rounded-2xl border bg-card/30 p-5 lg:grid-cols-2">
+    <div className="grid gap-6 border-t pt-6 lg:grid-cols-2">
       <div className="space-y-2">
         <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Today's delivery for customer 1</div>
         {(Object.keys(BASE) as (keyof Payload)[]).map((k) => (
@@ -210,6 +211,7 @@ export default function HashLab() {
           The satellite stores the hashdiff of the payload it last saw for each key. A new delivery is hashed the same way. Different hash, new row; same hash, skip. The
           trailing spaces below don't count because values are trimmed first. Change one letter's case and see what happens.
         </P>
+        <HashdiffDrawing />
         <DiffFlip />
       </Section>
       <Section

@@ -97,7 +97,7 @@ function WorkflowComparison() {
       </fieldset>
 
       {view === 'ssis' && (
-        <div className="space-y-3 rounded-xl border bg-card/50 p-3">
+        <div className="space-y-3 border-t pt-6">
           <div>
             <h3 className="mb-2 text-sm font-semibold">Control flow</h3>
             <div className="flex flex-wrap items-center gap-2">
@@ -194,6 +194,194 @@ function WorkflowComparison() {
       <Callout kind="tip" title="What stays the same">
         It is still SQL, and the same Data Vault patterns still apply: business keys, hashkeys, hashdiffs and insert-only history.
       </Callout>
+    </div>
+  )
+}
+
+type PrimerModel = (typeof PRIMER)[keyof typeof PRIMER]
+
+const PRIMER_MODELS = Object.values(PRIMER).filter(
+  (file): file is PrimerModel => file.path.startsWith('models/') && file.path.endsWith('.sql'),
+)
+
+const MODEL_PARENTS = new Map(
+  PRIMER_MODELS.map((model) => [
+    model.name,
+    [...model.code.matchAll(/ref\(['"]([^'"]+)['"]\)/g)].map((match) => match[1]),
+  ]),
+)
+
+const PRIMER_TESTS = PRIMER.schema_tests.code
+  .split(/(?=^\s{2}- name: )/m)
+  .flatMap((block) => {
+    const modelName = block.match(/^\s{2}- name:\s*([\w]+)/m)?.[1]
+    if (!modelName) return []
+    const columns = block.split(/(?=^\s{6}- name: )/m).slice(1)
+    return columns.flatMap((column) => {
+      const columnName = column.match(/^\s{6}- name:\s*([\w]+)/m)?.[1]
+      if (!columnName) return []
+      return [...column.matchAll(/^\s{10}-\s*([\w]+)/gm)].map((match) => ({
+        id: `${modelName}.${columnName}.${match[1]}`,
+        model: modelName,
+      }))
+    })
+  })
+
+type PrimerCommand = 'build' | 'run' | 'test' | 'compile'
+type PrimerSelection = 'none' | 'exact' | 'downstream' | 'upstream'
+
+const COMMANDS: PrimerCommand[] = ['build', 'run', 'test', 'compile']
+const SELECTIONS: PrimerSelection[] = ['none', 'exact', 'downstream', 'upstream']
+const TARGETS = [...PRIMER.profiles.code.matchAll(/^\s{4}([\w-]+):\s*$/gm)].map((match) => match[1])
+
+function selectionLabel(selection: PrimerSelection, model: string) {
+  if (selection === 'none') return '(none)'
+  if (selection === 'exact') return model
+  if (selection === 'downstream') return `${model}+`
+  return `+${model}`
+}
+
+function selectedModels(selection: PrimerSelection, model: string) {
+  if (selection === 'none') return new Set(PRIMER_MODELS.map((entry) => entry.name))
+  const included = new Set([model])
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const entry of PRIMER_MODELS) {
+      const parents = MODEL_PARENTS.get(entry.name) ?? []
+      if (selection === 'downstream' && parents.some((parent) => included.has(parent)) && !included.has(entry.name)) {
+        included.add(entry.name)
+        changed = true
+      }
+      if (selection === 'upstream' && parents.some((parent) => included.has(parent))) {
+        for (const parent of parents) {
+          if (!included.has(parent)) {
+            included.add(parent)
+            changed = true
+          }
+        }
+      }
+    }
+  }
+  return included
+}
+
+function CommandBuilder() {
+  const [command, setCommand] = useState<PrimerCommand>('build')
+  const [selection, setSelection] = useState<PrimerSelection>('none')
+  const [model, setModel] = useState<string>(PRIMER_MODELS[0]?.name ?? '')
+  const [target, setTarget] = useState(TARGETS[0] ?? '')
+  const included = selectedModels(selection, model)
+  const models = PRIMER_MODELS.filter((entry) => included.has(entry.name))
+  const tests = PRIMER_TESTS.filter((entry) => included.has(entry.model))
+  const nodes =
+    command === 'test'
+      ? tests.map((entry) => ({ id: entry.id, kind: 'test' }))
+      : command === 'build'
+        ? models.flatMap((entry) => [
+            { id: entry.name, kind: 'model' },
+            ...tests.filter((test) => test.model === entry.name).map((test) => ({ id: test.id, kind: 'test' })),
+          ])
+        : models.map((entry) => ({ id: entry.name, kind: 'model' }))
+  const selectionText = selection === 'none' ? '' : ` --select ${selection === 'exact' ? model : selection === 'downstream' ? `${model}+` : `+${model}`}`
+  const commandText = `dbt ${command}${selectionText} --target ${target}`
+
+  return (
+    <div className="mx-auto max-w-[48rem] space-y-5 rounded-xl border bg-card/50 p-4">
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium">Command</legend>
+        <div className="flex flex-wrap gap-2">
+          {COMMANDS.map((item) => (
+            <button key={item} type="button" aria-pressed={command === item} onClick={() => setCommand(item)} className="rounded-md border px-3 py-2 font-mono text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+              {item}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium">Selection</legend>
+        <div className="flex flex-wrap gap-2">
+          {SELECTIONS.map((item) => (
+            <button key={item} type="button" aria-pressed={selection === item} onClick={() => setSelection(item)} className="rounded-md border px-3 py-2 font-mono text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+              {selectionLabel(item, model)}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      {selection !== 'none' && (
+        <label className="block text-sm font-medium">
+          Model <select value={model} onChange={(event) => setModel(event.target.value)} className="ml-2 rounded-md border bg-background px-2 py-1 font-mono text-xs">
+            {PRIMER_MODELS.map((entry) => <option key={entry.name} value={entry.name}>{entry.name}</option>)}
+          </select>
+        </label>
+      )}
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium">Target</legend>
+        <div className="flex flex-wrap gap-2">
+          {TARGETS.map((item) => (
+            <button key={item} type="button" aria-pressed={target === item} onClick={() => setTarget(item)} className="rounded-md border px-3 py-2 font-mono text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+              {item}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <code aria-label="Generated dbt command" className="block overflow-x-auto rounded-lg bg-zinc-950 p-3 font-mono text-sm text-zinc-100">
+        {commandText}
+      </code>
+      <div>
+        <h3 className="mb-2 text-sm font-semibold">Nodes selected, in graph order</h3>
+        {nodes.length ? (
+          <ol className="space-y-1 font-mono text-xs">
+            {nodes.map((node, index) => <li key={`${node.kind}-${node.id}`}><span className="mr-2 tabular-nums text-muted-foreground">{index + 1}.</span><span className="text-muted-foreground">{node.kind}</span> · {node.id}</li>)}
+          </ol>
+        ) : (
+          <p className="text-sm text-muted-foreground">No tests are attached to the selected models in this Primer project.</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const FABRIC_PROFILE = `guide:
+  target: dev
+  outputs:
+    dev:
+      type: fabricspark
+      method: livy
+      authentication: CLI
+      workspaceid: "{{ env_var('FABRIC_WORKSPACE_ID') }}"
+      lakehouseid: "{{ env_var('FABRIC_LAKEHOUSE_ID') }}"
+      lakehouse: "{{ env_var('FABRIC_LAKEHOUSE') }}"
+      schema: "{{ env_var('DBT_DEV_SCHEMA') }}"
+      threads: 1`
+
+function ProfileExamples() {
+  const [selected, setSelected] = useState<'duckdb' | 'fabric'>('duckdb')
+  const fabric = selected === 'fabric'
+
+  return (
+    <div className="mx-auto max-w-[48rem]">
+      <fieldset className="flex flex-wrap gap-2">
+        <legend className="sr-only">Choose a profile example</legend>
+        <button type="button" aria-pressed={!fabric} onClick={() => setSelected('duckdb')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          Local DuckDB (this primer)
+        </button>
+        <button type="button" aria-pressed={fabric} onClick={() => setSelected('fabric')} className="rounded-md border px-3 py-2 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+          Fabric Lakehouse
+        </button>
+      </fieldset>
+      <figure className="mt-4">
+        <CodeBlock
+          title={fabric ? 'profiles.yml · Fabric Lakehouse (illustrative)' : PRIMER.profiles.path}
+          code={fabric ? FABRIC_PROFILE : PRIMER.profiles.code}
+          lang="yaml"
+        />
+        {fabric && (
+          <figcaption className="mt-2 text-xs text-muted-foreground">
+            Check the adapter's README for the fields your version needs.
+          </figcaption>
+        )}
+      </figure>
     </div>
   )
 }
@@ -302,7 +490,8 @@ function JinjaCompile() {
   const file = compiled ? PRIMER.compiled_round_amount : PRIMER.round_amount_macro
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <fieldset className="flex gap-2">
         <legend className="sr-only">Show Jinja or compiled SQL</legend>
         <button type="button" aria-pressed={!compiled} onClick={() => setCompiled(false)} className={cn('rounded-lg border px-3 py-2 text-sm', !compiled ? 'border-sky-600 bg-sky-500/10' : 'bg-card/50')}>
@@ -314,8 +503,9 @@ function JinjaCompile() {
       </fieldset>
       {!compiled && <CodeBlock title={PRIMER.round_amount_usage.path} code={PRIMER.round_amount_usage.code} lang={PRIMER.round_amount_usage.lang} />}
       <CodeBlock title={file.path} code={file.code} lang={file.lang} />
+      </div>
       {!compiled && <P>The macro definition lives in its own file; this model calls it with <Code>{`{{ round_amount('c_acctbal') }}`}</Code>.</P>}
-    </div>
+    </>
   )
 }
 
@@ -421,7 +611,8 @@ function IncrementalPlayer() {
   const highlight = active.highlight ? [5, 6] : []
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <ol aria-label="Incremental build steps" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {INCREMENTAL_STEPS.map((item, index) => (
           <li key={item.title} aria-current={step === index ? 'step' : undefined} className={cn('rounded-lg border px-3 py-2 text-sm', step === index ? 'border-sky-600 bg-sky-500/10' : 'bg-card/50')}>
@@ -455,10 +646,11 @@ function IncrementalPlayer() {
           </button>
         </div>
       </div>
-      <p className="text-sm leading-6">
+      </div>
+      <P>
         Continue with <Link to="/replay" className="text-foreground underline underline-offset-2">Replay</Link> to compare a changed model against the history still available.
-      </p>
-    </div>
+      </P>
+    </>
   )
 }
 
@@ -472,7 +664,8 @@ function TestsAndDocs() {
   const passes = failingRows.length === 0
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -511,11 +704,12 @@ having count(*) > 1`}
         stepIds={['unique-fails', 'unique-passes']}
         activeStepId={duplicate ? 'unique-fails' : 'unique-passes'}
       />
+      </div>
       <P>
         <Code>dbt docs generate</Code> builds project documentation and lineage. Explore the guide’s{' '}
         <Link to="/dbt-project" className="text-foreground underline underline-offset-2">Lineage chapter</Link>.
       </P>
-    </div>
+    </>
   )
 }
 
@@ -628,6 +822,36 @@ export default function DbtPrimer() {
           keyPoint="Tests turn assumptions about keys into repeatable checks, and generated docs expose model lineage."
           note="You can write duplicate-key queries and hand-maintained diagrams in SQL Server; dbt tests and docs keep these checks and dependencies alongside the models."
         />
+      </Section>
+      <Section
+        title="Running dbt from the command line"
+        lead="dbt is a command-line tool: one command, a selection and a target decide what runs and where."
+        keyPoint="The same command runs on a laptop, CI and a scheduler; only the target changes."
+      >
+        <CommandBuilder />
+        <P className="mx-auto mt-6">
+          <Code>build</Code> runs models and tests in graph order; a failing test skips downstream work. <Code>compile</Code> writes SQL without running it. Every run writes <Code>target/</Code> artifacts: compiled SQL, <Term id="manifest">manifest.json</Term> (the project graph) and <Code>run_results.json</Code> (what ran and its result), which CI and orchestrators read.
+        </P>
+      </Section>
+      <Section
+        title="profiles.yml: how dbt connects"
+        lead="A profile names the connection settings and outputs dbt can use for a run."
+      >
+        <P className="mx-auto">
+          dbt defaults to <Code>~/.dbt/profiles.yml</Code>, or uses <Code>DBT_PROFILES_DIR</Code>. The <Code>profile:</Code> field in <Code>dbt_project.yml</Code> selects a <Term id="profile">profile</Term>; targets are outputs inside it, and <Code>--target</Code> chooses one.
+        </P>
+        <ProfileExamples />
+        <P className="mx-auto mt-6">
+          Secrets come from <Code>env_var()</Code> and never belong in Git; <Code>.env</Code> stays in <Code>.gitignore</Code>.
+        </P>
+        <section className="mx-auto max-w-[40rem]">
+          <h3 className="mb-2 font-serif text-xl font-semibold">Your own sandbox</h3>
+          <ul className="list-disc space-y-2 pl-6 font-serif text-lg leading-7 text-foreground/90">
+            <li>The dev target writes only to your own schema; sources still read shared retained data through <Code>source()</Code>.</li>
+            <li>Profile settings do not grant permissions; the identity behind them decides read and write access.</li>
+            <li>Live source data changes, so record the batch (max <Code>ldts</Code>) used for comparisons.</li>
+          </ul>
+        </section>
       </Section>
     </Chapter>
   )

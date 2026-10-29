@@ -4,6 +4,7 @@ import {
   END,
   integratedCustomer,
   isGhost,
+  oneShotEffSat,
   orderTotals,
   pit,
   replay,
@@ -56,6 +57,29 @@ describe('simulate', () => {
     expect(es).toHaveLength(5 + 4 + 2)
   })
 
+  it('keeps both of Chiara’s links active when effectivity is loaded from a union', () => {
+    const chiara = runs[0].source.customer.find((row) => row.c_name === 'Chiara Rossi')!
+    const italy = runs[0].source.nation.find((row) => row.n_name === 'Italy')!
+    expect(chiara.c_nationkey).toBe(italy.n_nationkey)
+
+    const germany = runs[0].source.nation.find((row) => row.n_name === 'Germany')!
+    const links = new Map(
+      runs.flatMap((run) => run.stage.stg_customer)
+        .filter((row) => row.c_custkey === chiara.c_custkey)
+        .map((row) => [row.c_nationkey, row.hk_customer_nation_l] as const),
+    )
+    const italyLink = links.get(italy.n_nationkey)
+    const germanyLink = links.get(germany.n_nationkey)
+    const orderedItaly = last.customer_nation_es.filter((row) => row.hk_customer_nation_l === italyLink)
+    const orderedGermany = last.customer_nation_es.filter((row) => row.hk_customer_nation_l === germanyLink)
+    const oneShot = oneShotEffSat()
+
+    expect(orderedItaly.map((row) => row.is_active)).toEqual([true, false])
+    expect(orderedGermany.map((row) => row.is_active)).toEqual([true])
+    expect(oneShot.find((row) => row.hk_customer_nation_l === italyLink)?.is_active).toBe(true)
+    expect(oneShot.find((row) => row.hk_customer_nation_l === germanyLink)?.is_active).toBe(true)
+  })
+
   it('re-inserts the whole multi-active set on change', () => {
     expect(real(last.customer_phone_ma_s)).toHaveLength(3 + 3 + 1)
   })
@@ -78,6 +102,33 @@ describe('simulate', () => {
     const daniel = p.find((r) => r.c_custkey === 4 && r.sdts === '2024-01-04 07:00:00')!
     expect(daniel.customer_n_s_ldts).toBe('2024-01-01 06:00:00')
     expect(daniel.customer_phone_ma_s_hk).toBe(UNKNOWN_KEY)
+  })
+
+  it('keeps business dates on order-customer links for cutoff filtering', () => {
+    const orderKeys = new Map(last.order_h.filter((row) => !isGhost(row)).map((row) => [String(row.hk_order_h), String(row.o_orderkey)] as const))
+    const orders = real(last.order_customer_nh_l)
+    const byBusinessDate = orders
+      .filter((row) => String(row.o_orderdate) <= '2023-12-31')
+      .map((row) => orderKeys.get(String(row.hk_order_h)))
+      .sort()
+    const byLoadDate = orders.filter((row) => String(row.ldts).slice(0, 10) <= '2023-12-31')
+
+    expect(byBusinessDate).toEqual(['101', '102', '103'])
+    expect(byLoadDate).toHaveLength(0)
+  })
+
+  it('multiplies Alice’s order totals across PIT snapshots until one snapshot is selected', () => {
+    const aliceSnapshots = pit(last).filter((row) => row.c_custkey === 1)
+    const aliceOrders = real(last.order_customer_nh_l).filter((row) => row.hk_customer_h === hk(1))
+    const allSnapshotRows = aliceSnapshots.flatMap((snapshot) => aliceOrders.map((order) => ({ snapshot, order })))
+    const latestSnapshotRows = aliceOrders
+
+    expect(aliceSnapshots).toHaveLength(4)
+    expect(aliceOrders).toHaveLength(2)
+    expect(allSnapshotRows).toHaveLength(8)
+    expect(allSnapshotRows.reduce((sum, row) => sum + Number(row.order.o_totalprice), 0)).toBe(1240)
+    expect(latestSnapshotRows).toHaveLength(2)
+    expect(latestSnapshotRows.reduce((sum, row) => sum + Number(row.o_totalprice), 0)).toBe(310)
   })
 })
 
@@ -145,6 +196,27 @@ describe('business vault', () => {
     expect(totals.every((row) => typeof row.hd_customer_order_total_s === 'string')).toBe(true)
     expect(totals.find((row) => row.hk_customer_h === hk(1) && row.order_count === 1)?.hd_customer_order_total_s)
       .toBe(dvHash([1, 250], { kind: 'hashdiff' }).hash)
+  })
+
+  it('uses the selected aggregate for cumulative order totals', () => {
+    const alice = runs[2].source.customer.find((row) => String(row.c_name).startsWith('Alice'))
+    const aliceHub = runs[2].tables.customer_h.find((row) => row.c_custkey === alice?.c_custkey && !isGhost(row))
+    const aliceKey = String(aliceHub?.hk_customer_h)
+    const aliceOrders = runs[2].tables.order_customer_nh_l.filter(
+      (row) => !isGhost(row) && String(row.hk_customer_h) === aliceKey,
+    )
+    const latestLdts = [...new Set(aliceOrders.map((row) => String(row.ldts)))].sort().at(-1)
+    const latestOrders = aliceOrders.filter((row) => !latestLdts || String(row.ldts) <= latestLdts)
+    const expectedSum = latestOrders.reduce((sum, row) => sum + Number(row.o_totalprice ?? 0), 0)
+    const expectedMax = latestOrders.reduce(
+      (maximum, row) => Math.max(maximum, Number(row.o_totalprice ?? 0)),
+      Number.NEGATIVE_INFINITY,
+    )
+    const totals = orderTotals(runs[2].tables, { aggregate: 'max' })
+    const latestTotal = totals.find((row) => String(row.hk_customer_h) === aliceKey && String(row.ldts) === latestLdts)
+
+    expect(latestTotal?.total_price).toBe(expectedMax)
+    expect(latestTotal?.total_price).not.toBe(expectedSum)
   })
 })
 

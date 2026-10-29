@@ -35,6 +35,21 @@ When adding content, cite the source in the chapter's further-reading section.
 | [datavault4dbt release notes](https://github.com/ScalefreeCOM/datavault4dbt/releases) | Checking package support and adapter changes before upgrading or switching engines. |
 | [DuckDB-WASM documentation](https://duckdb.org/docs/stable/clients/wasm/overview.html) and [jsDelivr](https://www.jsdelivr.com/) | Running the primer's captured plain-dbt SQL on demand; the browser loads its large WASM files from jsDelivr. |
 
+## Running dbt and scheduling
+
+| Source | Use it for |
+|---|---|
+| [dbt `retry`](https://docs.getdbt.com/reference/commands/retry) | Resuming a failed dbt invocation from its failure point. |
+| [dbt connection profiles](https://docs.getdbt.com/docs/core/connect-data-platform/connection-profiles) | Profile names, output targets and connection configuration. |
+| [dbt `env_var()`](https://docs.getdbt.com/reference/dbt-jinja-functions/env_var) | Supplying environment-specific values without storing secrets in project files. |
+| [dbt node-selection syntax](https://docs.getdbt.com/reference/node-selection/syntax) | Selecting a node and its parents or children in a dbt command. |
+| [dbt deploy jobs](https://docs.getdbt.com/docs/deploy/deploy-jobs) | Configuring and triggering dbt platform jobs. |
+| [Astronomer Cosmos basic DAG](https://github.com/astronomer/astronomer-cosmos/blob/main/dev/dags/basic_cosmos_dag.py) | Defining a dbt DAG and limiting active Airflow runs. |
+| [dagster-dbt API](https://docs.dagster.io/api/libraries/dagster-dbt) | Building dbt assets from a manifest and streaming a CLI build. |
+| [Databricks dbt task](https://docs.databricks.com/aws/en/jobs/dbt) | Running dbt commands as a Databricks job task. |
+| [Microsoft Fabric dbt job overview](https://learn.microsoft.com/en-us/fabric/data-factory/dbt-job-overview) and [common dbt job patterns](https://learn.microsoft.com/en-us/fabric/data-factory/common-dbt-job-patterns) | Fabric dbt job support and pipeline patterns. |
+| [OneLake security](https://learn.microsoft.com/en-us/fabric/onelake/security/read-secured-data) | How access controls apply to data read paths. |
+
 ## Learning design and accessibility
 
 These sources back the rules in `learning-design.md` and the audit in `ux-audit.md`.

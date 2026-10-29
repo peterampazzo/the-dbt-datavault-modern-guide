@@ -59,17 +59,17 @@ export default function DvNames() {
           <table className="w-full min-w-[46rem] border-collapse text-left text-sm">
             <thead className="bg-muted/60">
               <tr>
-                <th scope="col" className="px-3 py-2.5 font-semibold">You may call it</th>
-                <th scope="col" className="px-3 py-2.5 font-semibold">In this guide</th>
-                <th scope="col" className="px-3 py-2.5 font-semibold">Where it's taught</th>
+                <th scope="col" className="px-3 py-1.5 font-semibold">You may call it</th>
+                <th scope="col" className="px-3 py-1.5 font-semibold">In this guide</th>
+                <th scope="col" className="px-3 py-1.5 font-semibold">Where it's taught</th>
               </tr>
             </thead>
             <tbody>
           {rows.map(([term, name, path, pageTitle]) => (
                 <tr key={term} className="border-t align-top">
-                  <th scope="row" className="px-3 py-2.5 font-medium">{TERM_IDS[term] ? <Term id={TERM_IDS[term]}>{term}</Term> : term}</th>
-                  <td className="px-3 py-2.5 font-mono text-xs leading-5">{name}</td>
-                  <td className="px-3 py-2.5">
+                  <th scope="row" className="px-3 py-1.5 font-medium">{TERM_IDS[term] ? <Term id={TERM_IDS[term]}>{term}</Term> : term}</th>
+                  <td className="px-3 py-1.5 font-mono text-xs leading-5">{name}</td>
+                  <td className="px-3 py-1.5">
                     <Link to={path} className="text-sky-700 underline underline-offset-2 dark:text-sky-400">
                       {pageTitle}
                     </Link>

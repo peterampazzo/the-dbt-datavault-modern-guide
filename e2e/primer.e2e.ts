@@ -52,6 +52,7 @@ test('primer pages request no DuckDB assets before a reader starts a live panel'
 
 test('4.6 live playback follows the static steps and stays accessible on mobile', async ({ page }) => {
   test.setTimeout(120_000)
+  await page.setViewportSize({ width: 375, height: 812 })
   await open(page, 'dbt-primer/incremental-and-full-refresh')
   await page.getByRole('region', { name: 'count(*) · Batch 1 · first run' })
     .locator('xpath=..')
@@ -72,7 +73,6 @@ test('4.6 live playback follows the static steps and stays accessible on mobile'
   await next.click()
   await checkLiveCounts(7, 7)
 
-  await page.setViewportSize({ width: 375, height: 812 })
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0)
   const { violations } = await new AxeBuilder({ page }).withTags(WCAG).analyze()
   expect(violations.map((violation) => violation.id)).toEqual([])
@@ -128,6 +128,26 @@ test('13.1 change player shows the failing test and then the fix', async ({ page
   await expect(page.getByRole('status')).toContainText(EMAIL_HASHDIFFS[0].expected)
 })
 
+test('command selections use the selected model name', async ({ page }) => {
+  await open(page, 'dbt-primer/running-dbt-from-the-command-line')
+  const selection = page.getByRole('group', { name: 'Selection' })
+  await expect(selection.getByRole('button', { name: 'stg_customer', exact: true })).toBeVisible()
+  await selection.getByRole('button', { name: 'stg_customer+' }).click()
+  await expect(page.getByLabel('Generated dbt command')).toHaveText('dbt build --select stg_customer+ --target dev')
+  await selection.getByRole('button', { name: '+stg_customer' }).click()
+  await expect(page.getByLabel('Generated dbt command')).toHaveText('dbt build --select +stg_customer --target dev')
+})
+
+test('profiles page switches between one full-width example at a time', async ({ page }) => {
+  await open(page, 'dbt-primer/profiles-yml-how-dbt-connects')
+  const figure = page.locator('main figure').first()
+  await expect(figure.locator('[data-codeblock]')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Fabric Lakehouse' }).click()
+  await expect(figure.getByText('profiles.yml · Fabric Lakehouse (illustrative)')).toBeVisible()
+  await expect(figure.getByText("Check the adapter's README for the fields your version needs.")).toBeVisible()
+  await expect(figure.locator('[data-codeblock]')).toHaveCount(1)
+})
+
 test('all new pages pass mobile axe and overflow checks in both reading modes', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile', 'Mobile accessibility and overflow audit runs in the mobile project.')
   test.setTimeout(120_000)
@@ -140,6 +160,8 @@ test('all new pages pass mobile axe and overflow checks in both reading modes', 
     { slug: 'dbt-primer/materializations', heading: 'Materializations' },
     { slug: 'dbt-primer/incremental-and-full-refresh', heading: 'Incremental and --full-refresh' },
     { slug: 'dbt-primer/tests-and-docs', heading: 'Tests and docs' },
+    { slug: 'dbt-primer/running-dbt-from-the-command-line', heading: 'Running dbt from the command line' },
+    { slug: 'dbt-primer/profiles-yml-how-dbt-connects', heading: 'profiles.yml: how dbt connects' },
     { slug: 'dbt-primer/recap', heading: 'Recap' },
     { slug: 'modern-way', heading: 'Working the modern way' },
     { slug: 'modern-way/change-player', heading: 'Change player' },

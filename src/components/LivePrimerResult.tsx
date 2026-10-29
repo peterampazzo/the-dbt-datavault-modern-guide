@@ -174,7 +174,7 @@ export function LivePrimerResult({
         </button>
       )}
       {enabled && (
-        <section aria-label="Live DuckDB result" className="space-y-3 rounded-xl border bg-card/50 p-3">
+        <section aria-label="Live DuckDB result" className="space-y-3 border-t pt-6">
           <h3 className="font-semibold">Live DuckDB result</h3>
           {busy && <p role="status" className="text-sm">Running captured SQL…</p>}
           {message && <p role="status" className="text-sm text-amber-800 dark:text-amber-300">{message}</p>}

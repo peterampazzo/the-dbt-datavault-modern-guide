@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
-import { ChapterHeader, Code, Section } from '@/components/Prose'
+import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { SNIPPETS } from '@/lib/dv/models'
 import { EMAIL_HASHDIFFS } from '@/lib/primer/email-hashdiffs'
@@ -64,7 +65,7 @@ function ChangePlayer() {
           </li>
         ))}
       </ol>
-      <section aria-live="polite" aria-label={`Step ${step + 1}: ${current.title}`} className="min-h-32 rounded-xl border bg-card/50 p-4">
+      <section aria-live="polite" aria-label={`Step ${step + 1}: ${current.title}`} className="min-h-32 border-t pt-6">
         <h3 className="font-semibold">Step {step + 1} of {CHANGE_STEPS.length} · {current.title}</h3>
         <p className="mt-2 max-w-3xl text-sm leading-6">{current.description}</p>
 
@@ -131,7 +132,7 @@ function ChangePlayer() {
         )}
 
         {step === 5 && (
-          <blockquote className="mt-4 max-w-2xl rounded-lg border-l-4 border-sky-600 bg-sky-500/5 px-4 py-3 text-sm">
+          <blockquote className="mt-4 max-w-2xl rounded-xl border border-sky-600 bg-sky-500/5 px-4 py-3 text-sm">
             “payload and hashdiff columns match”
           </blockquote>
         )}
@@ -224,6 +225,7 @@ function SlimCi() {
         title="Pull-request build · isolated target"
         code="dbt build --select state:modified+ --defer --state prod-artifacts/ --target ci"
         lang="bash"
+        className="mx-auto max-w-[48rem]"
       />
       <dl className="grid gap-3 md:grid-cols-2">
         <div className="rounded-lg border bg-card/50 p-4">
@@ -238,7 +240,7 @@ function SlimCi() {
       <p className="max-w-3xl text-sm leading-6">
         This can avoid rebuilding eligible unselected upstream models, so CI may do less work and finish sooner. It does not promise a fixed duration: runtime still depends on the project, data, adapter, warehouse and checks.
       </p>
-      <p className="text-sm leading-6">
+      <p className="max-w-3xl text-sm leading-6">
         See dbt’s official{' '}
         <a href="https://docs.getdbt.com/reference/node-selection/methods#the-state-method" target="_blank" rel="noreferrer" className="text-foreground underline underline-offset-2">state selection</a>
         {' '}and{' '}
@@ -272,6 +274,7 @@ export default function ModernWay() {
         keyPoint="The target changes the connection and output location; it does not change the model's business rules."
       >
         <Targets />
+        <P className="mx-auto mt-6">See how dbt connects to a profile in the <Link className="text-sky-700 underline dark:text-sky-400" to="/dbt-primer/profiles-yml-how-dbt-connects">Primer’s profiles.yml page</Link>.</P>
       </Section>
 
       <Section

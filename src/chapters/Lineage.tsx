@@ -2,7 +2,7 @@ import { Chapter } from '@/components/Chapter'
 import { useMemo, useState } from 'react'
 import { Background, Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { ChapterHeader, Section, P } from '@/components/Prose'
+import { ChapterHeader, Section } from '@/components/Prose'
 import { CodeBlock } from '@/components/CodeBlock'
 import { Badge } from '@/components/ui/badge'
 import { LAYER_META, MODEL, MODELS, type DbtModel } from '@/lib/dv/models'
@@ -105,7 +105,7 @@ export default function Lineage() {
         keyPoint="dbt’s ref() dependencies connect landed data to stages, vault models, business-vault helpers and the mart."
       >
         <div
-          className="h-[34rem] overflow-hidden rounded-2xl border bg-card/30"
+          className="h-[34rem] overflow-hidden border-t pt-6"
           onKeyDown={(e) => {
             const node = (e.target as HTMLElement).closest<HTMLElement>('.react-flow__node')
             if (node?.dataset.id && (e.key === 'Enter' || e.key === ' ')) {
@@ -137,9 +137,7 @@ export default function Lineage() {
               <Badge variant="outline">{LAYER_META[m.layer].label}</Badge>
               <Badge variant="outline">{m.materialized}</Badge>
             </div>
-            <P>
-              <span className="mt-3 block text-sm">{m.description}</span>
-            </P>
+            <p className="mt-3 font-sans text-sm leading-5">{m.description}</p>
             <div className="text-xs text-muted-foreground">
               depends on: {m.deps.length ? m.deps.join(', ') : '—'}
               <br />

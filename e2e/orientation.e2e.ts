@@ -5,7 +5,7 @@ const stored = (page: import('@playwright/test').Page) => page.evaluate(() => lo
 
 test('chapter header shows position, time and the 30-second summary', async ({ page }) => {
   await open(page, 'hash-lab')
-  await expect(page.getByText(/Chapter 6 of 17 · Part 2: Building it with dbt · about \d+ min/)).toBeVisible()
+  await expect(page.getByText(/Chapter 6 of 18 · Part 2: Building it with dbt · about \d+ min/)).toBeVisible()
   await expect(page.getByRole('region', { name: 'In 30 seconds' }).getByRole('listitem')).toHaveCount(3)
 })
 
@@ -26,10 +26,23 @@ test('Home offers to continue where you left off, at the same section', async ({
   await page.locator('#where-it-sits').evaluate((el) => el.scrollIntoView({ block: 'start' }))
   await expect.poll(() => stored(page)).toContain('where-it-sits')
   await page.goto('/#/')
-  const cont = page.getByRole('link', { name: /Continue: What is Data Vault, .*Where it sits/ })
+  const cont = page.getByRole('link', { name: /Continue: chapter 1, 1\.\d+ Where it sits/ })
   await expect(cont).toBeVisible()
   await cont.click()
   await expect(page.locator('#where-it-sits')).toBeInViewport()
+})
+
+test('Home labels a chapter cover and recap distinctly', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('reading-mode', 'paged'))
+  await page.goto('/#/replay')
+  await expect(page.locator('main h1').first()).toBeVisible()
+  await page.goto('/#/')
+  await expect(page.getByRole('link', { name: 'Continue: chapter 11' })).toBeVisible()
+
+  await page.goto('/#/replay/recap')
+  await expect(page.getByRole('heading', { name: 'Recap' })).toBeVisible()
+  await page.goto('/#/')
+  await expect(page.getByRole('link', { name: 'Continue: chapter 11, recap' })).toBeVisible()
 })
 
 test('a chapter is ticked once you reach its end, and Start over clears it', async ({ page }) => {

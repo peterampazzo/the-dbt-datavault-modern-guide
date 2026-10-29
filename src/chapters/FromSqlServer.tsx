@@ -7,17 +7,50 @@ import { Term } from '@/components/Term'
 import { MODEL, SNIPPETS } from '@/lib/dv/models'
 import { LEGACY_PATTERNS } from '@/lib/legacy/patterns'
 
-function Pair({ before, after, why }: { before: keyof typeof LEGACY_PATTERNS; after: { title: string; code: string; lang?: 'sql' | 'yaml' }; why: ReactNode }) {
+function Pair({
+  before,
+  after,
+  why,
+  maxCodeHeight,
+}: {
+  before: keyof typeof LEGACY_PATTERNS
+  after: { title: string; code: string; lang?: 'sql' | 'yaml' }
+  why?: ReactNode
+  maxCodeHeight?: string
+}) {
+  const legacyCode = <CodeBlock title={`T-SQL · ${LEGACY_PATTERNS[before].title}`} code={LEGACY_PATTERNS[before].code} lang="sql" />
+  const dbtCode = <CodeBlock title={`dbt · ${after.title}`} code={after.code} lang={after.lang ?? 'sql'} />
   return (
     <>
       <div className="grid gap-4 lg:grid-cols-2">
-        <CodeBlock title={`T-SQL · ${LEGACY_PATTERNS[before].title}`} code={LEGACY_PATTERNS[before].code} lang="sql" />
-        <CodeBlock title={`dbt · ${after.title}`} code={after.code} lang={after.lang ?? 'sql'} />
+        {maxCodeHeight ? <div className={maxCodeHeight}>{legacyCode}</div> : legacyCode}
+        {maxCodeHeight ? <div className={maxCodeHeight}>{dbtCode}</div> : dbtCode}
       </div>
-      <p className="mt-4 max-w-3xl text-sm leading-6">{why}</p>
+      {why && <p className="mt-4 max-w-3xl text-sm leading-6">{why}</p>}
     </>
   )
 }
+
+const TEMP_TABLE_MAPPING = [
+  {
+    step: '#orders_clean',
+    model: MODEL[MODEL.stg_orders.name].name,
+    materialization: MODEL[MODEL.stg_orders.name].materialized,
+    reason: 'A stage view makes the order columns available for reuse and tests.',
+  },
+  {
+    step: '#customer_totals',
+    model: MODEL.customer_order_total_s.name,
+    materialization: MODEL[MODEL.customer_order_total_s.name].materialized,
+    reason: 'An incremental computed satellite keeps changed totals by load date.',
+  },
+  {
+    step: 'UPDATE reporting.customer_totals',
+    model: 'No UPDATE: a mart selects from customer_order_total_s',
+    materialization: '—',
+    reason: 'Readers query a derived result instead of mutating a reporting table.',
+  },
+] as const
 
 export default function FromSqlServer() {
   return (
@@ -78,6 +111,46 @@ export default function FromSqlServer() {
           after={{ title: 'business_rules_in_business_vault', code: SNIPPETS.business_rules_in_business_vault.code }}
           why="Raw staging should preserve what arrived and add technical metadata, not decide what a customer means to the business. Keeping the rule in the business vault protects the raw evidence and lets marts use a reviewed definition."
         />
+      </Section>
+
+      <Section
+        title="From temp tables to ref() models"
+        lead={<>Move meaningful procedure steps into models linked with <Term id="ref-function">ref()</Term>, while leaving one-use logic as a CTE.</>}
+      >
+        <div className="mx-auto max-w-[48rem] border-t pt-6">
+          <Pair
+            before="temp_table_procedure"
+            after={{ title: MODEL.customer_order_total_s.name, code: MODEL.customer_order_total_s.code }}
+            maxCodeHeight="max-h-72 overflow-auto"
+          />
+          <div className="mt-6 overflow-auto rounded-xl border" tabIndex={0} aria-label="Temp-table to dbt model mapping">
+            <table className="w-full min-w-[42rem] border-collapse text-sm">
+              <thead>
+                <tr className="bg-muted/60">
+                  <th className="px-2 py-2 text-left">Temp step</th>
+                  <th className="px-2 py-2 text-left">dbt model</th>
+                  <th className="px-2 py-2 text-left">Materialization</th>
+                  <th className="px-2 py-2 text-left">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {TEMP_TABLE_MAPPING.map((row) => (
+                  <tr key={row.step} className="border-t">
+                    <th scope="row" className="px-2 py-2 text-left font-mono text-xs">{row.step}</th>
+                    <td className="px-2 py-2">{row.model}</td>
+                    <td className="px-2 py-2">{row.materialization}</td>
+                    <td className="px-2 py-2">{row.reason}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <P className="mt-6">Keep a step as its own model when it is reused, tested or expensive; inline it as a CTE when it is not. Not every temp table should become an ephemeral model.</P>
+        <P>dbt does not translate T-SQL: check precision, rounding, ordering and transaction assumptions.</P>
+        <P>
+          Reconcile the new outputs against the old before switching, using the <Link to="/migration-checklist" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Migration checklist</Link> and <Link to="/hash-parity" className="text-sky-700 underline underline-offset-2 dark:text-sky-400">Hash parity</Link>.
+        </P>
       </Section>
 
       <Section title="Make snapshots explicit">

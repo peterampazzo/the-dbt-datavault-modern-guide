@@ -61,7 +61,7 @@ function ParityLab() {
     quote_character: ${JSON.stringify(settings.quote)}`
 
   return (
-    <div className="space-y-5" data-testid="parity-lab">
+    <div className="space-y-4" data-testid="parity-lab">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="text-sm">Input cast
           <select aria-label="Input cast" className="mt-1 block w-full rounded-md border bg-background px-2 py-1.5" value={settings.encoding} onChange={(event) => update('encoding', event.target.value as LabSettings['encoding'])}>
@@ -89,7 +89,7 @@ function ParityLab() {
         </label>
       </div>
       <p role="status" className="text-sm font-medium">{matches} of {rows.length} rows match</p>
-      <div role="region" aria-label="Hash comparison results" tabIndex={0} className="max-h-[28rem] overflow-auto rounded-xl border focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+      <div role="region" aria-label="Hash comparison results" tabIndex={0} className="max-h-[22rem] overflow-auto rounded-xl border focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
         <table className="w-full min-w-[48rem] border-collapse text-sm">
           <thead><tr className="bg-muted/60"><th className="px-3 py-2 text-left">Row</th><th className="px-3 py-2 text-left">Legacy procedure</th><th className="px-3 py-2 text-left">datavault4dbt with your settings</th><th className="px-3 py-2">Result</th></tr></thead>
           <tbody>
