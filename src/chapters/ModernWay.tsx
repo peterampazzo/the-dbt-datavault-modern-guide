@@ -8,6 +8,7 @@ import { SNIPPETS } from '@/lib/dv/models'
 import { EMAIL_HASHDIFFS } from '@/lib/primer/email-hashdiffs'
 import { PRIMER } from '@/lib/primer/project'
 import { cn } from '@/lib/utils'
+import { SlimCiDrawing } from '@/components/drawing/SlimCiDrawing'
 
 const CHANGE_STEPS = [
   {
@@ -290,6 +291,7 @@ export default function ModernWay() {
         lead="State selection and defer can reduce CI work, but they do not guarantee a runtime. Read the selector and flags."
         keyPoint="State selection narrows the build; defer can reuse eligible unselected upstream relations from a saved manifest."
       >
+        <SlimCiDrawing />
         <SlimCi />
       </Section>
     </Chapter>

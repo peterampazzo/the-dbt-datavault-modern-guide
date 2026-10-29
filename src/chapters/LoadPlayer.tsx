@@ -4,6 +4,7 @@ import { motion } from 'motion/react'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { DataTable, defaultRowKey, type Tone } from '@/components/DataTable'
+import { LoadRulesDrawing } from '@/components/drawing/LoadRulesDrawing'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { isGhost, simulate, type BatchRun, type Decision, type SkipReason, type TableName } from '@/lib/dv/engine'
@@ -289,6 +290,7 @@ export default function LoadPlayer() {
         lead="Each batch follows the same rules for inserts, skips and ghost rows. Follow the rows through the batches."
         keyPoint="Raw-vault hubs and links stay insert-only; satellite versions are added when the payload changes."
       >
+        <LoadRulesDrawing />
         <div className="grid gap-4 md:grid-cols-2">
           <Callout kind="info" title="Hubs and links: insert if unknown">
             A key that already exists is skipped, however many times it is delivered. Chiara's move to Germany doesn't update the old link; it adds a second one.

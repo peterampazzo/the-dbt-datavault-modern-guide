@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import type { ReactNode } from 'react'
 import { Chapter } from '@/components/Chapter'
 import { CodeBlock } from '@/components/CodeBlock'
+import { HistoryUpdateDrawing } from '@/components/drawing/HistoryUpdateDrawing'
 import { ChapterHeader, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { MODEL, SNIPPETS } from '@/lib/dv/models'
@@ -66,6 +67,7 @@ export default function FromSqlServer() {
       </Section>
 
       <Section title="History is not an update">
+        <HistoryUpdateDrawing />
         <Pair
           before="update_end_date"
           after={{ title: 'sat_v0 + sat_v1', code: `${MODEL.customer_n_s.code}\n\n-- derived view\n${MODEL.customer_n_s_v1.code}` }}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
+import { StorageComputeDrawing } from '@/components/drawing/StorageComputeDrawing'
 
 type Engine = 'fabric' | 'databricks'
 
@@ -80,6 +81,7 @@ export default function OneLake() {
         keyPoint="Storage holds the source history; compute reads and transforms it."
       >
         <P>Store the raw deliveries once as open Delta files in ADLS Gen2. Fabric Spark or Databricks reads them in place; each engine has its own connection and dbt target.</P>
+        <StorageComputeDrawing />
       </Section>
       <Section
         title="The layers"

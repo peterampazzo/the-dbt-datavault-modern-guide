@@ -81,7 +81,7 @@ test('every paged chapter surface stays within the 1200px height target at 1280Ã
   for (const route of ROUTES.slice(1)) {
     await page.addInitScript(() => localStorage.setItem('reading-mode', 'paged'))
     await page.goto(`/#/${route.slug}`)
-    await expect(page.locator('main h1').first()).toBeVisible()
+    await expect(page.locator('main h1:visible').first()).toBeVisible()
     const pageLinks = page.locator('main article nav[aria-label="Pages"] ol a')
     const count = await pageLinks.count()
     for (let index = 0; index < count; index += 1) {

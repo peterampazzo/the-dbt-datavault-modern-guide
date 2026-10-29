@@ -6,6 +6,7 @@ import { ChapterHeader, Section, P, Callout, Code, RecapExtras } from '@/compone
 import { Term } from '@/components/Term'
 import { Decomposition } from '@/components/Decomposition'
 import { HubLinkSatDrawing } from '@/components/drawing/HubLinkSatDrawing'
+import { WarehouseVsVaultDrawing } from '@/components/drawing/WarehouseVsVaultDrawing'
 import { cn } from '@/lib/utils'
 import { Link } from 'react-router'
 import { BATCHES } from '@/lib/dv/dataset'
@@ -527,6 +528,7 @@ export default function WhatIsDataVault() {
         lead="Data Vault retains integrated history and supplies marts for changing reporting needs. Compare that design with a traditional warehouse."
         keyPoint="Data Vault feeds reporting marts; its history is retained so those marts can be rebuilt as needs change."
       >
+        <WarehouseVsVaultDrawing />
         <div tabIndex={0} className="overflow-x-auto rounded-xl border outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left">

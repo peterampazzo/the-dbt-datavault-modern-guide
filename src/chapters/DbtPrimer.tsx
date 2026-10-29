@@ -5,6 +5,8 @@ import { CodeBlock } from '@/components/CodeBlock'
 import { LivePrimerResult } from '@/components/LivePrimerResult'
 import type { PrimerResultColumn, PrimerResultRow } from '@/components/PrimerResult'
 import { SqlServerNote } from '@/components/SqlServerNote'
+import { MaterializationsDrawing } from '@/components/drawing/MaterializationsDrawing'
+import { HighWaterMarkDrawing } from '@/components/drawing/HighWaterMarkDrawing'
 import { Callout, ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { MODEL } from '@/lib/dv/models'
@@ -795,6 +797,8 @@ export default function DbtPrimer() {
         title="Materializations"
         lead={<>View, table and <Term id="incremental">incremental</Term> materializations produce different SQL shapes and resemble different SQL Server patterns. Switch the model to compare them.</>}
       >
+        <MaterializationsDrawing />
+        <HighWaterMarkDrawing />
         <Materializations />
         <PrimerFooter
           keyPoint="A materialization controls how dbt stores or updates the result; adapter-generated SQL can vary."

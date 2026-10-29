@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Plus, X } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { HashdiffDrawing } from '@/components/drawing/HashdiffDrawing'
+import { GhostKeysDrawing } from '@/components/drawing/GhostKeysDrawing'
 import { Button } from '@/components/ui/button'
 import { dvHash, type HashAlg, type HashKind } from '@/lib/dv/hash'
 import { cn } from '@/lib/utils'
@@ -219,6 +220,7 @@ export default function HashLab() {
         lead="Deterministic hashes and reserved ghost records preserve joins for unknown and error keys. See how the joins work."
         keyPoint="Ghost rows preserve unknown and error references so downstream joins do not lose records."
       >
+        <GhostKeysDrawing />
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Callout kind="info" title="Why hash at all?">
             Every loader computes keys from the business key alone, with no lookups against a sequence table. Hubs, links and satellites can therefore load in parallel, and

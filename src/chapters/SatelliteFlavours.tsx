@@ -5,6 +5,7 @@ import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Code } from '@/components/Prose'
 import { DataTable } from '@/components/DataTable'
 import { CodeBlock } from '@/components/CodeBlock'
+import { SatelliteFlavoursDrawing } from '@/components/drawing/SatelliteFlavoursDrawing'
 import { BEGIN, END, isGhost, satV1, simulate, type Row } from '@/lib/dv/engine'
 import { BATCHES } from '@/lib/dv/dataset'
 import { MODEL } from '@/lib/dv/models'
@@ -108,6 +109,7 @@ export default function SatelliteFlavours() {
         <P>
           The view uses <Code>LEAD()</Code> to find the next version's <Code>ldts</Code>, subtracts one microsecond for <Code>ledts</Code>, and marks the open row as current.
         </P>
+        <SatelliteFlavoursDrawing />
         <CodeBlock title="customer_n_s_v1.sql" code={MODEL.customer_n_s_v1.code} />
       </Section>
       <Section
