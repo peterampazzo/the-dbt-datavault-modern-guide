@@ -80,9 +80,11 @@ test('satellites: a bar shows its interval and the other flavours are separate p
   await open(page, 'satellite-flavours')
   const bar = page.getByRole('button', { name: /Alice, valid from 2024-01-01/ })
   await expect(bar).toHaveAccessibleName(/to 2024-01-03 05:59:59\.999999/)
-  const barBox = await bar.boundingBox()
-  const trackBox = await bar.locator('xpath=..').boundingBox()
-  expect(barBox && trackBox ? barBox.width / trackBox.width : 0).toBeGreaterThan(0.5)
+  await expect.poll(async () => {
+    const b = await bar.boundingBox()
+    const t = await bar.locator('xpath=..').boundingBox()
+    return b && t ? b.width / t.width : 0
+  }).toBeGreaterThan(0.6)
   if (info.project.name === 'mobile') await bar.tap()
   else await bar.click()
   await expect(bar).toHaveAttribute('aria-pressed', 'true')
