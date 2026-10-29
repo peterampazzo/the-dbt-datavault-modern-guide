@@ -5,6 +5,7 @@ import { motion } from 'motion/react'
 import { ChapterHeader, Section, P, Code } from '@/components/Prose'
 import { DataTable } from '@/components/DataTable'
 import { CodeBlock } from '@/components/CodeBlock'
+import { SatelliteFlavoursDrawing } from '@/components/drawing/SatelliteFlavoursDrawing'
 import { BEGIN, END, isGhost, satV1, simulate, type Row } from '@/lib/dv/engine'
 import { BATCHES } from '@/lib/dv/dataset'
 import { MODEL } from '@/lib/dv/models'
@@ -14,7 +15,7 @@ const NAMES: Record<number, string> = { 1: 'Alice', 2: 'Bruno', 3: 'Chiara', 4: 
 
 function Timeline({ rows }: { rows: Row[] }) {
   const [hover, setHover] = useState<Row | null>(null)
-  const col = (ts: string) => (ts === END ? 3 : Math.max(0, BATCHES.indexOf(ts as (typeof BATCHES)[number])))
+  const col = (ts: string) => (ts === END ? 3 : Math.max(0, BATCHES.findIndex((batch) => batch.slice(0, 10) === ts.slice(0, 10))))
   const byKey = new Map<string, Row[]>()
   rows.filter((r) => !isGhost(r)).forEach((r) => byKey.set(String(r.c_name).split(' ')[0], [...(byKey.get(String(r.c_name).split(' ')[0]) ?? []), r]))
   return (
@@ -35,7 +36,7 @@ function Timeline({ rows }: { rows: Row[] }) {
           <div className="relative h-6">
             {versions.map((v, i) => {
               const start = col(String(v.ldts))
-              const end = String(v.ledts) === END ? 3 : start + 1
+              const end = col(String(v.ledts))
               return (
                 <motion.button
                   type="button"
@@ -87,7 +88,7 @@ export default function SatelliteFlavours() {
       />
       <Section
         title="Compare satellite flavours"
-        lead="Compare the standard satellite's load-date history with the end dates derived for reporting."
+        lead="A standard satellite stores load dates; a v1 view derives end dates for reporting. Compare the two."
         keyPoint="The raw satellite stays insert-only; its v1 view derives validity intervals from successive load dates."
       >
         <P>
@@ -102,12 +103,13 @@ export default function SatelliteFlavours() {
       </Section>
       <Section
         title="How a v1 satellite derives intervals"
-        lead="Read the view model that turns a sequence of load dates into validity intervals."
+        lead="The v1 view turns a sequence of load dates into validity intervals. Read the model to see how."
         keyPoint="sat_v1 derives end dates; the raw satellite remains insert-only."
       >
         <P>
           The view uses <Code>LEAD()</Code> to find the next version's <Code>ldts</Code>, subtracts one microsecond for <Code>ledts</Code>, and marks the open row as current.
         </P>
+        <SatelliteFlavoursDrawing />
         <CodeBlock title="customer_n_s_v1.sql" code={MODEL.customer_n_s_v1.code} />
       </Section>
       <Section
@@ -124,7 +126,7 @@ export default function SatelliteFlavours() {
       <Section
         title="Effectivity satellites"
         lead="An effectivity satellite records whether a link is active over time."
-        keyPoint="Use it to record relationship activity without updating the insert-only link."
+        keyPoint="It records relationship activity while the link remains insert-only."
       >
         <P>
           Links are insert-only, so they can't tell you that a relationship <em>ended</em>. An <Term id="effectivity-satellite">effectivity satellite</Term> tracks <Code>is_active</Code> per link: when Chiara
@@ -136,7 +138,7 @@ export default function SatelliteFlavours() {
       <Section
         title="Record-tracking satellites"
         lead="A record-tracking satellite logs when and from where a key was observed."
-        keyPoint="It records provenance of appearance, not descriptive attribute history."
+        keyPoint="It records when and from where a key appeared. Descriptive attribute history belongs in a standard satellite."
       >
         <P>
           A <Term id="record-tracking">record-tracking satellite</Term> has no payload. It logs every load and source in which a key appeared, such as Daniel's absence on day two or Farah's first appearance through an order.

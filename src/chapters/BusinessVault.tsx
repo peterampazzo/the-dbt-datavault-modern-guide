@@ -5,6 +5,8 @@ import { CodeBlock } from '@/components/CodeBlock'
 import { DataTable } from '@/components/DataTable'
 import { Callout, ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
+import { BusinessVaultMartsDrawing } from '@/components/drawing/BusinessVaultMartsDrawing'
+import { PrecedenceMergeDrawing } from '@/components/drawing/PrecedenceMergeDrawing'
 import { integratedCustomer, isGhost, orderTotals, pit, shopCustomerSatellite, simulate, type CustomerPrecedence, type Row } from '@/lib/dv/engine'
 import { MODEL, SNIPPETS } from '@/lib/dv/models'
 
@@ -233,10 +235,12 @@ export default function BusinessVault() {
     <Chapter>
       <ChapterHeader
         title="The modern business vault"
-        lead={<>Keep reusable integration and calculation rules in the <Term id="business-vault">business vault</Term>, then shape the result for each audience in a <Term id="mart">mart</Term>.</>}
+        lead={<>The <Term id="business-vault">business vault</Term> holds reusable integration and calculation rules. A <Term id="mart">mart</Term> shapes the result for its audience.</>}
       />
 
-      <Section title="Business vault vs marts" lead="The business vault keeps reusable, auditable rules. A mart is shaped for one audience." keyPoint="Keep reusable rules keyed by vault keys; let marts serve a specific question.">
+      <Section title="Business vault vs marts" lead="The business vault keeps reusable, auditable rules. Each mart serves a particular audience and question." keyPoint="Reusable rules stay keyed by vault keys; marts serve a specific question.">
+        <BusinessVaultMartsDrawing />
+        <PrecedenceMergeDrawing />
         <div className="overflow-auto rounded-xl border" tabIndex={0} aria-label="Business vault and mart comparison">
           <table className="w-full min-w-[36rem] border-collapse text-sm">
             <thead><tr className="bg-muted/60"><th className="px-3 py-2 text-left">Business vault</th><th className="px-3 py-2 text-left">Mart</th></tr></thead>
@@ -308,9 +312,9 @@ export default function BusinessVault() {
         </div>
       </Section>
 
-      <Section title="Views first; one snapshot control for every PIT" lead="Use views for derived end dates and current flags. A control snapshot table gives every PIT the same reporting clock." keyPoint={<><Term id="business-date">Business date</Term> says when something happened; a load date says when the warehouse received it. Keep both.</>}>
+      <Section title="Views first; one snapshot control for every PIT" lead="Views derive end dates and current flags. One snapshot control table gives every PIT the same reporting clock." keyPoint={<><Term id="business-date">Business date</Term> says when something happened; a load date says when the warehouse received it. Keep both.</>}>
         <P>
-          A PIT is a set of pointers at a snapshot date. Keep one <code>control_snap_v1</code> policy for those snapshots rather than letting each PIT invent a calendar.
+          A PIT is a set of pointers at a snapshot date. One <code>control_snap_v1</code> policy gives those snapshots a shared calendar.
         </P>
         <P>
           The <Term id="business-date">business date</Term> comes from the source event, such as an order date. The load date comes from the delivery. A late delivery can change what the warehouse knew without changing the event’s business date.
@@ -318,9 +322,9 @@ export default function BusinessVault() {
         <Link className="font-medium text-sky-700 underline dark:text-sky-400" to="/pit">Review snapshots and PIT pointers →</Link>
       </Section>
 
-      <Section title="No copies maintained by MERGE" lead={<>Raw-vault rows remain insert-only. Rebuild the business vault from <Term id="raw-vault">raw-vault</Term> rows instead of maintaining a second mutable copy.</>} keyPoint="A rule in dbt code can be changed, tested and rebuilt without editing raw history.">
+      <Section title="No copies maintained by MERGE" lead={<>Raw-vault rows remain insert-only. Rebuild the business vault from <Term id="raw-vault">raw-vault</Term> rows, avoiding a second mutable copy.</>} keyPoint="A rule in dbt code can be changed, tested and rebuilt without editing raw history.">
         <P>When precedence, totals or a reporting definition changes, run the model again from the raw vault. Keep the previous result long enough to compare it, then publish the rebuilt mart.</P>
-        <Callout kind="tip" title="Rebuildable is the safety feature">
+        <Callout kind="tip" title="Rebuild from retained history">
           The business vault is derived work. Retained deliveries and raw-vault history let you change the rule without pretending the source said something else.
         </Callout>
       </Section>

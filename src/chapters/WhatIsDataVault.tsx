@@ -6,6 +6,7 @@ import { ChapterHeader, Section, P, Callout, Code, RecapExtras } from '@/compone
 import { Term } from '@/components/Term'
 import { Decomposition } from '@/components/Decomposition'
 import { HubLinkSatDrawing } from '@/components/drawing/HubLinkSatDrawing'
+import { WarehouseVsVaultDrawing } from '@/components/drawing/WarehouseVsVaultDrawing'
 import { cn } from '@/lib/utils'
 import { Link } from 'react-router'
 import { BATCHES } from '@/lib/dv/dataset'
@@ -32,7 +33,7 @@ const BLOCKS = [
     name: 'Link',
     tone: 'border-emerald-500/50 from-emerald-500/10',
     text: 'text-emerald-700 dark:text-emerald-400',
-    what: 'A unique relationship between two or more hubs, such as customer–nation or order–customer.',
+    what: 'A unique relationship between two or more hubs, such as customer and nation or order and customer.',
     rules: ['Hashkeys of the hubs it connects', 'No descriptive attributes', 'Many-to-many by design', 'Inserted once per new combination'],
   },
   {
@@ -384,14 +385,14 @@ export default function WhatIsDataVault() {
 
       <Section
         title="From source systems to reports"
-        lead={<>Follow customer, nation and orders from external systems through <Term id="landing">landing</Term> and <Term id="persistent-staging">persistent staging</Term> to reporting.</>}
+        lead={<>Customer, nation and orders move through <Term id="landing">landing</Term> and <Term id="persistent-staging">persistent staging</Term> before reaching reports. Follow these datasets through each layer.</>}
       >
         <SourceToReports />
       </Section>
 
       <Section
         title="Built for a warehouse that never stops changing"
-        lead="See how new sources, attributes, rules and deliveries add to a vault without rewriting its existing rows."
+        lead="Warehouse change can take the form of new sources, attributes, rules and deliveries."
         keyPoint="New sources, attributes, rules and deliveries should add to the vault without rewriting its existing rows."
       >
         <P>
@@ -413,7 +414,7 @@ export default function WhatIsDataVault() {
 
       <Section
         title="Unified decomposition"
-        lead="Watch one customer row separate into identity, relationship and changing context."
+        lead="A customer row contains identity, relationships and context that can change independently. Decompose it to see each part."
         keyPoint="Hubs, links and satellites keep separate grains, then come together around shared keys."
       >
         <div className="grid items-start gap-8 lg:grid-cols-2">
@@ -449,7 +450,7 @@ export default function WhatIsDataVault() {
 
       <Section
         title="The three building blocks"
-        lead="Compare what hubs, links and satellites store and the rules each follows."
+        lead="Hubs, links and satellites store different parts of a business concept and follow different loading rules. Compare them."
         keyPoint="A hub stores identity, a link stores a relationship, and a satellite stores descriptive history."
       >
         <HubLinkSatDrawing />
@@ -485,7 +486,7 @@ export default function WhatIsDataVault() {
 
       <Section
         title="Where it sits"
-        lead="Select a layer to see what it holds, who writes it and how it can be rebuilt."
+        lead="Data Vault sits between retained source deliveries and reporting. Each layer has a writer and a rebuild path; select a layer to inspect it."
         keyPoint="Bronze keeps source deliveries; stage and vault models are Silver; reporting marts are Gold."
       >
         <P>
@@ -497,7 +498,7 @@ export default function WhatIsDataVault() {
 
       <Section
         title="On Fabric"
-        lead="Map the same layers onto Bronze, Silver and Gold storage, then route dbt models to their own schemas."
+        lead="Fabric maps the source copy to Bronze, vault models to Silver and reporting marts to Gold. See how dbt routes each layer."
         keyPoint="Fabric changes where a model runs and where it writes; it does not change the vault layers."
       >
         <FabricArchitecture />
@@ -505,7 +506,7 @@ export default function WhatIsDataVault() {
 
       <Section
         title="What each layer does"
-        lead="Trace customer, nation and orders from staging through the raw vault to marts."
+        lead="Staging prepares customer, nation and orders; the raw vault preserves their history, and marts shape it for reporting. Trace the data through each layer."
         keyPoint="Stage prepares source rows, the raw vault preserves them, and marts shape them for questions."
       >
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -524,9 +525,10 @@ export default function WhatIsDataVault() {
 
       <Section
         title="Data Vault vs a traditional warehouse"
-        lead="Compare how Data Vault handles history, change and reporting with a more traditional warehouse design."
+        lead="Data Vault retains integrated history and supplies marts for changing reporting needs. Compare that design with a traditional warehouse."
         keyPoint="Data Vault feeds reporting marts; its history is retained so those marts can be rebuilt as needs change."
       >
+        <WarehouseVsVaultDrawing />
         <div tabIndex={0} className="overflow-x-auto rounded-xl border outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left">
@@ -560,9 +562,9 @@ export default function WhatIsDataVault() {
           <h2 id="further-reading-heading" className="mb-3 text-lg font-semibold">Further reading</h2>
           <ul className="space-y-1.5 text-sm">
           {[
-            ['Hans Hultgren — Introductory Guide to Data Vault Modeling (Genesee Academy, 2019)', 'http://dvstandards.com/wp-content/uploads/2021/02/data_vault_modeling_guide_2019_v3.pdf'],
-            ['Databricks — What is a Data Vault?', 'https://www.databricks.com/blog/what-is-data-vault'],
-            ['OvalEdge — Data Vault architecture', 'https://www.ovaledge.com/blog/data-vault-architecture'],
+            ['Hans Hultgren: Introductory Guide to Data Vault Modeling (Genesee Academy, 2019)', 'http://dvstandards.com/wp-content/uploads/2021/02/data_vault_modeling_guide_2019_v3.pdf'],
+            ['Databricks: What is a Data Vault?', 'https://www.databricks.com/blog/what-is-data-vault'],
+            ['OvalEdge: Data Vault architecture', 'https://www.ovaledge.com/blog/data-vault-architecture'],
             ['datavault4dbt wiki', 'https://github.com/ScalefreeCOM/datavault4dbt/wiki'],
           ].map(([t, u]) => (
             <li key={u}>

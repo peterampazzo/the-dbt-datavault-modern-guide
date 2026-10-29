@@ -5,6 +5,9 @@ import { CodeBlock } from '@/components/CodeBlock'
 import { LivePrimerResult } from '@/components/LivePrimerResult'
 import type { PrimerResultColumn, PrimerResultRow } from '@/components/PrimerResult'
 import { SqlServerNote } from '@/components/SqlServerNote'
+import { MaterializationsDrawing } from '@/components/drawing/MaterializationsDrawing'
+import { HighWaterMarkDrawing } from '@/components/drawing/HighWaterMarkDrawing'
+import { JinjaCompileDrawing } from '@/components/drawing/JinjaCompileDrawing'
 import { Callout, ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { MODEL } from '@/lib/dv/models'
@@ -105,7 +108,7 @@ function WorkflowComparison() {
                 <div key={node.id} className="flex items-center gap-2">
                   {index > 0 && (
                     <span className="text-xs text-muted-foreground" aria-label="On Success precedence constraint">
-                      — On success →
+                      On success →
                     </span>
                   )}
                   <ConceptButton concept={node.concept} label={node.label} selected={selected} onSelect={setSelected} />
@@ -718,12 +721,12 @@ export default function DbtPrimer() {
     <Chapter>
       <ChapterHeader
         title="dbt primer"
-        lead={<>See how a version-controlled dbt project replaces scattered procedure files. A <Term id="model">model</Term> is a SQL query; <Term id="ref-function">ref()</Term> links models, and <Term id="source-function">source()</Term> declares an input.</>}
+        lead={<>A version-controlled dbt project brings scattered procedure files, model SQL, dependencies and tests together. A <Term id="model">model</Term> is a SQL query; <Term id="ref-function">ref()</Term> links models, and <Term id="source-function">source()</Term> declares an input.</>}
       />
 
       <Section
         title="Why dbt"
-        lead="Compare a scheduled folder of procedures with a project tree that puts SQL, dependencies and tests together."
+        lead="A dbt project keeps SQL, dependencies and tests together in one project tree. Compare it with a scheduled folder of procedures."
       >
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-xl border bg-card/50 p-4">
@@ -760,7 +763,7 @@ export default function DbtPrimer() {
 
       <Section
         title="From SSIS and stored procedures"
-        lead="Switch between three ways to load the same stg_customer → customer_h step, then select a part to see its counterparts."
+        lead="SSIS, hand-written SQL and dbt can load the same stg_customer → customer_h step. Switch between them, then select a part to see its counterpart."
       >
         <WorkflowComparison />
         <PrimerFooter
@@ -771,7 +774,7 @@ export default function DbtPrimer() {
 
       <Section
         title="Models and ref()"
-        lead="Select a node in the source → stage → mart graph to inspect its SQL and a result computed from the first delivery."
+        lead="The source → stage → mart graph connects each model to its SQL and a result computed from the first delivery. Select a node to inspect them."
       >
         <ModelsAndRef />
         <PrimerFooter
@@ -782,8 +785,9 @@ export default function DbtPrimer() {
 
       <Section
         title="Jinja and compile"
-        lead="Switch between a reusable Jinja macro and the SQL expression left after dbt compiles it."
+        lead="A reusable Jinja macro compiles into a SQL expression. Switch between the macro and its compiled form."
       >
+        <JinjaCompileDrawing />
         <JinjaCompile />
         <PrimerFooter
           keyPoint="Jinja builds SQL before execution; dbt compile lets you inspect the resulting SQL."
@@ -793,8 +797,10 @@ export default function DbtPrimer() {
 
       <Section
         title="Materializations"
-        lead={<>Switch one model between view, table and <Term id="incremental">incremental</Term> output to see the SQL shape and its closest SQL Server analogue.</>}
+        lead={<>View, table and <Term id="incremental">incremental</Term> materializations produce different SQL shapes and resemble different SQL Server patterns. Switch the model to compare them.</>}
       >
+        <MaterializationsDrawing />
+        <HighWaterMarkDrawing />
         <Materializations />
         <PrimerFooter
           keyPoint="A materialization controls how dbt stores or updates the result; adapter-generated SQL can vary."
@@ -804,7 +810,7 @@ export default function DbtPrimer() {
 
       <Section
         title="Incremental and --full-refresh"
-        lead={<>Step through two deliveries, a landing truncate and a <Term id="full-refresh">full refresh</Term>; each count is derived from dataset.ts. The <Term id="high-water-mark">high-water mark</Term> skips already-seen rows.</>}
+        lead={<>The <Term id="high-water-mark">high-water mark</Term> skips rows already seen. Step through two deliveries, a landing truncate and a <Term id="full-refresh">full refresh</Term>; counts come from dataset.ts.</>}
       >
         <IncrementalPlayer />
         <PrimerFooter
@@ -815,7 +821,7 @@ export default function DbtPrimer() {
 
       <Section
         title="Tests and docs"
-        lead={<>Add a duplicate customer to make the unique test fail, remove it to pass, then open the lineage chapter. A <Term id="unit-test">unit test</Term> checks a model against fixed inputs and expected rows.</>}
+        lead={<>A <Term id="unit-test">unit test</Term> checks model output against fixed inputs and expected rows. Add a duplicate customer to make the unique test fail, remove it to pass, then open the lineage chapter.</>}
       >
         <TestsAndDocs />
         <PrimerFooter

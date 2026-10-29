@@ -140,7 +140,10 @@ test('command selections use the selected model name', async ({ page }) => {
 
 test('profiles page switches between one full-width example at a time', async ({ page }) => {
   await open(page, 'dbt-primer/profiles-yml-how-dbt-connects')
-  const figure = page.locator('main figure').first()
+  const profilesSection = page.locator('main section').filter({
+    has: page.getByRole('heading', { name: /profiles\.yml: how dbt connects/ }),
+  })
+  const figure = profilesSection.locator('figure').first()
   await expect(figure.locator('[data-codeblock]')).toHaveCount(1)
   await page.getByRole('button', { name: 'Fabric Lakehouse' }).click()
   await expect(figure.getByText('profiles.yml · Fabric Lakehouse (illustrative)')).toBeVisible()

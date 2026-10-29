@@ -26,7 +26,7 @@ test('Start here remembers the practitioner path and updates next links and cont
   await expect(refresher).toHaveClass(/text-muted-foreground/)
   await expect(refresher).not.toHaveClass(/opacity-/)
   await expect(contents.getByRole('link', { name: /Hash lab.*refresher/ })).toBeVisible()
-  const pageList = contents.getByRole('list', { name: /^Pages in Data Vault in this guide/ })
+  const pageList = contents.getByRole('list', { name: /^Pages in Data Vault terms in dbt/ })
   await expect(pageList.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
 
   await page.goto('/#/dv-names/recap')
@@ -60,10 +60,10 @@ test('Start here remembers the practitioner path and updates next links and cont
   await page.getByRole('button', { name: 'Contents' }).click()
   const updatedContents = page.getByRole('dialog', { name: 'Contents' })
   await expect(
-    updatedContents.getByRole('link', { name: /Data Vault in this guide.*names.*\(done\)/ }),
+    updatedContents.getByRole('link', { name: /Data Vault terms in dbt \(done\)/ }),
   ).toBeVisible()
   await expect(
-    updatedContents.getByRole('list', { name: /^Pages in Data Vault in this guide/ })
+    updatedContents.getByRole('list', { name: /^Pages in Data Vault terms in dbt/ })
       .getByRole('link', { name: 'The names we use' }),
   ).toHaveAttribute('aria-current', 'page')
 })
@@ -81,7 +81,7 @@ test('every paged chapter surface stays within the 1200px height target at 1280Ã
   for (const route of ROUTES.slice(1)) {
     await page.addInitScript(() => localStorage.setItem('reading-mode', 'paged'))
     await page.goto(`/#/${route.slug}`)
-    await expect(page.locator('main h1').first()).toBeVisible()
+    await expect(page.locator('main h1:visible').first()).toBeVisible()
     const pageLinks = page.locator('main article nav[aria-label="Pages"] ol a')
     const count = await pageLinks.count()
     for (let index = 0; index < count; index += 1) {

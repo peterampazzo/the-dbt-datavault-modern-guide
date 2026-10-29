@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
+import { StorageComputeDrawing } from '@/components/drawing/StorageComputeDrawing'
 
 type Engine = 'fabric' | 'databricks'
 
@@ -66,24 +67,25 @@ function EngineDiagram() {
 export default function OneLake() {
   return (
     <Chapter>
-      <ChapterHeader title="One lake, any engine" lead={<>Keep source files in an open <Term id="lakehouse">lakehouse</Term> while compute and dbt targets can change.</>} />
+      <ChapterHeader title="One lake, any engine" lead={<>Source files stay in an open <Term id="lakehouse">lakehouse</Term> as compute engines and dbt targets change.</>} />
       <Section
         title="Switch engines"
-        lead="Switch the compute engine and watch the connection label change while persistent staging stays put."
+        lead="Persistent staging stays in place when the compute engine changes. Switch engines to see the connection label update."
         keyPoint="An engine change does not require copying the source history."
       >
         <EngineDiagram />
       </Section>
       <Section
         title="Storage vs compute"
-        lead="Keep raw deliveries once in open storage, then let a selected engine read those files in place."
+        lead="Raw deliveries stay once in open storage, where each selected engine can read the same files."
         keyPoint="Storage holds the source history; compute reads and transforms it."
       >
         <P>Store the raw deliveries once as open Delta files in ADLS Gen2. Fabric Spark or Databricks reads them in place; each engine has its own connection and dbt target.</P>
+        <StorageComputeDrawing />
       </Section>
       <Section
         title="The layers"
-        lead={<>Map customer, nation and orders onto the <Term id="medallion">medallion architecture</Term>, from source systems to reporting.</>}
+        lead={<>The <Term id="medallion">medallion architecture</Term> maps customer, nation and orders from source systems through storage and modelling to reporting.</>}
         keyPoint="Landing and persistent staging preserve source data; stage, vault and mart models are derived and rebuildable."
       >
         <p data-figure-caption className="mb-4 max-w-full whitespace-normal font-mono text-xs text-foreground">
@@ -108,7 +110,7 @@ export default function OneLake() {
       </Section>
       <Section
         title="What moves, what’s rebuilt"
-        lead="Separate the files and transformation code that stay from the platform setup that must change."
+        lead="Source files and transformation code stay in place; platform connections and services must change."
         keyPoint="Move the compute, then rebuild derived tables and reconnect the services around them."
       >
         <div className="grid gap-4 md:grid-cols-2">
@@ -130,7 +132,7 @@ export default function OneLake() {
       </Section>
       <Section
         title="Keep it portable"
-        lead="Keep engine-specific details small and make the hash rule testable across targets."
+        lead="Engine-specific details stay small, and hash rules remain testable across targets."
         keyPoint="Portable SQL plus a cross-engine hash test protects the raw-vault keys during a move."
       >
         <ul className="ml-5 list-disc space-y-2 text-sm leading-6">

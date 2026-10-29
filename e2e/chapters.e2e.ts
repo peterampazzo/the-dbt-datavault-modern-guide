@@ -30,6 +30,18 @@ test('modelling: Next and Back walk the steps', async ({ page }) => {
   await expect(step).toHaveText(first ?? '')
 })
 
+test('modelling: the satellite split appears at step 3.2', async ({ page }) => {
+  await open(page, 'modelling')
+  const group = page.getByRole('heading', { name: 'Step through the satellites' }).locator('xpath=..')
+  await group.getByRole('button', { name: 'Next →' }).click()
+  await expect(group.getByText('Step 3.2 · Satellites')).toBeVisible()
+  const splitNode = group.locator('div.absolute.w-44').filter({ hasText: 'customer_balance_s' })
+  await expect(group.locator('div.absolute.w-44').filter({ hasText: 'customer_n_s' })).toBeVisible()
+  await expect(splitNode).toHaveCount(0)
+  await group.getByRole('switch').click()
+  await expect(splitNode).toBeVisible()
+})
+
 test('dbt: the terminal only runs when asked and finishes', async ({ page }) => {
   await open(page, 'dbt')
   const done = page.getByText(/Completed successfully\. PASS=\d+/)
@@ -55,15 +67,36 @@ test('load player: Next step advances the phase, batches switch', async ({ page 
   await expect(batchTwo).toHaveAttribute('aria-selected', 'true')
 })
 
+test('load player: the staged batch-one phone rows are visible', async ({ page }) => {
+  await open(page, 'load-player')
+  await page.getByRole('button', { name: 'Next step' }).click()
+  const phones = page.getByRole('region', { name: 'stg_customer_phone' })
+  await expect(phones).toBeVisible()
+  await expect(phones.getByText('home')).toBeVisible()
+  await expect(phones.getByText('mobile').first()).toBeVisible()
+})
+
 test('satellites: a bar shows its interval and the other flavours are separate pages', async ({ page }, info) => {
   await open(page, 'satellite-flavours')
   const bar = page.getByRole('button', { name: /Alice, valid from 2024-01-01/ })
+  await expect(bar).toHaveAccessibleName(/to 2024-01-03 05:59:59\.999999/)
+  const barBox = await bar.boundingBox()
+  const trackBox = await bar.locator('xpath=..').boundingBox()
+  expect(barBox && trackBox ? barBox.width / trackBox.width : 0).toBeGreaterThan(0.5)
   if (info.project.name === 'mobile') await bar.tap()
   else await bar.click()
   await expect(bar).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByText(/ldts 2024-01-01 06:00:00/)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Multi-active satellites', exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: 'customer_phone_ma_s' })).toBeVisible()
+})
+
+test('PIT: the customer hub key sits beside the snapshot dimension key', async ({ page }) => {
+  await open(page, 'pit')
+  await expect(page.getByText(/dimension key per customer per snapshot/)).toBeVisible()
+  const table = page.getByRole('region', { name: 'customer_pit' })
+  await expect(table.getByRole('columnheader', { name: 'hk_customer_h' })).toBeVisible()
+  await expect(table.getByRole('columnheader', { name: 'hk_customer_d' })).toBeVisible()
 })
 
 test('lineage: clicking a node selects it', async ({ page }) => {

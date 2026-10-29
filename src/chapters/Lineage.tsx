@@ -97,11 +97,11 @@ export default function Lineage() {
     <Chapter>
       <ChapterHeader
         title="The whole dbt project"
-        lead="Everything from the previous chapters as one dbt DAG: seeds, stages, raw vault, business vault and a mart. Click a node to trace its upstream and downstream models."
+        lead="The dbt DAG connects seeds, stages, raw vault, business vault and mart models. Click a node to trace its upstream and downstream dependencies."
       />
       <Section
         title="Explore the project graph"
-        lead="Select a node in the lineage graph to inspect its model and its dependencies."
+        lead="The lineage graph shows each model and its dependencies. Select a node to inspect them."
         keyPoint="dbt’s ref() dependencies connect landed data to stages, vault models, business-vault helpers and the mart."
       >
         <div

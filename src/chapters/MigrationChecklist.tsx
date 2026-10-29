@@ -3,6 +3,7 @@ import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { MIGRATION_ITEMS, resetMigrationChecklist, setMigrationItem, useMigrationChecklist } from '@/lib/migration'
+import { MigrationPathDrawing } from '@/components/drawing/MigrationPathDrawing'
 
 function ChecklistItems({ start, end, checked }: { start: number; end: number; checked: boolean[] }) {
   return (
@@ -38,9 +39,9 @@ export default function MigrationChecklist() {
     <Chapter>
       <ChapterHeader
         title="Migration checklist"
-        lead={<>Use eight gates to move from a legacy load to a rebuildable project. Keep source evidence in <Term id="persistent-staging">persistent staging</Term>, preserve <Term id="raw-vault">raw-vault</Term> history, and validate <Term id="hash-parity">hash parity</Term> before reconciling the <Term id="business-vault">business vault</Term> for cutover.</>}
+        lead={<>Eight gates move a legacy load toward a rebuildable project. They retain source evidence in <Term id="persistent-staging">persistent staging</Term>, preserve <Term id="raw-vault">raw-vault</Term> history, and validate <Term id="hash-parity">hash parity</Term> before the <Term id="business-vault">business vault</Term> is reconciled for cutover.</>}
       />
-      <Section title="Keep the evidence and prove the rules" lead="Check the first four gates before relying on the new models." keyPoint={<>Retained deliveries, explicit hashes and <Term id="unit-test">unit tests</Term> turn migration decisions into evidence.</>}>
+      <Section title="Keep the evidence and prove the rules" lead="The first four gates establish evidence for the new models." keyPoint={<>Retained deliveries, explicit hashes and <Term id="unit-test">unit tests</Term> make migration decisions testable.</>}>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <strong data-testid="migration-count">{done} of {MIGRATION_ITEMS.length} done</strong>
           <button type="button" onClick={resetMigrationChecklist} className="rounded-lg border px-3 py-1.5 text-sm hover:bg-muted/50" data-testid="migration-reset">Reset</button>
@@ -48,7 +49,8 @@ export default function MigrationChecklist() {
         <P>Tick a gate when its evidence is available. The state is saved in this browser, so an interrupted review can continue later.</P>
         <ChecklistItems start={0} end={4} checked={checked} />
       </Section>
-      <Section title="Replay, reconcile, then cut over" lead="Finish the last four gates with a comparison window and a rollback plan." keyPoint="Cut over only after the parallel result reconciles and the rebuild path is known.">
+      <Section title="Replay, reconcile, then cut over" lead="The last four gates cover a comparison window and a rollback plan." keyPoint="Cut over only after the parallel result reconciles and the rebuild path is known.">
+        <MigrationPathDrawing />
         <ChecklistItems start={4} end={MIGRATION_ITEMS.length} checked={checked} />
       </Section>
     </Chapter>

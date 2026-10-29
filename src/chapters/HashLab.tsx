@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Plus, X } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { HashdiffDrawing } from '@/components/drawing/HashdiffDrawing'
+import { GhostKeysDrawing } from '@/components/drawing/GhostKeysDrawing'
+import { HashPipelineDrawing } from '@/components/drawing/HashPipelineDrawing'
 import { Button } from '@/components/ui/button'
 import { dvHash, type HashAlg, type HashKind } from '@/lib/dv/hash'
 import { cn } from '@/lib/utils'
@@ -193,18 +195,19 @@ export default function HashLab() {
       />
       <Section
         title="Build a hash, step by step"
-        lead="Change the input values to see the guide’s hash standard applied one step at a time."
+        lead="The hash standard applies a fixed sequence to every business key. Change the inputs to follow each step."
         keyPoint="Hashkeys use trimmed, quoted, upper-cased inputs joined by ||, with ^^ for NULL, before MD5."
       >
         <P>
           This is the same standardisation datavault4dbt applies with its default settings: cast to string, trim, replace NULL with <Code>^^</Code>, quote, join with{' '}
           <Code>||</Code>, upper-case for hashkeys only, then MD5. Edit the inputs and watch each step update.
         </P>
+        <HashPipelineDrawing />
         <Lab />
       </Section>
       <Section
         title="Hashdiff: did anything change?"
-        lead="Compare payload fingerprints to see when a satellite needs a new version."
+        lead="A satellite needs a new version when its payload fingerprint changes. Compare the hashes."
         keyPoint="A satellite inserts when the new hashdiff differs from the latest version for that parent key."
       >
         <P>
@@ -216,9 +219,10 @@ export default function HashLab() {
       </Section>
       <Section
         title="Ghost keys and why we hash"
-        lead="See how deterministic hashes and reserved ghost records keep unknown and error joins intact."
+        lead="Deterministic hashes and reserved ghost records preserve joins for unknown and error keys. See how the joins work."
         keyPoint="Ghost rows preserve unknown and error references so downstream joins do not lose records."
       >
+        <GhostKeysDrawing />
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Callout kind="info" title="Why hash at all?">
             Every loader computes keys from the business key alone, with no lookups against a sequence table. Hubs, links and satellites can therefore load in parallel, and
@@ -226,7 +230,7 @@ export default function HashLab() {
           </Callout>
           <Callout kind="warn" title="Ghost keys">
             All-NULL input maps to <Code>0000…</Code> (the unknown record) and the error record is <Code>ffff…</Code>. Both are inserted as ghost records so joins never
-            lose rows.
+            lose rows. A ghost record is a reserved unknown or error row; a late-arriving dimension is a real record delivered late, like Hana (#8).
           </Callout>
         </div>
       </Section>

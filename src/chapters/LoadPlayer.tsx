@@ -4,6 +4,7 @@ import { motion } from 'motion/react'
 import { Pause, Play, RotateCcw } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { DataTable, defaultRowKey, type Tone } from '@/components/DataTable'
+import { LoadRulesDrawing } from '@/components/drawing/LoadRulesDrawing'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { isGhost, simulate, type BatchRun, type Decision, type SkipReason, type TableName } from '@/lib/dv/engine'
@@ -159,6 +160,16 @@ function Player() {
       maxHeight="max-h-64"
     />
   )
+  const phoneStageTable = () => (
+    <DataTable
+      title="stg_customer_phone"
+      tone="stage"
+      rows={run.stage.stg_customer_phone}
+      hideGhosts={!showGhosts}
+      columns={['c_custkey', 'phone_type', 'phone_number', 'hk_customer_h', 'hd_customer_phone_ma_s', 'ldts']}
+      maxHeight="max-h-64"
+    />
+  )
   const highWaterMark =
     prev ? (prev.tables.customer_h.filter((row) => !isGhost(row)).map((row) => String(row.ldts)).sort().at(-1) ?? '—') : '— (first run)'
 
@@ -249,6 +260,7 @@ function Player() {
       <div data-testid={`phase-tables-${phase}`} className="mt-3 grid min-w-0 gap-4 lg:grid-cols-2">
         {phase === 0 && sourceTable()}
         {phase === 1 && stageTable()}
+        {phase === 1 && phoneStageTable()}
         {phase === 2 && targetTable(TARGETS[0])}
         {phase === 3 && targetTable(TARGETS[1])}
         {phase === 4 && targetTable(TARGETS[2])}
@@ -271,11 +283,11 @@ export default function LoadPlayer() {
     <Chapter>
       <ChapterHeader
         title="Loading, batch by batch"
-        lead="Three daily full loads of the same sources. Play them and watch what dbt inserts, and what it deliberately skips."
+        lead="Three daily full loads show what dbt inserts and skips as the vault grows."
       />
       <Section
         title="Play the batches"
-        lead="Choose a batch and phase, then use Next step. The result and table for that phase are directly below the controls; replay the longer batch story from More options."
+        lead="Each phase shows its result and table under the controls. Choose a batch and phase, then use Next step; More options replays the longer batch story."
         keyPoint="Staging calculates the hashes first; hubs and links insert keys, while satellites compare hashdiffs."
       >
         <P>
@@ -286,9 +298,10 @@ export default function LoadPlayer() {
       </Section>
       <Section
         title="The rules you just watched"
-        lead="Track which rows each batch inserts, skips or keeps as ghosts."
+        lead="Each batch follows the same rules for inserts, skips and ghost rows. Follow the rows through the batches."
         keyPoint="Raw-vault hubs and links stay insert-only; satellite versions are added when the payload changes."
       >
+        <LoadRulesDrawing />
         <div className="grid gap-4 md:grid-cols-2">
           <Callout kind="info" title="Hubs and links: insert if unknown">
             A key that already exists is skipped, however many times it is delivered. Chiara's move to Germany doesn't update the old link; it adds a second one.
