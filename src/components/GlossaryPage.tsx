@@ -23,7 +23,7 @@ export function GlossaryPage() {
     <article className="mx-auto max-w-3xl">
       <header className="mb-8 max-w-[75ch]">
         <h1 className="font-serif text-4xl font-semibold tracking-tight">Glossary</h1>
-        <p className="mt-3 font-serif text-lg leading-7 text-muted-foreground">Plain definitions for the terms used in this guide.</p>
+        <p className="mt-3 font-serif text-lg leading-7 text-muted-foreground">Plain definitions for technical terms.</p>
       </header>
       <div className="mb-6 max-w-xl">
         <label htmlFor="glossary-filter" className="mb-2 block text-sm font-medium">Filter terms</label>

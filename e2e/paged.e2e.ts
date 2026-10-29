@@ -89,7 +89,7 @@ test('"Show as one page" is remembered', async ({ page }) => {
 test('chapter 3 is the Data Vault name bridge', async ({ page }) => {
   await open(page, 'dv-names', { paged: true })
   await expect(page.getByText(/Chapter 3 of 18 · Part 1: The method · about/)).toBeVisible()
-  await expect(page.getByRole('heading', { name: "Data Vault in this guide's names" })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Data Vault terms in dbt' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Start' })).toBeVisible()
   await page.getByRole('link', { name: 'Start' }).click()
   await expect(page).toHaveURL(/#\/dv-names\/the-names-we-use$/)

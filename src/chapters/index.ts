@@ -92,7 +92,7 @@ export const CHAPTERS = [
   },
   {
     slug: 'dv-names',
-    title: "Data Vault in this guide's names",
+    title: 'Data Vault terms in dbt',
     short: 'Names',
     minutes: 2,
     part: 1,
@@ -280,7 +280,7 @@ export const CHAPTERS = [
     ],
     quiz: [
       {
-        q: 'What does sat_v1 add to sat_v0 in this guide?',
+        q: 'What does sat_v1 add to sat_v0?',
         options: ['A derived load end date and is_current flag', 'A new business key', 'An update that overwrites old payloads'],
         answer: 0,
         why: 'The v1 view derives ledts from the next ldts and marks the open version as current.',
@@ -304,7 +304,7 @@ export const CHAPTERS = [
     summary: [
       'A snapshot table lists the moments you want to report on.',
       'A PIT table stores, per customer and snapshot, which satellite row was valid at that moment.',
-      'Joining through the PIT gives plain equality joins instead of date-range joins.',
+      'PIT pointers support plain equality joins and avoid repeated date-range lookups.',
     ],
     recap: [
       'The snapshot control defines the dates at which PIT rows are built.',
@@ -358,7 +358,7 @@ export const CHAPTERS = [
         why: 'The lineage arrows represent dbt model dependencies.',
       },
       {
-        q: 'Which layer normally feeds the raw-vault models in this guide?',
+        q: 'Which layer normally feeds the raw-vault models?',
         options: ['Stage models', 'Information marts', 'PIT outputs'],
         answer: 0,
         why: 'The raw-vault models depend on staging models that prepare source rows and hashes.',
@@ -418,7 +418,7 @@ export const CHAPTERS = [
       'Named engine-specific macros and consistent hash rules help keep dbt models portable.',
     ],
     recap: [
-      'Keep source history in open storage; change the compute connection rather than copying the source data.',
+      'Changing compute connections does not require copying source history, which stays in open storage.',
       'Only persistent staging is source data; dv_stage, raw_vault, business_vault and gold are derived.',
       'Keep engine differences in named macros and vars, and test identical hashkeys on both engines.',
     ],
@@ -627,7 +627,7 @@ export const CHAPTERS = [
     part: 4,
     audience: 'practitioner',
     summary: [
-      'Turn a migration into eight observable gates instead of one risky cut-over.',
+      'Track a migration through eight observable gates before cut-over.',
       'Keep deliveries, prove hash and business-rule parity, and compare rebuilds.',
       'Save your progress locally while you work through the checklist.',
     ],

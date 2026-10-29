@@ -108,14 +108,14 @@ export default function Pit() {
       />
       <Section
         title="A photo of one date"
-        lead="Think of a PIT as a photo of every satellite taken at one snapshot date."
+        lead="A PIT shows the satellite versions valid at one snapshot date. It works like a photo of that moment."
         keyPoint="A PIT row points at the satellite versions valid at its snapshot; it does not copy their values."
       >
         <PitDrawing />
       </Section>
       <Section
         title="Drag the snapshot"
-        lead="Move the snapshot date to see the PIT pointers select the valid row from each satellite."
+        lead="PIT pointers select the satellite row valid at each snapshot date. Move the date to inspect the pointers."
         keyPoint="A PIT row identifies the satellite versions valid for one tracked key at one snapshot."
       >
         <div className="border-t pt-6">
@@ -174,7 +174,7 @@ export default function Pit() {
       </Section>
       <Section
         title="The models"
-        lead={<>Review the <Term id="snapshot-control">snapshot control</Term> and PIT models that define dates and produce the pointers.</>}
+        lead={<>The <Term id="snapshot-control">snapshot control</Term> defines dates, and PIT models use them to produce pointers. Review the models.</>}
         keyPoint="Snapshot control supplies active dates; the PIT stores equality-join pointers for those dates."
       >
         <div className="grid gap-4 xl:grid-cols-2">

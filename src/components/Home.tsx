@@ -8,9 +8,9 @@ import { resetProgress, useProgress } from '@/lib/progress'
 import { getFirstPathChapter, setReadingPath, usePages, useReadingPath, type ReadingPath } from '@/lib/reading'
 
 const blurbs: Record<string, string> = {
-  'what-is-data-vault': 'Hubs, links and satellites, unified decomposition, and where the vault sits between sources and marts.',
+  'what-is-data-vault': 'Learn the vault building blocks and follow data from source deliveries to reporting.',
   modelling: 'Customers, nations and orders, modelled step by step with the nine-step Data Vault method.',
-  'dv-names': 'A quick map from familiar Data Vault terms to the exact names used in this guide.',
+  'dv-names': 'A quick map from familiar Data Vault terms to their model and macro names.',
   'dbt-primer': 'Plain dbt models are SQL SELECTs; source() and ref() name inputs and dependencies.',
   dbt: 'The same model as datavault4dbt code: stage YAML, then one macro call per hub, link and satellite.',
   'hash-lab': 'Type a business key and watch it get trimmed, upper-cased, concatenated and hashed.',
@@ -25,12 +25,12 @@ const blurbs: Record<string, string> = {
   'from-sql-server': 'Compare seven hand-written loading patterns with dbt models and metadata.',
   'hash-parity': 'Compare legacy and datavault4dbt hash settings with fixed business-key vectors.',
   'business-vault': 'Keep reusable precedence and calculations in a business vault above the raw history.',
-  'migration-checklist': 'Turn a migration into eight observable gates instead of one risky cut-over.',
+  'migration-checklist': 'Track a migration through eight observable gates before cut-over.',
 }
 
 const paths: { id: ReadingPath; title: string; description: string }[] = [
   { id: 'full', title: 'New to Data Vault and dbt', description: 'Build the foundations, then follow the complete guide.' },
-  { id: 'dv-practitioner', title: 'I know Data Vault, new to dbt', description: 'Start with this guide’s names, then build and load with dbt.' },
+  { id: 'dv-practitioner', title: 'I know Data Vault, new to dbt', description: 'Start with Data Vault model names, then build and load with dbt.' },
   { id: 'browse', title: 'Just browsing', description: 'Pick any chapter and read in any order.' },
 ]
 

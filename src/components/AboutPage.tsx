@@ -32,7 +32,7 @@ export function AboutPage() {
       </section>
 
       <section className="mb-8 max-w-[75ch]" aria-labelledby="about-scope">
-        <h2 id="about-scope" className="mb-3 font-serif text-2xl font-semibold">What it is—and is not</h2>
+        <h2 id="about-scope" className="mb-3 font-serif text-2xl font-semibold">What the guide is and is not</h2>
         <p className="leading-7">
           The examples use fictional customer, nation and order data. They teach Data Vault modelling and dbt with datavault4dbt only; they are not production instructions and require no vendor setup.
         </p>

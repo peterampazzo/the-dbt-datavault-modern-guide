@@ -105,8 +105,8 @@ function ParityLab() {
         </table>
       </div>
       <CodeBlock title="Matching datavault4dbt vars" code={vars} lang="yaml" />
-      <P>Encoding follows SQL Server’s <code>hash_input_dtype</code>. Spark strings are UTF-8, so UTF-16LE parity needs an engine-specific hash macro rather than a dbt var.</P>
-      <P>With all four settings matching, the two semicolon-in-key rows still show a mismatch: the legacy procedure escaped nothing, so both different keys produced the same ambiguous legacy hash. Use the old-to-new key map below instead of guessing.</P>
+      <P>Encoding follows SQL Server’s <code>hash_input_dtype</code>. Spark strings are UTF-8, so UTF-16LE parity requires an engine-specific hash macro. A dbt var alone cannot change Spark string encoding.</P>
+      <P>With all four settings matching, the two semicolon-in-key rows still show a mismatch: the legacy procedure escaped nothing, so both different keys produced the same ambiguous legacy hash. The old-to-new key map records each business-key relationship.</P>
       <P>SQL Server <code>CONVERT(..., 2)</code> returns hexadecimal text. Compare hashes case-insensitively or store <code>BINARY(16)</code>. Engines also differ in how they uppercase characters such as <code>ß</code>; keep such values in vectors without assuming one engine’s result.</P>
     </div>
   )
@@ -145,7 +145,7 @@ export default function HashParity() {
     <Chapter>
       <ChapterHeader
         title={<><Term id="hash-parity">Hash parity</Term> and restoring history</>}
-        lead="Compare an older key rule with datavault4dbt, then bring history across without losing the business meaning."
+        lead="An older key rule and datavault4dbt can produce different hashes. Compare the settings, then bring history across without losing business meaning."
       />
 
       <Section title="Two ways to bring keys across">
@@ -153,7 +153,7 @@ export default function HashParity() {
         <P>Hubs retain the business key, and links can join legacy hubs to derive their new keys. Recompute unless another system already consumes the legacy hashkeys; always recompute hashdiffs from the payload.</P>
       </Section>
 
-      <Section title="Parity lab" lead="The left side never changes. Tune the right side until its settings match the procedure.">
+      <Section title="Parity lab" lead="The fixed legacy procedure provides the reference. Tune the datavault4dbt settings on the right to match it.">
         <ParityLab />
       </Section>
 
@@ -177,7 +177,7 @@ export default function HashParity() {
       </Section>
 
       <Section title="Old → new key map and reconciliation">
-        <P>The sample legacy vault is derived from batches 1–2 of the guide’s own engine. The seed joins each satellite to its hub, recomputes the default hk/hashdiff, and drops <code>LoadEndDate</code>; <code>sat_v1</code> rebuilds the end dates when needed.</P>
+        <P>The sample legacy vault is derived from batches 1–2 of the simulation. The seed joins each satellite to its hub, recomputes the default hk/hashdiff, and drops <code>LoadEndDate</code>; <code>sat_v1</code> rebuilds the end dates when needed.</P>
         <DataTable title="Legacy hash → business key → new hash" tone="hub" rows={seeded.keyMap.map((row) => ({ legacy_hash: row.legacyHashKey, c_custkey: row.customerNumber, new_hash: row.newHashKey }))} />
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(seeded.reconciliation).map(([label, value]) => <div key={label} className="rounded-lg border bg-card/50 p-3"><div className="text-xs text-muted-foreground">{RECONCILIATION_LABEL[label] ?? label}</div><div className="mt-1 font-mono text-lg">{value}</div></div>)}

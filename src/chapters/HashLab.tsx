@@ -193,7 +193,7 @@ export default function HashLab() {
       />
       <Section
         title="Build a hash, step by step"
-        lead="Change the input values to see the guide’s hash standard applied one step at a time."
+        lead="The hash standard applies a fixed sequence to every business key. Change the inputs to follow each step."
         keyPoint="Hashkeys use trimmed, quoted, upper-cased inputs joined by ||, with ^^ for NULL, before MD5."
       >
         <P>
@@ -204,7 +204,7 @@ export default function HashLab() {
       </Section>
       <Section
         title="Hashdiff: did anything change?"
-        lead="Compare payload fingerprints to see when a satellite needs a new version."
+        lead="A satellite needs a new version when its payload fingerprint changes. Compare the hashes."
         keyPoint="A satellite inserts when the new hashdiff differs from the latest version for that parent key."
       >
         <P>
@@ -216,7 +216,7 @@ export default function HashLab() {
       </Section>
       <Section
         title="Ghost keys and why we hash"
-        lead="See how deterministic hashes and reserved ghost records keep unknown and error joins intact."
+        lead="Deterministic hashes and reserved ghost records preserve joins for unknown and error keys. See how the joins work."
         keyPoint="Ghost rows preserve unknown and error references so downstream joins do not lose records."
       >
         <div className="mt-6 grid gap-4 md:grid-cols-2">

@@ -436,10 +436,10 @@ function Replay() {
 
   return (
     <Chapter>
-      <ChapterHeader title="Replay: one history, two shapes" lead={<>Keep source deliveries in <Term id="persistent-staging">persistent staging</Term> so a changed model can rebuild the raw vault.</>} />
+      <ChapterHeader title="Replay: one history, two shapes" lead={<>Retained deliveries in <Term id="persistent-staging">persistent staging</Term> let a changed model rebuild the raw vault.</>} />
       <Section
         title="The replay lab"
-        lead="Choose what was kept, change the customer model, then run a full refresh to compare the rebuilt tables with truth."
+        lead="A full refresh compares rebuilt tables with the available source truth. Choose what was kept and change the customer model to test the result."
         keyPoint="A full refresh can only rebuild what the landing layer still contains."
       >
         <ReplayLab key={`${location.pathname}${location.search}`} initialChange={initialChange} />
@@ -480,7 +480,7 @@ function Replay() {
       </Section>
       <Section
         title="Two histories, one record"
-        lead="Separate the preserved evidence from the organised tables built from it."
+        lead="Persistent staging preserves source evidence; the raw vault organises that evidence by business key."
         keyPoint="Two copies are useful; two competing sources of truth are not."
       >
         <P><strong>Two copies are fine, two sources of truth are not.</strong> Persistent staging is append-only evidence: what each source sent and when. Never change it to match a later model. The raw vault is a derived, organised view by business key that can be rebuilt from that evidence.</P>
@@ -506,7 +506,7 @@ function Replay() {
       </Section>
       <Section
         title="Prove it"
-        lead="Schedule a rebuild in a development target, then compare its row counts and table fingerprints with production."
+        lead="A development rebuild can be checked against production without changing it. Compare row counts and table fingerprints."
         keyPoint="Matching counts and hashes is evidence that the two shapes contain the same rows."
       >
         <P>Keep production untouched. Build from persistent staging with <Code>dbt build --full-refresh --target dev</Code>, then compare each raw-vault table’s row count and hash-of-hashes with the corresponding production table. A match means one history in two shapes; a mismatch points to missing data, different rules or an unreproducible build.</P>
@@ -514,7 +514,7 @@ function Replay() {
       </Section>
       <Section
         title="Rerun, rebuild or replay?"
-        lead="Choose the recovery path that matches the failure, the model change and the history still available."
+        lead="Recovery depends on the failure, model change and available history. Choose the matching path."
         keyPoint="Retry a run, rebuild changed logic or replay retained deliveries in order."
       >
         <ReplayChoices />
@@ -522,7 +522,7 @@ function Replay() {
       </Section>
       <Section
         title="Until you’re replay-safe"
-        lead="Prevent a broad refresh from dropping raw-vault tables until replay and recovery are tested."
+        lead="A refresh guard protects raw-vault tables until replay and recovery are tested."
         keyPoint="A refresh guard is one control, not a replacement for durable source evidence and backups."
       >
         <P>Set a per-folder dbt guard; it overrides the command-line flag for these models. Check that your adapter honours it.</P>

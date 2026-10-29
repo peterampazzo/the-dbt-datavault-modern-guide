@@ -256,12 +256,12 @@ export default function ModernWay() {
     <Chapter>
       <ChapterHeader
         title="Working the modern way"
-        lead="Follow one customer email change from a branch through tests, review, merge and deployment."
+        lead="A customer email change moves through a branch, tests, review, merge and deployment."
       />
 
       <Section
         title="Change player"
-        lead="Step through a payload change, the failing unit test, its fix and deployment; nothing advances until you choose."
+        lead="A payload change can fail a unit test before its fix is deployed. Step through the change; nothing advances until you choose."
         keyPoint="A reviewed, tested change moves through git and CI before it is deployed."
       >
         <p className="mb-4 max-w-[75ch]">Continuous integration and delivery (<Term id="ci-cd">CI/CD</Term>) runs checks before a reviewed change is deployed.</p>
@@ -270,7 +270,7 @@ export default function ModernWay() {
 
       <Section
         title="Targets"
-        lead={<>Compare dev, ci and prod outputs, then see who runs each <Term id="target">target</Term>.</>}
+        lead={<>The dev, ci and prod <Term id="target">targets</Term> separate output locations and deployment responsibilities. Compare them.</>}
         keyPoint="The target changes the connection and output location; it does not change the model's business rules."
       >
         <Targets />
@@ -279,7 +279,7 @@ export default function ModernWay() {
 
       <Section
         title="What a reviewer checks in vault YAML"
-        lead="Use this short checklist to review the keys, history fields, payload and safeguards."
+        lead="A short checklist covers keys, history fields, payload and safeguards. Use it to review the model."
         keyPoint="A satellite’s hashdiff input must match the attributes it versions."
       >
         <ReviewerChecklist />
@@ -287,7 +287,7 @@ export default function ModernWay() {
 
       <Section
         title="Slim CI"
-        lead="Read the state selector and defer flags, and see why they can reduce CI work without promising a runtime."
+        lead="State selection and defer can reduce CI work, but they do not guarantee a runtime. Read the selector and flags."
         keyPoint="State selection narrows the build; defer can reuse eligible unselected upstream relations from a saved manifest."
       >
         <SlimCi />

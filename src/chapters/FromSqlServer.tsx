@@ -57,12 +57,12 @@ export default function FromSqlServer() {
     <Chapter>
       <ChapterHeader
         title="From a hand-written SQL Server vault"
-        lead={<>Keep the useful Data Vault ideas, keep the <Term id="raw-vault">raw vault</Term> insert-only, and move repeated loading rules into models, metadata and tests.</>}
+        lead={<>A <Term id="raw-vault">raw vault</Term> stays insert-only while repeated loading rules move into models, metadata and tests.</>}
       />
 
-      <Section title="The same destination, safer route" lead="A hand-written vault can work. The risk grows when every procedure copies its own assumptions about history, keys and sources.">
+      <Section title="The same destination, safer route" lead="A hand-written vault can work, but repeated assumptions about history, keys and sources are hard to keep aligned across procedures.">
         <P>dbt does not change the Data Vault objects. It makes the transformation from delivery to vault reviewable, repeatable and rebuildable.</P>
-        <P>The seven comparisons below use the customer, nation and orders story. The left side shows a common legacy pattern; the right side shows where the rule can live in a dbt project.</P>
+        <P>The seven comparisons use the customer, nation and orders story. Each shows a common legacy pattern and where the rule can live in a dbt project.</P>
       </Section>
 
       <Section title="History is not an update">
@@ -101,7 +101,7 @@ export default function FromSqlServer() {
         <Pair
           before="cloned_business_vault"
           after={{ title: 'integrated_customer_precedence', code: SNIPPETS.integrated_customer_precedence.code }}
-          why={<>The <Term id="business-vault">business vault</Term> is the explicit place to resolve a source conflict. A precedence order is visible in code and can be changed with a review, instead of cloning another procedure and hoping the copies stay aligned.</>}
+          why={<>The <Term id="business-vault">business vault</Term> is the explicit place to resolve a source conflict. A precedence order is visible in code and can change through review, which keeps copies from drifting.</>}
         />
       </Section>
 
@@ -115,7 +115,7 @@ export default function FromSqlServer() {
 
       <Section
         title="From temp tables to ref() models"
-        lead={<>Move meaningful procedure steps into models linked with <Term id="ref-function">ref()</Term>, while leaving one-use logic as a CTE.</>}
+        lead={<>Reusable, tested or expensive procedure steps can become models linked with <Term id="ref-function">ref()</Term>. One-use logic can stay as a CTE.</>}
       >
         <div className="mx-auto max-w-[48rem] border-t pt-6">
           <Pair
@@ -157,7 +157,7 @@ export default function FromSqlServer() {
         <Pair
           before="no_snapshot_control"
           after={{ title: 'control_snap_v1 + customer_pit', code: `${MODEL.control_snap_v1.code}\n\n${MODEL.customer_pit.code}` }}
-          why={<>A <Term id="snapshot-control">snapshot control</Term> defines which observation times matter, and a <Term id="pit">PIT</Term> stores pointers to the satellite versions valid at those times. dbt metadata makes the tracked entity and satellite set visible instead of hiding them in join text.</>}
+          why={<>A <Term id="snapshot-control">snapshot control</Term> defines which observation times matter, and a <Term id="pit">PIT</Term> stores pointers to the satellite versions valid at those times. dbt metadata shows the tracked entity and satellite set alongside the joins.</>}
         />
       </Section>
     </Chapter>

@@ -178,7 +178,7 @@ const STEPS: Step[] = [
     title: 'Analyse the unit of work',
     body: (
       <>
-        Which keys belong together in one relationship? Customer–nation is a pair that can change over time, so it gets a standard link. Order–customer is fixed at the
+        Which keys belong together in one relationship? Customer and nation form a pair that can change over time, so they get a standard link. The order and customer relationship is fixed at the
         moment of the order and never changes. That makes it a <strong>non-historized link</strong>, which can carry the order's own values directly.
       </>
     ),
@@ -437,7 +437,7 @@ function KeyFinder() {
     .join(' · ')
   const changedDetail =
     column === 'c_custkey'
-      ? '— it’s the identifier the other checks match on; confirm with the system owner that numbers are never reused'
+      ? 'It is the identifier the other checks match on; confirm with the system owner that numbers are never reused'
       : `${profile.changedCustomerCount} customer${profile.changedCustomerCount === 1 ? '' : 's'} changed this value between deliveries`
   const feedback: Record<CustomerKeyColumn, string> = {
     c_custkey: `Unique in every batch, never empty, and all ${profile.orderKeysFound} distinct orders.o_custkey values occur here. It is the strongest candidate in this sample; confirm with the system owner that numbers are never reused.`,
@@ -609,19 +609,19 @@ export default function Modelling() {
     <Chapter>
       <ChapterHeader
         title="Modelling three datasets"
-        lead="Modelling a Data Vault is closer to business analysis than to source analysis. Follow the nine steps of the method and watch customer, nation and orders turn into hubs, links and satellites."
+        lead="Data Vault modelling starts with business concepts and their keys, then maps customer, nation and orders to hubs, links and satellites. Follow the nine method steps."
       />
       <Section
         title="Step through the hubs"
         lead="The first group of method steps identifies the business concepts and their stable keys."
-        keyPoint="A hub holds a business key and its hashkey, load date and record source—not descriptive attributes."
+        keyPoint="A hub holds a business key, its hashkey, load date and record source. Descriptive attributes belong in satellites."
       >
         <Stepper group="Hubs" />
         <p data-figure-caption className="mt-2 text-xs text-muted-foreground">Hover over columns and tables to trace each business key.</p>
       </Section>
       <Section
         title="Find the business key yourself"
-        lead="Profile customer columns across all three deliveries, then check whether orders use the same candidate."
+        lead="A business key should remain stable across customer deliveries and appear in orders when it identifies the same customer. Profile the columns to test a candidate."
         keyPoint="A useful key is unique, stable and shared across the feeds; retained source history lets you correct a bad choice."
       >
         <KeyFinder />
@@ -636,7 +636,7 @@ export default function Modelling() {
       </Section>
       <Section
         title="Step through the satellites"
-        lead="The final group assigns descriptive context and applies the guide’s satellite split criteria."
+        lead="The final steps assign descriptive context and split satellites by their design criteria."
         keyPoint="Satellites attach to one hub or link and keep new versions when their payload changes."
       >
         <Stepper group="Satellites" />
@@ -645,7 +645,7 @@ export default function Modelling() {
 
       <Section
         title="What to take away"
-        lead="Use the nine modelling steps to map customer, nation and orders to hubs, links and satellites."
+        lead="The nine modelling steps map customer, nation and orders to hubs, links and satellites."
         keyPoint="Treat keys and relationships as business decisions; new sources and changing context can be added without rewriting history."
       >
         <div className="grid gap-4 md:grid-cols-3">

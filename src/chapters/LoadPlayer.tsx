@@ -271,11 +271,11 @@ export default function LoadPlayer() {
     <Chapter>
       <ChapterHeader
         title="Loading, batch by batch"
-        lead="Three daily full loads of the same sources. Play them and watch what dbt inserts, and what it deliberately skips."
+        lead="Three daily full loads show what dbt inserts and skips as the vault grows."
       />
       <Section
         title="Play the batches"
-        lead="Choose a batch and phase, then use Next step. The result and table for that phase are directly below the controls; replay the longer batch story from More options."
+        lead="Each phase shows its result and table under the controls. Choose a batch and phase, then use Next step; More options replays the longer batch story."
         keyPoint="Staging calculates the hashes first; hubs and links insert keys, while satellites compare hashdiffs."
       >
         <P>
@@ -286,7 +286,7 @@ export default function LoadPlayer() {
       </Section>
       <Section
         title="The rules you just watched"
-        lead="Track which rows each batch inserts, skips or keeps as ghosts."
+        lead="Each batch follows the same rules for inserts, skips and ghost rows. Follow the rows through the batches."
         keyPoint="Raw-vault hubs and links stay insert-only; satellite versions are added when the payload changes."
       >
         <div className="grid gap-4 md:grid-cols-2">

@@ -275,11 +275,11 @@ export default function Scheduling() {
     <Chapter>
       <ChapterHeader
         title="Running dbt on a schedule"
-        lead={<>an <Term id="orchestrator">orchestrator</Term> starts dbt when a delivery lands; dbt still owns the models, the order and the tests.</>}
+        lead={<>An <Term id="orchestrator">orchestrator</Term> starts dbt when a delivery lands. dbt owns the models, dependency order and tests.</>}
       />
       <Section
         title="The run"
-        lead="Follow a delivery from persistent staging through dbt and the publish steps."
+        lead="A delivery moves from persistent staging through dbt and the publish steps. Follow the flow."
         keyPoint="Deliveries trigger runs; dbt preserves dependency order inside a run."
       >
         <SchedulerDrawing />
@@ -289,7 +289,7 @@ export default function Scheduling() {
       </Section>
       <Section
         title="Green is not published"
-        lead="A successful build is not the same as a checked result being visible to readers."
+        lead="A successful build does not guarantee that a checked result is visible to readers."
         keyPoint="Build privately, audit the result, and publish only after checks pass."
       >
         <GreenIsNotPublished />
@@ -303,19 +303,19 @@ export default function Scheduling() {
       </Section>
       <Section
         title="Who writes what"
-        lead="Keep dbt and a calculation job from competing for the same output table."
+        lead="A table needs one writer at a time, so dbt and a calculation job must not compete for the same output. See how the jobs are coordinated."
         keyPoint="Each table has one writer; the orchestrator coordinates the jobs."
       >
         <WriterTable />
       </Section>
       <Section
         title="Same job, different schedulers"
-        lead="Each orchestrator starts the same dbt build while the dbt project keeps its model graph."
+        lead="Each orchestrator starts the same dbt build, and the dbt project keeps its model graph. Compare the scheduler examples."
         keyPoint="Keep the scheduler definition and dbt project together so one reviewed change deploys both."
       >
         <SchedulerTabs />
         <P className="mx-auto mt-6">
-          Keep DAGs and the dbt project in one repo so one reviewed change deploys both. Installing and running orchestrators is out of scope; see each tool’s documentation above.
+          Keep DAGs and the dbt project in one repo so one reviewed change deploys both. Orchestrator installation and operation are outside scope; consult each tool’s documentation for those details.
         </P>
         <div className="mx-auto mt-6 max-w-[48rem]"><CodeBlock title="One repository" lang="bash" code={REPO_TREE} /></div>
       </Section>

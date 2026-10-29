@@ -39,12 +39,12 @@ export default function DvNames() {
   return (
     <Chapter>
       <ChapterHeader
-        title="Data Vault in this guide's names"
-        lead="Map familiar Data Vault terms to the model names and dbt pages used here."
+        title="Data Vault terms in dbt"
+        lead="Familiar Data Vault terms map to specific model names and dbt concepts."
       />
       <Section
         title="The names we use"
-        lead="Find a term you already use and see the exact name it has in this guide’s models."
+        lead="Model and macro names show how familiar Data Vault objects appear in dbt. Use the table to map the terms."
         keyPoint="Model suffixes identify the object; datavault4dbt macro names identify how each model is generated."
       >
         <P>
@@ -60,7 +60,7 @@ export default function DvNames() {
             <thead className="bg-muted/60">
               <tr>
                 <th scope="col" className="px-3 py-1.5 font-semibold">You may call it</th>
-                <th scope="col" className="px-3 py-1.5 font-semibold">In this guide</th>
+                <th scope="col" className="px-3 py-1.5 font-semibold">Term used here</th>
                 <th scope="col" className="px-3 py-1.5 font-semibold">Where it's taught</th>
               </tr>
             </thead>

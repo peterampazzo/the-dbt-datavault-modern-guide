@@ -4,7 +4,7 @@ export const ROUTES = [
   { slug: '', title: 'Home' },
   { slug: 'what-is-data-vault', title: 'What is Data Vault' },
   { slug: 'modelling', title: 'Modelling three datasets' },
-  { slug: 'dv-names', title: "Data Vault in this guide's names" },
+  { slug: 'dv-names', title: 'Data Vault terms in dbt' },
   { slug: 'dbt-primer', title: 'dbt primer' },
   { slug: 'dbt', title: 'Building it with dbt' },
   { slug: 'hash-lab', title: 'Hash lab' },
