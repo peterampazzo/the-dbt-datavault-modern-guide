@@ -9,6 +9,7 @@ import { EMAIL_HASHDIFFS } from '@/lib/primer/email-hashdiffs'
 import { PRIMER } from '@/lib/primer/project'
 import { cn } from '@/lib/utils'
 import { SlimCiDrawing } from '@/components/drawing/SlimCiDrawing'
+import { TargetsDrawing } from '@/components/drawing/TargetsDrawing'
 
 const CHANGE_STEPS = [
   {
@@ -274,6 +275,7 @@ export default function ModernWay() {
         lead={<>The dev, ci and prod <Term id="target">targets</Term> separate output locations and deployment responsibilities. Compare them.</>}
         keyPoint="The target changes the connection and output location; it does not change the model's business rules."
       >
+        <TargetsDrawing />
         <Targets />
         <P className="mx-auto mt-6">See how dbt connects to a profile in the <Link className="text-sky-700 underline dark:text-sky-400" to="/dbt-primer/profiles-yml-how-dbt-connects">Primer’s profiles.yml page</Link>.</P>
       </Section>

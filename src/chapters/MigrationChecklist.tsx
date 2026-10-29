@@ -3,6 +3,7 @@ import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { MIGRATION_ITEMS, resetMigrationChecklist, setMigrationItem, useMigrationChecklist } from '@/lib/migration'
+import { MigrationPathDrawing } from '@/components/drawing/MigrationPathDrawing'
 
 function ChecklistItems({ start, end, checked }: { start: number; end: number; checked: boolean[] }) {
   return (
@@ -49,6 +50,7 @@ export default function MigrationChecklist() {
         <ChecklistItems start={0} end={4} checked={checked} />
       </Section>
       <Section title="Replay, reconcile, then cut over" lead="The last four gates cover a comparison window and a rollback plan." keyPoint="Cut over only after the parallel result reconciles and the rebuild path is known.">
+        <MigrationPathDrawing />
         <ChecklistItems start={4} end={MIGRATION_ITEMS.length} checked={checked} />
       </Section>
     </Chapter>

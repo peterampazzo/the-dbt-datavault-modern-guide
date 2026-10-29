@@ -5,6 +5,8 @@ import { CodeBlock } from '@/components/CodeBlock'
 import { DataTable } from '@/components/DataTable'
 import { Callout, ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
+import { BusinessVaultMartsDrawing } from '@/components/drawing/BusinessVaultMartsDrawing'
+import { PrecedenceMergeDrawing } from '@/components/drawing/PrecedenceMergeDrawing'
 import { integratedCustomer, isGhost, orderTotals, pit, shopCustomerSatellite, simulate, type CustomerPrecedence, type Row } from '@/lib/dv/engine'
 import { MODEL, SNIPPETS } from '@/lib/dv/models'
 
@@ -237,6 +239,8 @@ export default function BusinessVault() {
       />
 
       <Section title="Business vault vs marts" lead="The business vault keeps reusable, auditable rules. Each mart serves a particular audience and question." keyPoint="Reusable rules stay keyed by vault keys; marts serve a specific question.">
+        <BusinessVaultMartsDrawing />
+        <PrecedenceMergeDrawing />
         <div className="overflow-auto rounded-xl border" tabIndex={0} aria-label="Business vault and mart comparison">
           <table className="w-full min-w-[36rem] border-collapse text-sm">
             <thead><tr className="bg-muted/60"><th className="px-3 py-2 text-left">Business vault</th><th className="px-3 py-2 text-left">Mart</th></tr></thead>

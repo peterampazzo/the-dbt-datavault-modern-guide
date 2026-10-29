@@ -64,6 +64,7 @@ function timelineRow({
   xs,
   labels,
   markers,
+  note,
 }: {
   y: number
   label: string
@@ -71,10 +72,11 @@ function timelineRow({
   xs: number[]
   labels: string[]
   markers: number[]
+  note?: string
 }) {
   return (
     <g>
-      <Card x={12} y={y} w={776} h={62} tone="ink" />
+      <Card x={12} y={y} w={776} h={note ? 94 : 62} tone="ink" />
       <Mono x={26} y={y + 24} size={11} bold>{label}</Mono>
       <Small x={26} y={y + 44} size={9}>{subtitle}</Small>
       <Line d={`M${xs[0]} ${y + 28} H${xs[xs.length - 1]}`} />
@@ -84,6 +86,7 @@ function timelineRow({
           <Small x={xs[index]} y={y + 51} anchor="middle" size={9}>{labels[item]}</Small>
         </g>
       ))}
+      {note && <Small x={xs[1]} y={y + 81} anchor="middle" size={9}>{note}</Small>}
     </g>
   )
 }
@@ -150,8 +153,8 @@ const wide = (
       xs: wideXs,
       markers: DANIEL_EVENTS.map((row) => eventIndex(row.ldts)),
       labels: DANIEL_EVENTS.map((row) => String(row.ldts).slice(5, 10)),
+      note: 'no Daniel observation',
     })}
-    <Small x={wideXs[1]} y={418} anchor="middle" size={9}>no Daniel observation in this delivery</Small>
   </>
 )
 
@@ -162,6 +165,7 @@ function narrowRow({
   xs,
   markers,
   labels,
+  note,
 }: {
   y: number
   title: string
@@ -169,10 +173,11 @@ function narrowRow({
   xs: number[]
   markers: number[]
   labels: string[]
+  note?: string
 }) {
   return (
     <g>
-      <Card x={10} y={y} w={340} h={82} tone="ink" />
+      <Card x={10} y={y} w={340} h={note ? 104 : 82} tone="ink" />
       <Mono x={20} y={y + 20} size={10} bold>{title}</Mono>
       <Small x={20} y={y + 37} size={9}>{detail}</Small>
       <Line d={`M${xs[0]} ${y + 51} H${xs[xs.length - 1]}`} />
@@ -182,6 +187,7 @@ function narrowRow({
           <Small x={xs[index]} y={y + 72} anchor="middle" size={8}>{labels[item]}</Small>
         </g>
       ))}
+      {note && <Small x={xs[1]} y={y + 97} anchor="middle" size={8}>{note}</Small>}
     </g>
   )
 }
@@ -250,8 +256,8 @@ const narrow = (
       xs: narrowXs,
       markers: DANIEL_EVENTS.map((row) => eventIndex(row.ldts)),
       labels: DANIEL_EVENTS.map((row) => String(row.ldts).slice(5, 10)),
+      note: 'no Daniel observation',
     })}
-    <Small x={narrowXs[1]} y={514} anchor="middle" size={8}>no Daniel observation</Small>
   </>
 )
 

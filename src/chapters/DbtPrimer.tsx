@@ -7,6 +7,7 @@ import type { PrimerResultColumn, PrimerResultRow } from '@/components/PrimerRes
 import { SqlServerNote } from '@/components/SqlServerNote'
 import { MaterializationsDrawing } from '@/components/drawing/MaterializationsDrawing'
 import { HighWaterMarkDrawing } from '@/components/drawing/HighWaterMarkDrawing'
+import { JinjaCompileDrawing } from '@/components/drawing/JinjaCompileDrawing'
 import { Callout, ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Term } from '@/components/Term'
 import { MODEL } from '@/lib/dv/models'
@@ -786,6 +787,7 @@ export default function DbtPrimer() {
         title="Jinja and compile"
         lead="A reusable Jinja macro compiles into a SQL expression. Switch between the macro and its compiled form."
       >
+        <JinjaCompileDrawing />
         <JinjaCompile />
         <PrimerFooter
           keyPoint="Jinja builds SQL before execution; dbt compile lets you inspect the resulting SQL."

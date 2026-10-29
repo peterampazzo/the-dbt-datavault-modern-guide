@@ -5,6 +5,7 @@ import { Plus, X } from 'lucide-react'
 import { ChapterHeader, Section, P, Callout, Code } from '@/components/Prose'
 import { HashdiffDrawing } from '@/components/drawing/HashdiffDrawing'
 import { GhostKeysDrawing } from '@/components/drawing/GhostKeysDrawing'
+import { HashPipelineDrawing } from '@/components/drawing/HashPipelineDrawing'
 import { Button } from '@/components/ui/button'
 import { dvHash, type HashAlg, type HashKind } from '@/lib/dv/hash'
 import { cn } from '@/lib/utils'
@@ -201,6 +202,7 @@ export default function HashLab() {
           This is the same standardisation datavault4dbt applies with its default settings: cast to string, trim, replace NULL with <Code>^^</Code>, quote, join with{' '}
           <Code>||</Code>, upper-case for hashkeys only, then MD5. Edit the inputs and watch each step update.
         </P>
+        <HashPipelineDrawing />
         <Lab />
       </Section>
       <Section

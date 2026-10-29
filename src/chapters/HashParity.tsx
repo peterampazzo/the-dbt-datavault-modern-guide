@@ -9,6 +9,7 @@ import { BATCHES, CUSTOMERS, ORDERS } from '@/lib/dv/dataset'
 import { dvHash, type Value } from '@/lib/dv/hash'
 import { legacyHash } from '@/lib/legacy/parity'
 import { LEGACY_CUSTOMER_HUB, LEGACY_CUSTOMER_SAT, seedFromLegacy } from '@/lib/legacy/history'
+import { KeyMapDrawing } from '@/components/drawing/KeyMapDrawing'
 
 type LabSettings = {
   encoding: 'utf8' | 'utf16le'
@@ -178,6 +179,7 @@ export default function HashParity() {
 
       <Section title="Old → new key map and reconciliation">
         <P>The sample legacy vault is derived from batches 1–2 of the simulation. The seed joins each satellite to its hub, recomputes the default hk/hashdiff, and drops <code>LoadEndDate</code>; <code>sat_v1</code> rebuilds the end dates when needed.</P>
+        <KeyMapDrawing />
         <DataTable title="Legacy hash → business key → new hash" tone="hub" rows={seeded.keyMap.map((row) => ({ legacy_hash: row.legacyHashKey, c_custkey: row.customerNumber, new_hash: row.newHashKey }))} />
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(seeded.reconciliation).map(([label, value]) => <div key={label} className="rounded-lg border bg-card/50 p-3"><div className="text-xs text-muted-foreground">{RECONCILIATION_LABEL[label] ?? label}</div><div className="mt-1 font-mono text-lg">{value}</div></div>)}
