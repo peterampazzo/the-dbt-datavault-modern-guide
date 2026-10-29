@@ -3,6 +3,7 @@ import { Drawing, Card, Line, Mono, Small } from './kit'
 
 const TITLE = 'A Jinja template becomes compiled SQL before execution'
 const DESC = `The ${PRIMER.round_amount_macro.path} macro is called by a model and compiled into SQL for inspection.`
+const COMPILED_FILE = PRIMER.compiled_round_amount.path.split('/').at(-1)!
 const wide = (
   <>
     <Card x={20} y={24} w={235} h={100} tone="stage" />
@@ -20,7 +21,7 @@ const wide = (
 )
 const narrow = (
   <>
-    {[['Template', PRIMER.round_amount_macro.path, 'stage'], ['Compile', 'dbt compile', 'link'], ['Output', PRIMER.compiled_round_amount.path, 'hub']].map(([label, value, tone], i) => (
+    {[['Template', PRIMER.round_amount_macro.path, 'stage'], ['Compile', 'dbt compile', 'link'], ['Output', COMPILED_FILE, 'hub']].map(([label, value, tone], i) => (
       <g key={label}>
         <Card x={20} y={i * 106 + 10} w={320} h={76} tone={tone as 'stage' | 'link' | 'hub'} />
         <Mono x={36} y={i * 106 + 39} bold>{label}</Mono>
@@ -31,5 +32,5 @@ const narrow = (
   </>
 )
 export function JinjaCompileDrawing() {
-  return <Drawing id="jinja-compile" title={TITLE} desc={DESC} wide={{ viewBox: '0 0 800 145', content: wide }} narrow={{ viewBox: '0 0 360 240', content: narrow }} />
+  return <Drawing id="jinja-compile" title={TITLE} desc={DESC} wide={{ viewBox: '0 0 800 145', content: wide }} narrow={{ viewBox: '0 0 360 312', content: narrow }} />
 }

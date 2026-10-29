@@ -19,7 +19,7 @@ const chip: Record<Kind, string> = {
   bk: 'border-sky-500/50 bg-sky-500/15 text-sky-800 dark:text-sky-300',
   fk: 'border-emerald-500/50 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300',
   attr: 'border-amber-500/50 bg-amber-500/15 text-amber-800 dark:text-amber-200',
-  meta: 'border-border bg-muted/60 text-muted-foreground',
+  meta: 'border-border bg-muted text-foreground',
 }
 
 function Col({ name, kind, id }: { name: string; kind: Kind; id: string }) {
