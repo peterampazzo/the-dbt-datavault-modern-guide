@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
-import { CHAPTERS, PARTS } from '@/books/datavault/chapters'
+import { useBook } from '@/lib/book'
 import { useLocation } from 'react-router'
 
 export function ChapterHeader({ title, lead }: { title: ReactNode; lead: ReactNode }) {
   const { pathname } = useLocation()
   const slug = pathname.split('/').filter(Boolean)[0]
+  const { chapters: CHAPTERS, parts: PARTS } = useBook()
   const n = CHAPTERS.findIndex((chapter) => chapter.slug === slug) + 1
   const chapter = CHAPTERS[n - 1]
   const part = PARTS.find((entry) => entry.n === chapter.part)

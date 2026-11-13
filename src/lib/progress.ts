@@ -7,7 +7,7 @@ export type Progress = {
   state: Record<string, unknown>
 }
 
-const KEY = 'dv-guide-progress'
+let KEY = 'dv-guide-progress'
 const EMPTY: Progress = { done: [], state: {} }
 const listeners = new Set<() => void>()
 
@@ -21,6 +21,13 @@ function read(): Progress {
 }
 
 let cache: Progress = read()
+
+/** Each book keeps its own progress; only one book is open at a time. */
+export function selectProgress(key: string) {
+  if (key === KEY) return
+  KEY = key
+  cache = read()
+}
 
 function write(next: Progress) {
   cache = next

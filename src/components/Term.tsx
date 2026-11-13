@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
 import { Popover } from '@base-ui/react/popover'
 import { Link } from 'react-router'
-import { CHAPTERS } from '@/books/datavault/chapters'
-import { GLOSSARY, type GlossaryId } from '@/books/datavault/lib/glossary'
+import { useBook } from '@/lib/book'
 
-export function Term({ id, children }: { id: GlossaryId; children?: ReactNode }) {
-  const entry = GLOSSARY.find((item) => item.id === id)!
-  const chapter = CHAPTERS.find((item) => item.slug === entry.chapter)!
+export function Term({ id, children }: { id: string; children?: ReactNode }) {
+  const book = useBook()
+  const entry = book.glossary.find((item) => item.id === id)!
+  const chapter = book.chapters.find((item) => item.slug === entry.chapter)!
 
   return (
     <Popover.Root>
