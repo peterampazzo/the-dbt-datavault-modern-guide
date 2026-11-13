@@ -4,18 +4,11 @@ import { ArrowRight, BookOpen, Moon, ScrollText, Sun, Check, List, X } from 'luc
 import { motion } from 'motion/react'
 import { CHAPTERS, PARTS } from '@/books/datavault/chapters'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/lib/theme'
 import { Button } from '@/components/ui/button'
 import { setLast, useProgress } from '@/lib/progress'
 import { getOptionalRefresherSlugs, setReadingMode, usePages, useReadingMode, useReadingPath } from '@/lib/reading'
 
-function useTheme() {
-  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark)
-    localStorage.setItem('theme', dark ? 'dark' : 'light')
-  }, [dark])
-  return [dark, setDark] as const
-}
 
 export function Logo() {
   return (

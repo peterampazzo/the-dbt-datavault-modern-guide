@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { motion } from 'motion/react'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
 import { CHAPTERS, PARTS } from '@/books/datavault/chapters'
 import { Decomposition } from '@/components/Decomposition'
 import { Button } from '@/components/ui/button'
@@ -61,6 +61,9 @@ export function Home() {
   return (
     <div className="mx-auto max-w-[40rem]">
       <section aria-labelledby="home-title" className="py-6">
+        <a href="#/" className="mb-4 inline-flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline">
+          <ArrowLeft aria-hidden className="size-4" /> All books
+        </a>
         <motion.h1
           id="home-title"
           initial={{ opacity: 0, y: 12 }}

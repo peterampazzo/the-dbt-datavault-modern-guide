@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { CHAPTERS } from '@/books/datavault/chapters'
-import { bookRedirect } from './books'
+import { bookOf, bookRedirect } from './books'
 
 describe('bookRedirect', () => {
-  it('sends the old home page to the Data Vault book', () => {
-    expect(bookRedirect('')).toBe('/datavault')
-    expect(bookRedirect('/')).toBe('/datavault')
+  it('leaves the bookshelf at the root', () => {
+    expect(bookRedirect('')).toBeUndefined()
+    expect(bookRedirect('/')).toBeUndefined()
   })
 
   it('keeps every old chapter link working, with its page and query', () => {
@@ -18,5 +18,15 @@ describe('bookRedirect', () => {
     expect(bookRedirect('/datavault')).toBeUndefined()
     expect(bookRedirect('/datavault/replay/recap')).toBeUndefined()
     expect(bookRedirect('/datavault?x=1')).toBeUndefined()
+  })
+})
+
+describe('bookOf', () => {
+  it('reads the book from the first path segment', () => {
+    expect(bookOf('/datavault/replay')).toBe('datavault')
+    expect(bookOf('/datavault?x=1')).toBe('datavault')
+    expect(bookOf('/')).toBeUndefined()
+    expect(bookOf('')).toBeUndefined()
+    expect(bookOf('/datavaults')).toBeUndefined()
   })
 })

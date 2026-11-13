@@ -1,12 +1,17 @@
 export const BOOKS = ['datavault'] as const
 export type BookSlug = (typeof BOOKS)[number]
 
+/** The book a hash path belongs to, or undefined for the bookshelf. */
+export function bookOf(hashPath: string): BookSlug | undefined {
+  const first = hashPath.replace(/^\//, '').split(/[/?]/)[0]
+  return BOOKS.find((book) => book === first)
+}
+
 /** Links from before the bookshelf (`#/replay`) point into the Data Vault book (`#/datavault/replay`). */
 export function bookRedirect(hashPath: string): string | undefined {
   const path = hashPath.startsWith('/') ? hashPath : `/${hashPath}`
-  const first = path.split(/[/?]/)[1]
-  if ((BOOKS as readonly string[]).includes(first)) return undefined
-  return `/datavault${path === '/' ? '' : path}`
+  if (path === '/' || bookOf(path)) return undefined
+  return `/datavault${path}`
 }
 
 export function redirectLegacyHash() {
