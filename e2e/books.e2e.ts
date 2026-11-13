@@ -37,7 +37,7 @@ test('the bookshelf opens Foundations, a book of its own', async ({ page }) => {
   await expect(page.getByRole('banner').getByText('Foundations', { exact: true })).toBeVisible()
   await page.getByRole('link', { name: /Start: Where am I\?/ }).click()
   await expect(page).toHaveURL(/#\/foundations\/where-am-i$/)
-  await expect(page.getByText('Chapter 1 of 1 · Part 1: The terminal')).toBeVisible()
+  await expect(page.getByText('Chapter 1 of 2 · Part 1: The terminal')).toBeVisible()
 })
 
 test('Foundations keeps its own progress, apart from the Data Vault book', async ({ page }) => {
@@ -61,7 +61,24 @@ test('the Foundations practice terminal runs commands in the browser', async ({ 
   await expect(page.getByText('/home/student/orders-report', { exact: true }).first()).toBeVisible()
 })
 
-for (const path of ['/#/foundations/', '/#/foundations/where-am-i/the-prompt']) {
+test('Running a program: exit codes, && and the approval exercise', async ({ page }) => {
+  await page.goto('/#/foundations/running-a-program/did-it-work')
+  const terminal = page.getByRole('textbox').first()
+  for (const line of ['python3 nope.py', 'echo $?']) {
+    await terminal.fill(line)
+    await terminal.press('Enter')
+  }
+  await expect(page.locator('pre').getByText('2', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('Done: Run something that fails, then print its exit code.')).toBeAttached()
+
+  await page.goto('/#/foundations/running-a-program/approve-or-not')
+  await page.getByRole('group', { name: 'Your call on rm -rf data' }).getByRole('button', { name: 'Look closer first' }).click()
+  await expect(page.getByText('Good call.')).toBeVisible()
+  await page.getByRole('group', { name: 'Your call on python3 -m pytest tests' }).getByRole('button', { name: 'Look closer first' }).click()
+  await expect(page.getByText('This one is fine to run.')).toBeVisible()
+})
+
+for (const path of ['/#/foundations/', '/#/foundations/where-am-i/the-prompt', '/#/foundations/running-a-program/press-enter', '/#/foundations/running-a-program/approve-or-not']) {
   for (const theme of ['dark', 'light'] as const) {
     test(`${path} passes WCAG 2.2 AA (${theme})`, async ({ page }) => {
       await page.addInitScript((t) => localStorage.setItem('theme', t), theme)
@@ -74,7 +91,7 @@ for (const path of ['/#/foundations/', '/#/foundations/where-am-i/the-prompt']) 
 }
 
 for (const width of [320, 390, 1280]) {
-  for (const path of ['/#/foundations/', '/#/foundations/where-am-i/move-around']) {
+  for (const path of ['/#/foundations/', '/#/foundations/where-am-i/move-around', '/#/foundations/running-a-program/press-enter']) {
     test(`${path} has no horizontal overflow @${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 700 })
       await page.goto(path)

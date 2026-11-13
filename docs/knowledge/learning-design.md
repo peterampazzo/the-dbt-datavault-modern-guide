@@ -36,6 +36,7 @@ Each rule gives Do, Don't, Why and Source.
    - Do: render content visible, and animate only after it is on screen.
    - Don't: use `initial={{ opacity: 0 }}` with `whileInView` for prose, sections or cards. On short viewports the reveal can fail to fire. That bug hid the PIT slider section on phones.
    - Why: hidden content is a HIGH-severity issue.
+   - Exception: Foundations "Go deeper" blocks (`Deeper`) are collapsed `<details>` with a labelled summary. They hold optional detail for technical readers only; the core page must make sense without them.
    - Source: jakubkrehel/skills `better-interface`.
 2. **Respect reduced motion.**
    - Do: keep `<MotionConfig reducedMotion="user">` at the root, and use `motion-safe:` for Tailwind animations.
