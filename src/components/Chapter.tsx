@@ -2,7 +2,7 @@ import { Children, cloneElement, isValidElement, useCallback, useEffect, useMemo
 import { Link, useLocation, useNavigate } from 'react-router'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { motion } from 'motion/react'
-import { CHAPTERS, type Audience } from '@/books/datavault/chapters'
+import { useBook } from '@/lib/book'
 import { ChapterHeader, RecapExtras, Section, slugify } from '@/components/Prose'
 import { QuickCheck } from '@/components/QuickCheck'
 import { markDone, setLast } from '@/lib/progress'
@@ -36,23 +36,19 @@ function split(children: ReactNode, fallback: string) {
   return { header, pages, extras }
 }
 
-const audienceText: Record<Audience, string> = {
-  essential: 'Essential',
-  'skim-if-dv': 'Skim if you know Data Vault',
-  practitioner: 'For Data Vault practitioners',
-}
-
 export function Chapter({ children }: { children: ReactNode }) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const mode = useReadingMode()
   const path = useReadingPath()
+  const book = useBook()
+  const { chapters: CHAPTERS, audience: audienceText } = book
   const [slug, seg] = pathname.split('/').filter(Boolean)
   const chapterIndex = Math.max(0, CHAPTERS.findIndex((c) => c.slug === slug))
   const chapter = CHAPTERS[chapterIndex]
   const n = chapterIndex + 1
-  const previousSlug = getPreviousPathChapter(chapter.slug, path)
-  const nextSlug = getNextPathChapter(chapter.slug, path)
+  const previousSlug = getPreviousPathChapter(book, chapter.slug, path)
+  const nextSlug = getNextPathChapter(book, chapter.slug, path)
   const previousChapter = CHAPTERS.find((c) => c.slug === previousSlug)
   const nextChapter = CHAPTERS.find((c) => c.slug === nextSlug)
 

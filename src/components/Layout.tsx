@@ -2,7 +2,7 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { ArrowRight, BookOpen, Moon, ScrollText, Sun, Check, List, X } from 'lucide-react'
 import { motion } from 'motion/react'
-import { CHAPTERS, PARTS } from '@/books/datavault/chapters'
+import { useBook } from '@/lib/book'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/lib/theme'
 import { Button } from '@/components/ui/button'
@@ -65,13 +65,15 @@ export function Layout() {
   const { pathname, search } = useLocation()
   const navigate = useNavigate()
   const [slug, pageSeg] = pathname.split('/').filter(Boolean)
+  const book = useBook()
+  const { chapters: CHAPTERS, parts: PARTS } = book
   const idx = CHAPTERS.findIndex((c) => c.slug === slug)
   const chapter = idx >= 0 ? CHAPTERS[idx] : null
   const progress = useProgress()
   const doneCount = CHAPTERS.filter((c) => progress.done.includes(c.slug)).length
   const mode = useReadingMode()
   const readingPath = useReadingPath()
-  const refresherSlugs = new Set(getOptionalRefresherSlugs(readingPath))
+  const refresherSlugs = new Set(getOptionalRefresherSlugs(book, readingPath))
   const { sections, active } = useSections(pathname)
   const published = usePages()
   const chapterPages = chapter && published.slug === chapter.slug ? published.pages : []
@@ -116,9 +118,9 @@ export function Layout() {
         <div className="mx-auto flex h-14 w-full max-w-[90rem] items-center gap-3 px-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
             <Logo />
-            <span className="sr-only sm:not-sr-only">The dbt + Data Vault guide</span>
+            <span className="sr-only sm:not-sr-only">{book.title}</span>
           </Link>
-          <Link to="/about" className="inline-flex min-h-11 items-center rounded-md px-2 text-sm font-medium hover:bg-muted">About</Link>
+          {book.hasAbout && <Link to="/about" className="inline-flex min-h-11 items-center rounded-md px-2 text-sm font-medium hover:bg-muted">About</Link>}
           <Button variant="ghost" className="min-h-11" aria-haspopup="dialog" onClick={openContents}>
             <List aria-hidden /> Contents
           </Button>
@@ -149,7 +151,7 @@ export function Layout() {
               {dark ? <Sun /> : <Moon />}
             </Button>
             <a
-              href="https://github.com/peterampazzo/the-dbt-datavault-modern-guide"
+              href={book.repoUrl}
               aria-label="GitHub"
               className="inline-flex size-9 items-center justify-center rounded-md hover:bg-muted"
             >
@@ -251,24 +253,12 @@ export function Layout() {
               </section>
             )
           })}
-          <div className="mt-8 space-y-1.5 px-2 text-xs text-muted-foreground">
-            <div className="font-medium">Legend</div>
-            {[
-              ['bg-sky-500', 'Hub', '_h'],
-              ['bg-emerald-500', 'Link', '_l'],
-              ['bg-amber-500', 'Satellite', '_s'],
-              ['bg-violet-500', 'Business vault', '_pit, _sn'],
-            ].map(([c, l, suffix]) => (
-              <div key={l} className="flex items-center gap-2">
-                <span className={cn('size-2.5 rounded-sm', c)} /> {l}
-                <span className="font-mono text-[10px] text-muted-foreground/80">{suffix}</span>
-              </div>
-            ))}
-          </div>
+          {book.legend}
           <nav aria-label="Guide resources" className="mt-8 border-t px-2 pt-4">
             <ul className="space-y-1">
-              <li><Link to="/glossary" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">Glossary</Link></li>
-              <li><Link to="/about" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">About this guide</Link></li>
+              <li><a href="#/" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">All books</a></li>
+              {book.glossary.length > 0 && <li><Link to="/glossary" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">Glossary</Link></li>}
+              {book.hasAbout && <li><Link to="/about" className="inline-flex min-h-11 items-center text-sm hover:text-foreground">About this guide</Link></li>}
             </ul>
           </nav>
         </dialog>
@@ -285,8 +275,9 @@ export function Layout() {
           )}
           <footer className="mx-auto mt-12 max-w-[40rem] border-t pt-5">
             <nav aria-label="Guide information" className="flex flex-wrap gap-4 text-sm">
-              <Link to="/about" className="inline-flex min-h-11 items-center underline underline-offset-4">About this guide</Link>
-              <Link to="/glossary" className="inline-flex min-h-11 items-center underline underline-offset-4">Glossary</Link>
+              <a href="#/" className="inline-flex min-h-11 items-center underline underline-offset-4">All books</a>
+              {book.hasAbout && <Link to="/about" className="inline-flex min-h-11 items-center underline underline-offset-4">About this guide</Link>}
+              {book.glossary.length > 0 && <Link to="/glossary" className="inline-flex min-h-11 items-center underline underline-offset-4">Glossary</Link>}
             </nav>
           </footer>
         </main>

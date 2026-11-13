@@ -13,6 +13,7 @@ const SHELF: ShelfBook[] = [
   {
     title: 'Foundations: shipping code in the age of AI tools',
     summary: 'What tools like Claude Code, Codex and Lovable do under the hood, and how to handle the code they write: the terminal, git, reproducible setup, CI and troubleshooting.',
+    href: '#/foundations',
   },
 ]
 

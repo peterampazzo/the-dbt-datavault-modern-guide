@@ -1,4 +1,4 @@
-export const BOOKS = ['datavault'] as const
+export const BOOKS = ['datavault', 'foundations'] as const
 export type BookSlug = (typeof BOOKS)[number]
 
 /** The book a hash path belongs to, or undefined for the bookshelf. */

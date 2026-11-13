@@ -5,6 +5,7 @@ import { CHAPTERS, PARTS } from '@/books/datavault/chapters'
 import { Decomposition } from '@/components/Decomposition'
 import { Button } from '@/components/ui/button'
 import { resetProgress, useProgress } from '@/lib/progress'
+import { DATAVAULT } from '@/books/datavault/book'
 import { getFirstPathChapter, setReadingPath, usePages, useReadingPath, type ReadingPath } from '@/lib/reading'
 
 const blurbs: Record<string, string> = {
@@ -121,7 +122,7 @@ export function Home() {
               </Button>
               <p className="mt-2 font-serif text-lg leading-7 text-foreground/90">{path.description}</p>
               <Link
-                to={`/${getFirstPathChapter(path.id)}`}
+                to={`/${getFirstPathChapter(DATAVAULT, path.id)}`}
                 aria-label={`Start this path: ${path.title}`}
                 onClick={() => setReadingPath(path.id)}
                 className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-sky-700 hover:underline dark:text-sky-400"

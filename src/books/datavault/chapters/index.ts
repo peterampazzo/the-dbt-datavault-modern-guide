@@ -1,7 +1,9 @@
 import { lazy } from 'react'
 
 export type Audience = 'essential' | 'skim-if-dv' | 'practitioner'
-export type ChapterQuiz = { q: string; options: string[]; answer: number; why: string }
+import type { ChapterQuiz } from '@/lib/book'
+
+export type { ChapterQuiz }
 
 type ChapterDefinition = {
   slug: string

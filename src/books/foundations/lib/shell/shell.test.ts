@@ -1,0 +1,86 @@
+import { describe, expect, it } from 'vitest'
+import { HOME, PROJECT, display, resolve } from './fs'
+import { complete, createShell, prompt, run, type ShellState } from './shell'
+
+const go = (state: ShellState, ...lines: string[]) => lines.reduce(run, state)
+const last = (state: ShellState) => state.entries[state.entries.length - 1]
+
+describe('practice shell', () => {
+  it('resolves relative, absolute and home paths', () => {
+    expect(resolve(PROJECT, 'data')).toBe(`${PROJECT}/data`)
+    expect(resolve(`${PROJECT}/data`, '..')).toBe(PROJECT)
+    expect(resolve('/usr', '~/orders-report/./data')).toBe(`${PROJECT}/data`)
+    expect(resolve(PROJECT, '/home/student')).toBe(HOME)
+    expect(display(`${PROJECT}/data`)).toBe('~/orders-report/data')
+    expect(prompt(PROJECT)).toBe('student@laptop:~/orders-report$')
+  })
+
+  it('prints the working directory and lists folders like ls in a UTF-8 locale', () => {
+    const s = go(createShell(PROJECT), 'pwd', 'ls', 'ls data')
+    expect(s.entries.map((e) => e.output)).toEqual([PROJECT, 'data  README.md  report.py  report.R  tests', 'customer.csv  nation.csv  orders.csv'])
+  })
+
+  it('moves with cd and records the move for the drawing', () => {
+    const s = go(createShell(PROJECT), 'cd data', 'pwd', 'cd ..')
+    expect(s.entries[1].output).toBe(`${PROJECT}/data`)
+    expect(last(s).event).toEqual({ kind: 'cd', from: `${PROJECT}/data`, to: PROJECT })
+    expect(s.cwd).toBe(PROJECT)
+    expect(s.visited).toContain(`${PROJECT}/data`)
+  })
+
+  it('reads the dataset files', () => {
+    const s = go(createShell(PROJECT), 'head -n 3 data/orders.csv', 'wc -l data/orders.csv', 'wc -l data/nation.csv')
+    expect(s.entries[0].output).toBe('o_orderkey,o_custkey,o_orderdate,o_totalprice\n101,1,2023-12-30,250\n102,3,2023-12-31,1800')
+    expect(s.entries[1].output).toBe('7 data/orders.csv')
+    expect(s.entries[2].output).toBe('7 data/nation.csv')
+  })
+
+  it('gives bash-style errors and points at the real file', () => {
+    const s = go(createShell(PROJECT), 'cd Data')
+    expect(last(s).output).toBe('bash: cd: Data: No such file or directory')
+    expect(last(s).event).toEqual({ kind: 'missing', looked: `${PROJECT}/Data`, actual: `${PROJECT}/data` })
+
+    const inData = go(createShell(`${PROJECT}/data`), 'cat data/orders.csv')
+    expect(last(inData).output).toBe('cat: data/orders.csv: No such file or directory')
+    expect(last(inData).event).toMatchObject({ kind: 'missing', actual: `${PROJECT}/data/orders.csv` })
+
+    const home = go(createShell(HOME), 'python3 report.py', 'Rscript report.R')
+    expect(home.entries[0].output).toBe("python3: can't open file '/home/student/report.py': [Errno 2] No such file or directory")
+    expect(home.entries[1].output).toBe("Fatal error: cannot open file 'report.R': No such file or directory")
+  })
+
+  it('runs the report from the project folder in Python and R', () => {
+    const s = go(createShell(PROJECT), 'python3 report.py', 'Rscript report.R')
+    expect(s.entries[0].ok).toBe(true)
+    expect(s.entries[0].output.split('\n')).toEqual([
+      'nation     orders   revenue',
+      'Brazil          1    310.00',
+      'Canada          1    420.00',
+      'France          2    310.00',
+      'Germany         1   1800.00',
+      'Japan           1     95.90',
+    ])
+    expect(s.entries[1].output.split('\n')[0]).toBe('  nation orders revenue')
+  })
+
+  it('fails the report when started from the wrong folder level', () => {
+    const s = go(createShell(`${PROJECT}/data`), 'python3 ../report.py')
+    expect(last(s).ok).toBe(false)
+    expect(last(s).output).toContain("No such file or directory: 'data/nation.csv'")
+  })
+
+  it('explains commands that come later and case mistakes', () => {
+    const s = go(createShell(PROJECT), 'grep x', 'LS', 'foo')
+    expect(s.entries[0].output).toContain('module 2')
+    expect(s.entries[1].output).toContain('try ls')
+    expect(s.entries[2].output).toBe('bash: foo: command not found')
+  })
+
+  it('completes names with Tab', () => {
+    expect(complete(PROJECT, 'cd da')).toBe('cd data/')
+    expect(complete(PROJECT, 'cat data/n')).toBe('cat data/nation.csv ')
+    expect(complete(PROJECT, 'cat rep')).toBe('cat report.')
+    expect(complete(PROJECT, 'cd D')).toBe('cd D')
+    expect(complete(PROJECT, 'pw')).toBe('pwd ')
+  })
+})

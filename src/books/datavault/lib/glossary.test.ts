@@ -18,7 +18,7 @@ describe('glossary and chapter quick checks', () => {
 
   it('defines every term id used in JSX', () => {
     const ids = new Set(GLOSSARY.map((entry) => entry.id))
-    const uses = sourceFiles(join(process.cwd(), 'src'))
+    const uses = sourceFiles(join(process.cwd(), 'src/books/datavault'))
       .flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/<Term\b[^>]*\bid=["']([^"']+)["']/g)])
       .map((match) => match[1])
     expect(uses.length).toBeGreaterThan(0)

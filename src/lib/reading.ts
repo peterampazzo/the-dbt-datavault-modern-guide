@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { CHAPTERS } from '@/books/datavault/chapters'
+import type { Book } from '@/lib/book'
 
 export type ReadingMode = 'paged' | 'scroll'
 export type ReadingPath = 'full' | 'dv-practitioner' | 'browse'
@@ -56,34 +56,37 @@ export function setReadingPath(next: ReadingPath) {
   notify()
 }
 
-export function getPathOrder(selected: ReadingPath): string[] {
-  if (selected === 'dv-practitioner') return ['dv-names', 'dbt-primer', 'dbt', 'load-player', 'replay', 'one-lake', 'modern-way', 'scheduling', 'from-sql-server', 'hash-parity', 'business-vault', 'migration-checklist']
-  return CHAPTERS.map((chapter) => chapter.slug)
+type PathBook = Pick<Book, 'chapters' | 'pathOrder'>
+
+const chapterOrder = (book: PathBook) => book.chapters.map((chapter) => chapter.slug)
+
+export function getPathOrder(book: PathBook, selected: ReadingPath): string[] {
+  return book.pathOrder ? [...book.pathOrder(selected)] : chapterOrder(book)
 }
 
-export function getOptionalRefresherSlugs(selected: ReadingPath): string[] {
-  if (selected !== 'dv-practitioner') return []
-  const recommended = new Set(getPathOrder(selected))
-  return CHAPTERS.map((chapter) => chapter.slug).filter((slug) => !recommended.has(slug))
+/** Chapters the selected path skips: listed as refreshers in the contents. */
+export function getOptionalRefresherSlugs(book: PathBook, selected: ReadingPath): string[] {
+  const recommended = new Set(getPathOrder(book, selected))
+  return chapterOrder(book).filter((slug) => !recommended.has(slug))
 }
 
-export function getFirstPathChapter(selected: ReadingPath) {
-  return getPathOrder(selected)[0]
+export function getFirstPathChapter(book: PathBook, selected: ReadingPath) {
+  return getPathOrder(book, selected)[0]
 }
 
-function getNavigationOrder(slug: string, selected: ReadingPath) {
-  const order = getPathOrder(selected)
-  return order.includes(slug) ? order : CHAPTERS.map((chapter) => chapter.slug)
+function getNavigationOrder(book: PathBook, slug: string, selected: ReadingPath) {
+  const order = getPathOrder(book, selected)
+  return order.includes(slug) ? order : chapterOrder(book)
 }
 
-export function getNextPathChapter(slug: string, selected: ReadingPath) {
-  const order = getNavigationOrder(slug, selected)
+export function getNextPathChapter(book: PathBook, slug: string, selected: ReadingPath) {
+  const order = getNavigationOrder(book, slug, selected)
   const index = order.indexOf(slug)
   return index >= 0 ? order[index + 1] : undefined
 }
 
-export function getPreviousPathChapter(slug: string, selected: ReadingPath) {
-  const order = getNavigationOrder(slug, selected)
+export function getPreviousPathChapter(book: PathBook, slug: string, selected: ReadingPath) {
+  const order = getNavigationOrder(book, slug, selected)
   const index = order.indexOf(slug)
   return index > 0 ? order[index - 1] : undefined
 }
