@@ -2,13 +2,13 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BATCHES, CUSTOMERS, NATIONS, ORDERS, PHONES } from '../src/lib/dv/dataset'
+import { BATCHES, CUSTOMERS, NATIONS, ORDERS, PHONES } from '../src/books/datavault/lib/dv/dataset'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const project = path.join(root, 'primer-dbt')
 const target = path.join(project, 'target')
 const database = path.join(project, 'primer.duckdb')
-const output = path.join(root, 'src/lib/primer/compiled.json')
+const output = path.join(root, 'src/books/datavault/lib/primer/compiled.json')
 
 type Step = {
   id: string

@@ -30,7 +30,7 @@ export async function open(page: Page, slug: string, { paged = false } = {}) {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text())
   })
-  await page.goto(`/#/${slug}`)
+  await page.goto(`/#/datavault/${slug}`)
   await expect(page.locator('main h1').first()).toBeVisible()
   return errors
 }

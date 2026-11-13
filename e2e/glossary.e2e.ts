@@ -20,12 +20,12 @@ test('glossary filtering narrows terms and About renders its sources and version
   await page.goto('/')
   await expect(page.getByRole('link', { name: 'Glossary', exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'About this guide' }).first()).toBeVisible()
-  await page.goto('/#/glossary')
+  await page.goto('/#/datavault/glossary')
   const filter = page.getByRole('searchbox', { name: 'Filter terms' })
   await filter.fill('precedence')
   await expect(page.locator('#precedence')).toBeVisible()
   await expect(page.locator('#hub')).toHaveCount(0)
-  await page.goto('/#/about')
+  await page.goto('/#/datavault/about')
   await expect(page.getByRole('heading', { name: 'About this guide' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Sources' })).toBeVisible()
   await expect(page.getByText(/dbt-core: 1\.11\.16/)).toBeVisible()
@@ -37,7 +37,7 @@ test('About and Glossary pass axe and fit a 320px viewport', async ({ page }, in
   const width = info.project.name === 'mobile' ? 320 : 1280
   await page.setViewportSize({ width, height: 800 })
   for (const [path, heading] of [['about', 'About this guide'], ['glossary', 'Glossary']] as const) {
-    await page.goto(`/#/${path}`)
+    await page.goto(`/#/datavault/${path}`)
     await expect(page.getByRole('heading', { name: heading })).toBeVisible()
     const { violations } = await new AxeBuilder({ page }).withTags(WCAG).analyze()
     expect(violations.map((violation) => violation.id)).toEqual([])

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CHAPTERS } from '@/chapters'
+import { CHAPTERS } from '@/books/datavault/chapters'
 import { getFirstPathChapter, getNextPathChapter, getPathOrder, getPreviousPathChapter } from './reading'
 
 describe('reading paths', () => {

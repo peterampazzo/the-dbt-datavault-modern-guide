@@ -1,15 +1,15 @@
 import { HashRouter, Route, Routes } from 'react-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Layout } from '@/components/Layout'
-import { Home } from '@/components/Home'
-import { AboutPage } from '@/components/AboutPage'
-import { GlossaryPage } from '@/components/GlossaryPage'
-import { CHAPTERS } from '@/chapters'
+import { Home } from '@/books/datavault/components/Home'
+import { AboutPage } from '@/books/datavault/components/AboutPage'
+import { GlossaryPage } from '@/books/datavault/components/GlossaryPage'
+import { CHAPTERS } from '@/books/datavault/chapters'
 
 export default function App() {
   return (
     <TooltipProvider>
-      <HashRouter>
+      <HashRouter basename="/datavault">
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Home />} />

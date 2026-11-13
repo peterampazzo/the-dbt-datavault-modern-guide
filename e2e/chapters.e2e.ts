@@ -4,7 +4,7 @@ import { open, ROUTES } from './helpers'
 test('every chapter opens from the home page with no errors', async ({ page }) => {
   const errors = await open(page, '')
   for (const r of ROUTES.slice(1)) {
-    await page.locator(`a[href="#/${r.slug}"]`).filter({ visible: true }).first().click()
+    await page.locator(`a[href="#/datavault/${r.slug}"]`).filter({ visible: true }).first().click()
     await expect(page.locator('main h1').first()).toHaveText(r.title)
   }
   expect(errors).toEqual([])
