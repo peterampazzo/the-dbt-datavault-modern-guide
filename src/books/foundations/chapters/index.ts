@@ -58,4 +58,43 @@ export const CHAPTERS = [
     ],
     Component: lazy(() => import('./WhereAmI')),
   },
+  {
+    slug: 'running-a-program',
+    title: 'Running a program',
+    short: 'Programs',
+    minutes: 10,
+    part: 1,
+    audience: 'core',
+    summary: [
+      'Pressing Enter splits the line, finds the program on PATH, runs it in your folder and gets back an exit code.',
+      'An exit code of 0 means it worked; anything else means it failed, and && stops at the first failure.',
+      'When an AI tool asks “Run this command?”, it is asking to start a program on your machine with your permissions.',
+    ],
+    recap: [
+      'which shows which program a name starts; command not found means no match on PATH.',
+      'echo $? prints the last exit code: 0 is success, anything else is a failure.',
+      'Approve commands that read or test; look closer at ones that delete, or download and run something.',
+    ],
+    quiz: [
+      {
+        q: 'A command prints a lot of text, then echo $? shows 1. Did it work?',
+        options: ['No: any exit code other than 0 is a failure', 'Yes: it printed output', 'You cannot tell from the exit code'],
+        answer: 0,
+        why: 'The exit code is the verdict. 0 means success, whatever the output looks like.',
+      },
+      {
+        q: 'What does python3 nope.py && echo done print if nope.py does not exist?',
+        options: ['Only the Python error', 'The error, then done', 'Only done'],
+        answer: 0,
+        why: 'python3 exits with 2, so && skips echo done.',
+      },
+      {
+        q: 'An AI tool asks to run rm -rf build. What do you do first?',
+        options: ['Check what is in build and whether you can get it back', 'Approve it, it is only cleaning up', 'Choose always allow for rm'],
+        answer: 0,
+        why: 'rm -rf deletes with no undo. Make sure the folder is what you think and that a copy exists.',
+      },
+    ],
+    Component: lazy(() => import('./RunningAProgram')),
+  },
 ] as const satisfies readonly ChapterDefinition[]

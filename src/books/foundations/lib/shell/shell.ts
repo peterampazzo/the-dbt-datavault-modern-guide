@@ -8,8 +8,11 @@ export type ShellEvent =
   | { kind: 'ran'; path: string }
   | { kind: 'none' }
 
-export type Entry = { cwd: string; input: string; output: string; ok: boolean; command: string; event: ShellEvent }
+/** `status` is the exit code: 0 means it worked, anything else means it failed. */
+export type Entry = { cwd: string; input: string; output: string; ok: boolean; command: string; event: ShellEvent; status?: number }
 export type ShellState = { cwd: string; entries: Entry[]; visited: string[] }
+
+export const PATH = '/usr/local/bin:/usr/bin:/bin'
 
 export const FS = createFs()
 
@@ -22,19 +25,19 @@ export function prompt(cwd: string) {
 }
 
 const LATER: Record<string, string> = {
-  grep: 'module 2',
-  sort: 'module 2',
-  uniq: 'module 2',
-  less: 'module 2',
-  tail: 'module 2',
-  echo: 'module 3',
-  which: 'module 3',
-  env: 'module 3',
-  export: 'module 3',
-  chmod: 'module 4',
-  git: 'module 5',
-  make: 'module 9',
-  docker: 'module 10',
+  grep: 'module 3',
+  sort: 'module 3',
+  uniq: 'module 3',
+  less: 'module 3',
+  tail: 'module 3',
+  env: 'module 9',
+  export: 'module 9',
+  chmod: 'a later module',
+  git: 'module 4',
+  make: 'module 7',
+  docker: 'a later module',
+  curl: 'a later module',
+  sh: 'a later module',
   mkdir: 'a later module',
   rm: 'a later module',
   mv: 'a later module',
@@ -53,13 +56,17 @@ const HELP = `Commands on this page:
   wc -l file        count lines
   python3 file      run a Python script
   Rscript file      run an R script
+  which program     show where a program lives
+  echo text         print text; echo $? prints the last exit code
+  a && b            run b only if a worked
   clear             clear the screen
 Tab completes names. Up and Down bring back earlier commands.`
 
-type Result = { output: string; ok: boolean; event: ShellEvent; cwd?: string }
+type Result = { output: string; ok: boolean; event: ShellEvent; cwd?: string; status?: number }
 
-const ok = (output: string, event: ShellEvent = { kind: 'none' }, cwd?: string): Result => ({ output, ok: true, event, cwd })
-const fail = (output: string, event: ShellEvent = { kind: 'none' }): Result => ({ output, ok: false, event })
+const ok = (output: string, event: ShellEvent = { kind: 'none' }, cwd?: string): Result => ({ output, ok: true, event, cwd, status: 0 })
+const fail = (output: string, event: ShellEvent = { kind: 'none' }, status = 1): Result => ({ output, ok: false, event, status })
+const notFound = (output: string): Result => fail(output, { kind: 'none' }, 127)
 
 function missing(path: string) {
   const name = split(path).at(-1) ?? ''
@@ -123,6 +130,7 @@ function report(cwd: string, program: 'python3' | 'Rscript', target: string | un
         ? `python3: can't open file '${path}': [Errno 2] No such file or directory`
         : `Fatal error: cannot open file '${target}': No such file or directory`,
       missing(path),
+      2,
     )
   }
   const csvAt = (name: string) => lookup(FS, resolve(cwd, `data/${name}`))
@@ -170,8 +178,17 @@ export function summarise(nationCsv: string, customerCsv: string, ordersCsv: str
   return [...totals].sort(([a], [b]) => a.localeCompare(b)).map(([nation, t]) => ({ nation, ...t }))
 }
 
-function execute(cwd: string, line: string): Result {
-  const [cmd, ...args] = tokenize(line)
+const PROGRAMS = ['python3', 'Rscript', 'pwd', 'ls', 'cat', 'head', 'wc', 'echo', 'which']
+const BUILTIN = ['cd', 'help', 'clear']
+
+function which(args: string[]): Result {
+  const found = args.filter((a) => PROGRAMS.includes(a))
+  const output = found.map((a) => `/usr/bin/${a}`).join('\n')
+  return found.length && found.length === args.length ? ok(output) : fail(output)
+}
+
+function execute(cwd: string, line: string, status: number): Result {
+  const [cmd, ...args] = tokenize(line).map((t) => (t === '$?' ? String(status) : t === '$PATH' ? PATH : t))
   switch (cmd) {
     case 'pwd':
       return ok(cwd)
@@ -217,18 +234,21 @@ function execute(cwd: string, line: string): Result {
       const words = r.content.split(/\s+/).filter(Boolean).length
       return ok(`  ${lines}  ${words} ${new TextEncoder().encode(r.content).length} ${target}`, { kind: 'read', path: r.path })
     }
+    case 'echo':
+      return ok(args.join(' '))
+    case 'which':
+      return which(args)
     case 'python':
-      return fail(`Command 'python' not found, did you mean:\n  command 'python3' from deb python3`)
+      return notFound(`Command 'python' not found, did you mean:\n  command 'python3' from deb python3`)
     case 'python3':
       return report(cwd, 'python3', args[0])
     case 'Rscript':
       return report(cwd, 'Rscript', args[0])
     default:
       if (cmd && LATER[cmd]) return fail(`${cmd} is a real command; it comes in ${LATER[cmd]}. Type help to see what works here.`)
-      if (cmd && LATER[cmd.toLowerCase()]) return fail(`bash: ${cmd}: command not found\nCommands are case sensitive: try ${cmd.toLowerCase()}`)
-      if (cmd && ['pwd', 'ls', 'cd', 'cat', 'head', 'wc', 'clear', 'help'].includes(cmd.toLowerCase()))
-        return fail(`bash: ${cmd}: command not found\nCommands are case sensitive: try ${cmd.toLowerCase()}`)
-      return fail(`bash: ${cmd}: command not found`)
+      if (cmd && (LATER[cmd.toLowerCase()] || [...PROGRAMS, ...BUILTIN].find((p) => p.toLowerCase() === cmd.toLowerCase() && p !== cmd)))
+        return notFound(`bash: ${cmd}: command not found\nCommands are case sensitive: try ${[...PROGRAMS, ...BUILTIN].find((p) => p.toLowerCase() === cmd.toLowerCase()) ?? cmd.toLowerCase()}`)
+      return notFound(`bash: ${cmd}: command not found`)
   }
 }
 
@@ -236,10 +256,26 @@ export function run(state: ShellState, line: string): ShellState {
   const input = line.trim()
   if (!input) return { ...state, entries: [...state.entries, { cwd: state.cwd, input: '', output: '', ok: true, command: '', event: { kind: 'none' } }] }
   if (input === 'clear') return { ...state, entries: [] }
-  const r = execute(state.cwd, input)
-  const cwd = r.cwd ?? state.cwd
-  const entry: Entry = { cwd: state.cwd, input, output: r.output, ok: r.ok, command: tokenize(input)[0], event: r.event }
+  let cwd = state.cwd
+  let status = lastStatus(state)
+  let r: Result = ok('')
+  const outputs: string[] = []
+  // `a && b`: each part runs only if the one before it exited with 0.
+  for (const part of input.split('&&').map((p) => p.trim())) {
+    r = part ? execute(cwd, part, status) : fail("bash: syntax error near unexpected token `&&'", { kind: 'none' }, 2)
+    if (r.output) outputs.push(r.output)
+    cwd = r.cwd ?? cwd
+    status = r.status ?? (r.ok ? 0 : 1)
+    if (status !== 0) break
+  }
+  const entry: Entry = { cwd: state.cwd, input, output: outputs.join('\n'), ok: status === 0, command: tokenize(input)[0], event: r.event, status }
   return { cwd, entries: [...state.entries, entry], visited: state.visited.includes(cwd) ? state.visited : [...state.visited, cwd] }
+}
+
+/** The exit code of the last command, as `$?` shows it. */
+export function lastStatus(state: ShellState) {
+  const e = [...state.entries].reverse().find((entry) => entry.input)
+  return e ? (e.status ?? (e.ok ? 0 : 1)) : 0
 }
 
 /** Complete the last word of the line against names in the folder it points to. */
@@ -248,7 +284,7 @@ export function complete(cwd: string, line: string): string {
   const word = match?.[1] ?? ''
   const head = line.slice(0, line.length - word.length)
   if (!head.trim()) {
-    const commands = ['pwd', 'ls', 'cd', 'cat', 'head', 'wc', 'python3', 'Rscript', 'clear', 'help'].filter((c) => c.startsWith(word))
+    const commands = ['pwd', 'ls', 'cd', 'cat', 'head', 'wc', 'python3', 'Rscript', 'which', 'echo', 'clear', 'help'].filter((c) => c.startsWith(word))
     return commands.length === 1 ? `${commands[0]} ` : line
   }
   const slash = word.lastIndexOf('/')

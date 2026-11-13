@@ -71,7 +71,7 @@ describe('practice shell', () => {
 
   it('explains commands that come later and case mistakes', () => {
     const s = go(createShell(PROJECT), 'grep x', 'LS', 'foo')
-    expect(s.entries[0].output).toContain('module 2')
+    expect(s.entries[0].output).toContain('module 3')
     expect(s.entries[1].output).toContain('try ls')
     expect(s.entries[2].output).toBe('bash: foo: command not found')
   })
@@ -83,4 +83,33 @@ describe('practice shell', () => {
     expect(complete(PROJECT, 'cd D')).toBe('cd D')
     expect(complete(PROJECT, 'pw')).toBe('pwd ')
   })
+
+  it('keeps the exit code of the last command for echo $?', () => {
+    const s = go(createShell(PROJECT), 'python3 report.py', 'echo $?', 'python3 nope.py', 'echo $?', 'pyhton3 report.py', 'echo $?')
+    expect(s.entries.map((e) => e.status)).toEqual([0, 0, 2, 0, 127, 0])
+    expect(s.entries.filter((e) => e.command === 'echo').map((e) => e.output)).toEqual(['0', '2', '127'])
+  })
+
+  it('finds programs on PATH with which', () => {
+    const s = go(createShell(PROJECT), 'which python3', 'which python', 'echo $PATH')
+    expect(s.entries.map((e) => [e.output, e.status])).toEqual([
+      ['/usr/bin/python3', 0],
+      ['', 1],
+      ['/usr/local/bin:/usr/bin:/bin', 0],
+    ])
+  })
+
+  it('runs the part after && only if the first part worked', () => {
+    const s = go(createShell(PROJECT), 'cd data && wc -l orders.csv', 'cd .. && python3 nope.py && echo done')
+    expect(s.entries[0].output).toBe('7 orders.csv')
+    expect(s.entries[0].status).toBe(0)
+    expect(s.entries[1].output).not.toContain('done')
+    expect(s.entries[1].status).toBe(2)
+    expect(s.cwd).toBe(PROJECT)
+  })
+
+  it('suggests the right case for a known program', () => {
+    expect(last(go(createShell(PROJECT), 'Python3 report.py')).output).toBe('bash: Python3: command not found\nCommands are case sensitive: try python3')
+  })
 })
+
