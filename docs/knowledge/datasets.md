@@ -1,6 +1,6 @@
 # The three datasets
 
-Fictional TPC-H-style data in three daily full loads (`BATCHES` in `src/lib/dv/dataset.ts`, `2024-01-01..03 06:00`).
+Fictional TPC-H-style data in three daily full loads (`BATCHES` in `src/books/datavault/lib/dv/dataset.ts`, `2024-01-01..03 06:00`).
 
 | Source | Columns | Vault |
 |---|---|---|

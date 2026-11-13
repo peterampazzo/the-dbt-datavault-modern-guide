@@ -1,7 +1,7 @@
 import { AxeBuilder } from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
-import { CUSTOMERS } from '../src/lib/dv/dataset'
-import { EMAIL_HASHDIFFS } from '../src/lib/primer/email-hashdiffs'
+import { CUSTOMERS } from '../src/books/datavault/lib/dv/dataset'
+import { EMAIL_HASHDIFFS } from '../src/books/datavault/lib/primer/email-hashdiffs'
 import { open } from './helpers'
 
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
@@ -176,11 +176,11 @@ test('all new pages pass mobile axe and overflow checks in both reading modes', 
 
   await page.setViewportSize({ width: 320, height: 700 })
   for (const mode of ['paged', 'scroll'] as const) {
-    await page.goto('/#/')
+    await page.goto('/#/datavault/')
     await page.evaluate((value) => localStorage.setItem('reading-mode', value), mode)
     await page.reload()
     for (const surface of surfaces) {
-      await page.goto(`/#/${surface.slug}`)
+      await page.goto(`/#/datavault/${surface.slug}`)
       await expect(page.getByRole('heading', { name: surface.heading, exact: true }).first()).toBeVisible()
       await expect(page.locator('main article > div').first()).toHaveCSS('opacity', '1')
       const { violations } = await new AxeBuilder({ page }).withTags(WCAG).analyze()

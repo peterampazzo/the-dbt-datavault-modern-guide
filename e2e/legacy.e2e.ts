@@ -5,10 +5,10 @@ import { open } from './helpers'
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 
 async function openPagedSection(page: Parameters<typeof open>[0], slug: string, title: string) {
-  await page.goto('/#/')
+  await page.goto('/#/datavault/')
   await page.evaluate(() => localStorage.setItem('reading-mode', 'paged'))
   await page.reload()
-  await page.goto(`/#/${slug}`)
+  await page.goto(`/#/datavault/${slug}`)
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
 }
 

@@ -6,7 +6,7 @@ const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 const h2 = (page: import('@playwright/test').Page, name: string) => page.locator('main').getByRole('heading', { level: 2, name, exact: true })
 
 test('the cover starts a paged chapter and content pages stay separate', async ({ page }) => {
-  await page.goto('/#/dbt')
+  await page.goto('/#/datavault/dbt')
   await expect(page.getByText(/Chapter 5 of 18 · Part 2: Building it with dbt · about/)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Building it with dbt', exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: 'In 30 seconds' })).toBeVisible()
@@ -16,7 +16,7 @@ test('the cover starts a paged chapter and content pages stay separate', async (
   await expect(page.getByText('Page 1 of 6')).toBeVisible()
   await expect(h2(page, 'By hand vs with dbt')).toHaveCount(0)
   await page.getByRole('link', { name: 'Start' }).click()
-  await expect(page).toHaveURL(/#\/dbt\/by-hand-vs-with-dbt$/)
+  await expect(page).toHaveURL(/#\/datavault\/dbt\/by-hand-vs-with-dbt$/)
   await expect(h2(page, 'By hand vs with dbt')).toBeFocused()
   await expect(page.getByText('Page 2 of 6')).toBeVisible()
   await expect(h2(page, 'From canvas to code')).toHaveCount(0)
@@ -42,10 +42,10 @@ test('arrow keys turn pages, and the dots jump to any page', async ({ page }) =>
 
 test('a page address survives a reload and Continue returns to it', async ({ page }) => {
   await open(page, 'what-is-data-vault', { paged: true })
-  await page.goto('/#/what-is-data-vault/where-it-sits')
+  await page.goto('/#/datavault/what-is-data-vault/where-it-sits')
   await page.reload()
   await expect(h2(page, 'Where it sits')).toBeVisible()
-  await page.goto('/#/')
+  await page.goto('/#/datavault/')
   await page.getByRole('link', { name: /Continue: chapter 1, 1\.\d+ Where it sits/ }).click()
   await expect(page).toHaveURL(/where-it-sits$/)
   await expect(h2(page, 'Where it sits')).toBeVisible()
@@ -53,8 +53,8 @@ test('a page address survives a reload and Continue returns to it', async ({ pag
 
 test('old ?s= links open the right page', async ({ page }) => {
   await open(page, 'hash-lab', { paged: true })
-  await page.goto('/#/hash-lab?s=hashdiff-did-anything-change')
-  await expect(page).toHaveURL(/#\/hash-lab\/hashdiff-did-anything-change$/)
+  await page.goto('/#/datavault/hash-lab?s=hashdiff-did-anything-change')
+  await expect(page).toHaveURL(/#\/datavault\/hash-lab\/hashdiff-did-anything-change$/)
   await expect(h2(page, 'Hashdiff: did anything change?')).toBeVisible()
 })
 
@@ -81,7 +81,7 @@ test('"Show as one page" is remembered', async ({ page }) => {
   await expect(h2(page, 'Run it')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Quick check (optional)' })).toBeVisible()
   await page.evaluate(() => localStorage.removeItem('dv-guide-progress'))
-  await page.goto('/#/hash-lab')
+  await page.goto('/#/datavault/hash-lab')
   await expect(toggle).toHaveAttribute('aria-pressed', 'true')
   await expect(h2(page, 'Ghost keys and why we hash')).toBeVisible()
 })
@@ -92,19 +92,19 @@ test('chapter 3 is the Data Vault name bridge', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Data Vault terms in dbt' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Start' })).toBeVisible()
   await page.getByRole('link', { name: 'Start' }).click()
-  await expect(page).toHaveURL(/#\/dv-names\/the-names-we-use$/)
+  await expect(page).toHaveURL(/#\/datavault\/dv-names\/the-names-we-use$/)
   await expect(h2(page, 'The names we use')).toBeVisible()
 })
 
 test('recap quick check is optional and gives correct and incorrect feedback', async ({ page }) => {
   await open(page, 'dv-names', { paged: true })
-  await page.goto('/#/dv-names/recap')
+  await page.goto('/#/datavault/dv-names/recap')
   const next = page.locator('#chapter-recap').getByRole('link', { name: 'Next: dbt primer' })
   await expect(next).toBeVisible()
   await next.click()
-  await expect(page).toHaveURL(/#\/dbt-primer$/)
+  await expect(page).toHaveURL(/#\/datavault\/dbt-primer$/)
 
-  await page.goto('/#/dv-names/recap')
+  await page.goto('/#/datavault/dv-names/recap')
   const question = page.getByRole('group', { name: 'Which model is the customer hub?' })
   await expect(question.getByRole('radio')).toHaveCount(3)
   await expect(question.getByRole('button', { name: 'Check' })).toHaveCount(1)
@@ -127,7 +127,7 @@ test('covers, recaps and the name bridge pass mobile axe and overflow checks in 
     ]) {
       await page.setViewportSize({ width: 390, height: 844 })
       await page.addInitScript((value) => localStorage.setItem('reading-mode', value), mode)
-      await page.goto(`/#/${surface.slug}`)
+      await page.goto(`/#/datavault/${surface.slug}`)
       await expect(page.getByRole('heading', { name: surface.heading }).first()).toBeVisible()
       await page.waitForTimeout(200)
       const { violations } = await new AxeBuilder({ page }).withTags(WCAG).analyze()

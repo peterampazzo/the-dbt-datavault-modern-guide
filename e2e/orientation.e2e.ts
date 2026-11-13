@@ -25,7 +25,7 @@ test('Home offers to continue where you left off, at the same section', async ({
   await open(page, 'what-is-data-vault')
   await page.locator('#where-it-sits').evaluate((el) => el.scrollIntoView({ block: 'start' }))
   await expect.poll(() => stored(page)).toContain('where-it-sits')
-  await page.goto('/#/')
+  await page.goto('/#/datavault/')
   const cont = page.getByRole('link', { name: /Continue: chapter 1, 1\.\d+ Where it sits/ })
   await expect(cont).toBeVisible()
   await cont.click()
@@ -34,14 +34,14 @@ test('Home offers to continue where you left off, at the same section', async ({
 
 test('Home labels a chapter cover and recap distinctly', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('reading-mode', 'paged'))
-  await page.goto('/#/replay')
+  await page.goto('/#/datavault/replay')
   await expect(page.locator('main h1').first()).toBeVisible()
-  await page.goto('/#/')
+  await page.goto('/#/datavault/')
   await expect(page.getByRole('link', { name: 'Continue: chapter 11' })).toBeVisible()
 
-  await page.goto('/#/replay/recap')
+  await page.goto('/#/datavault/replay/recap')
   await expect(page.getByRole('heading', { name: 'Recap' })).toBeVisible()
-  await page.goto('/#/')
+  await page.goto('/#/datavault/')
   await expect(page.getByRole('link', { name: 'Continue: chapter 11, recap' })).toBeVisible()
 })
 
@@ -51,7 +51,7 @@ test('a chapter is ticked once you reach its end, and Start over clears it', asy
   await expect(bar).toHaveAttribute('aria-valuenow', '0')
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
   await expect(bar).toHaveAttribute('aria-valuenow', '1')
-  await page.goto('/#/')
+  await page.goto('/#/datavault/')
   await page.getByRole('button', { name: 'Start over' }).click()
   await expect(bar).toHaveAttribute('aria-valuenow', '0')
   await expect(page.getByRole('link', { name: /Start reading/ })).toBeVisible()

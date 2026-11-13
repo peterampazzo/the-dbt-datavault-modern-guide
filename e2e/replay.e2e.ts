@@ -5,7 +5,7 @@ const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 
 async function openLab(page: import('@playwright/test').Page, suffix = 'the-replay-lab') {
   await page.addInitScript(() => localStorage.setItem('reading-mode', 'paged'))
-  await page.goto(`/#/replay/${suffix}`)
+  await page.goto(`/#/datavault/replay/${suffix}`)
   await expect(page.getByRole('heading', { name: suffix === 'the-replay-lab' ? 'The replay lab' : 'What truncated landing loses' })).toBeVisible()
 }
 
@@ -56,7 +56,7 @@ test('Reset restores the default state and loss-table preset links select their 
   await expect(page.getByRole('switch', { name: 'Landing data' })).toHaveAttribute('aria-checked', 'false')
   await expect(page.getByRole('status')).toContainText('current model rebuild matches')
 
-  await page.goto('/#/replay/what-truncated-landing-loses')
+  await page.goto('/#/datavault/replay/what-truncated-landing-loses')
   await page.getByRole('link', { name: 'Try new-column preset' }).click()
   await expect(page).toHaveURL(/change=new-column/)
   await expect(page.getByLabel('Model change')).toHaveValue('new-column')
@@ -89,7 +89,7 @@ test('the four replay controls work from the keyboard', async ({ page }) => {
 
 test('the engine switch changes compute and connection while storage stays put', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('reading-mode', 'paged'))
-  await page.goto('/#/one-lake/switch-engines')
+  await page.goto('/#/datavault/one-lake/switch-engines')
   await expect(page.getByText('Storage unchanged. Fabric Spark uses OneLake shortcut.')).toBeVisible()
   await page.getByRole('button', { name: 'Databricks' }).click()
   await expect(page.getByText('Storage unchanged. Databricks uses Unity Catalog external location.')).toBeVisible()
@@ -122,7 +122,7 @@ test('new chapter covers, content pages and recaps pass axe and mobile overflow 
     await page.evaluate((value) => localStorage.setItem('reading-mode', value), mode)
     await page.reload()
     for (const surface of surfaces) {
-      await page.goto(`/#/${mode === 'paged' ? surface.route : surface.chapter}`)
+      await page.goto(`/#/datavault/${mode === 'paged' ? surface.route : surface.chapter}`)
       const target = surface.id ? page.locator(`#${surface.id}`) : page.locator('main')
       if (surface.id && mode === 'scroll') await target.scrollIntoViewIfNeeded()
       await expect(page.getByRole('heading', { name: surface.title }).first()).toBeVisible()

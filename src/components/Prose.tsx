@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
-import { CHAPTERS, PARTS } from '@/chapters'
+import { CHAPTERS, PARTS } from '@/books/datavault/chapters'
 import { useLocation } from 'react-router'
 
 export function ChapterHeader({ title, lead }: { title: ReactNode; lead: ReactNode }) {

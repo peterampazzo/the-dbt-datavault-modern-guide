@@ -1,6 +1,6 @@
 # datavault4dbt reference (as used in this guide)
 
-Package: [ScalefreeCOM/datavault4dbt](https://github.com/ScalefreeCOM/datavault4dbt) ([wiki](https://github.com/ScalefreeCOM/datavault4dbt/wiki)). The demos replicate its default behaviour in `src/lib/dv/`.
+Package: [ScalefreeCOM/datavault4dbt](https://github.com/ScalefreeCOM/datavault4dbt) ([wiki](https://github.com/ScalefreeCOM/datavault4dbt/wiki)). The demos replicate its default behaviour in `src/books/datavault/lib/dv/`.
 
 ## Model pattern
 
@@ -38,7 +38,7 @@ source_models:
 | `control_snap_v0` / `control_snap_v1` | table / view | `start_date`, `daily_snapshot_time`; v1 adds `log_logic` |
 | `pit` | incremental | `pit_type`, `tracked_entity`, `hashkey`, `sat_names`, `snapshot_relation`, `snapshot_trigger_column`, `dimension_key` |
 
-Check `src/lib/dv/models.ts` and the package source before adding or changing keys.
+Check `src/books/datavault/lib/dv/models.ts` and the package source before adding or changing keys.
 
 ## Hashing defaults
 

@@ -2,7 +2,7 @@ import { Children, cloneElement, isValidElement, useCallback, useEffect, useMemo
 import { Link, useLocation, useNavigate } from 'react-router'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { motion } from 'motion/react'
-import { CHAPTERS, type Audience } from '@/chapters'
+import { CHAPTERS, type Audience } from '@/books/datavault/chapters'
 import { ChapterHeader, RecapExtras, Section, slugify } from '@/components/Prose'
 import { QuickCheck } from '@/components/QuickCheck'
 import { markDone, setLast } from '@/lib/progress'

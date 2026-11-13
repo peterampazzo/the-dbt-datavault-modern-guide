@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ChapterQuiz } from '@/chapters'
+import type { ChapterQuiz } from '@/books/datavault/chapters'
 import { Button } from '@/components/ui/button'
 
 export function QuickCheck({ questions }: { questions: readonly ChapterQuiz[] }) {

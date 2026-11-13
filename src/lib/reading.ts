@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { CHAPTERS } from '@/chapters'
+import { CHAPTERS } from '@/books/datavault/chapters'
 
 export type ReadingMode = 'paged' | 'scroll'
 export type ReadingPath = 'full' | 'dv-practitioner' | 'browse'

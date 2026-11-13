@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import { Popover } from '@base-ui/react/popover'
 import { Link } from 'react-router'
-import { CHAPTERS } from '@/chapters'
-import { GLOSSARY, type GlossaryId } from '@/lib/glossary'
+import { CHAPTERS } from '@/books/datavault/chapters'
+import { GLOSSARY, type GlossaryId } from '@/books/datavault/lib/glossary'
 
 export function Term({ id, children }: { id: GlossaryId; children?: ReactNode }) {
   const entry = GLOSSARY.find((item) => item.id === id)!

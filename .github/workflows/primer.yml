@@ -24,4 +24,4 @@ jobs:
       - run: pip install -r primer-dbt/requirements.txt
       - run: pnpm install --frozen-lockfile
       - run: pnpm primer:compile
-      - run: git diff --exit-code src/lib/primer/compiled.json
+      - run: git diff --exit-code src/books/datavault/lib/primer/compiled.json
