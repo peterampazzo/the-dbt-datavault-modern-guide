@@ -3,7 +3,7 @@ import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Deeper } from '@/books/foundations/components/Deeper'
 import { SameSetupDrawing } from '@/books/foundations/components/drawing/SameSetupDrawing'
 import { TextFilesDrawing } from '@/books/foundations/components/drawing/TextFilesDrawing'
-import { Story } from '@/books/foundations/components/Story'
+import { Problem } from '@/books/foundations/components/Problem'
 import { Practice, type Task } from '@/books/foundations/components/shell/Practice'
 import { WhyAI } from '@/books/foundations/components/WhyAI'
 import { PROJECT } from '@/books/foundations/lib/shell/fs'
@@ -114,13 +114,12 @@ export default function Snapshots() {
     <Chapter>
       <ChapterHeader
         title="Snapshots"
-        lead="May 2021, DTU 02806: three students, one folder of notebooks, and 6 saved versions in total, all made on a single day. January 2022, DTU 02476: four students, 210 saved versions and 22 pull requests in two weeks. Same student. The difference was git."
+        lead="A folder full of separate copies cannot tell you which version is right. Git keeps each version with who changed it, when and why."
       />
       <Section title="Any text file" keyPoint="If you can open it in a text editor, git can keep every version of it and show what changed.">
-        <Story course="02806">
-          The project ended up with both <Code>useful_functions.ipynb</Code> and <Code>useful_functions-2.ipynb</Code>, and they are not the same. Which one is
-          right? The names can&apos;t tell you. It is <Code>report_v2_FINAL_final.xlsx</Code>, in code.
-        </Story>
+        <Problem>
+          A folder has <Code>analysis_final.R</Code> and <Code>analysis_final_v2.R</Code>, and they do not match. The filenames cannot tell you which lines changed.
+        </Problem>
         <P>
           <strong>Git</strong> is like Google Docs version history, for a whole folder. It works for anything stored as text: Python and R code, settings files,
           even your editor&apos;s settings. Look at the hidden settings files in the practice project.
@@ -138,10 +137,9 @@ export default function Snapshots() {
         <WhyAI>Everything Claude Code, Codex or Lovable produces is text. If it is in git, you can see what the tool did and go back to any earlier version.</WhyAI>
       </Section>
       <Section title="Take a snapshot" keyPoint="git add chooses what goes in the snapshot; git commit saves it with a note.">
-        <Story course="02476">
-          Every change came with a short note: “add google-cloud to requirements.txt”, “Fixing accuracy calculations”. 210 of them. Each one is a snapshot anyone
-          on the team could look at, or go back to.
-        </Story>
+        <Problem>
+          You have made a change to <Code>report.R</Code> and want a record before starting another one. A short note should explain the change.
+        </Problem>
         <P>
           Saving a snapshot is like sending a parcel: put things in the box (<Code>git add</Code>), then seal it and write a label (<Code>git commit</Code>).
           This folder has nothing saved yet.
@@ -170,10 +168,9 @@ export default function Snapshots() {
         </Deeper>
       </Section>
       <Section title="What did the tool change?" keyPoint="git status shows which files changed; git diff shows which lines.">
-        <Story course="02476">
-          One commit is called “Fixing accuracy calculations”. A small edit, and the model&apos;s headline number changes. When a number in your report moves, the
-          first question is: which line changed?
-        </Story>
+        <Problem>
+          Your AI tool changed <Code>report.py</Code>, and the revenue moved. You need to see which lines changed before you accept the edit.
+        </Problem>
         <P>
           You have one snapshot. Now ask your AI tool for a small change, then look at exactly what it did, like Track Changes in Word.
         </P>
@@ -192,10 +189,9 @@ export default function Snapshots() {
         </WhyAI>
       </Section>
       <Section title="Same setup everywhere" keyPoint="Settings in the repository travel with the code: get the project, get the setup.">
-        <Story course="02476">
-          The repository held the team&apos;s settings files: code formatting rules, style checks, and an <Code>.env.example</Code>. So four laptops formatted code
-          the same way and knew which settings to fill in, without anyone emailing instructions.
-        </Story>
+        <Problem>
+          A teammate opens <Code>orders-report</Code> on a new laptop and gets different editor settings. The project needs to carry the setup and list the packages it uses.
+        </Problem>
         <P>
           Editor settings are text files too. Put them in the repository and every teammate, every machine and your next laptop get the same setup.
         </P>
@@ -223,10 +219,9 @@ export default function Snapshots() {
         </Deeper>
       </Section>
       <Section title="When it breaks" keyPoint="Read git's message to the end: it usually says what to type next.">
-        <Story course="02476">
-          The project&apos;s <Code>.env.example</Code> lists names like <Code>WANDB_API=</Code> and <Code>GC_KEY=</Code>, with nothing after the equals sign. The
-          real keys stayed on each laptop and never went into git.
-        </Story>
+        <Problem>
+          You try to commit the report before staging it, or accidentally try to stage <Code>.env</Code>. Read the exact message before deciding what to do.
+        </Problem>
         <P>The tool&apos;s change is back in your folder. Here are three messages you will meet in your first week with git.</P>
         <Practice
           id="m4-breaks"

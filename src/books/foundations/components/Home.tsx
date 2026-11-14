@@ -18,9 +18,9 @@ export function Home() {
         machines it runs on and run it somewhere other than a laptop. This book shows how.
       </p>
       <p className="mt-3 leading-7 text-muted-foreground">
-        A note from Pietro: I wish I&apos;d had this during my computer science bachelor. The tutorials I found were complicated, and none of them said which problem a tool actually solved. Today this is simply how work is done, and now that AI tools write much of our code, being on top of it matters even more.
+        Most tutorials start from the commands and never say which problem they solve. This book starts from the problem: you need to share your analysis, a colleague changed your script, the packages broke. Each page shows how to solve it, whether you click a button in RStudio or VS Code or let an AI tool do it. This is everyday practice at work, and with AI tools writing much of the code, knowing it matters more than ever.
       </p>
-      <p className="mt-3 leading-7 text-muted-foreground">Each page starts from a real problem, then you try it in a practice terminal in your browser. No programming needed and nothing to install.</p>
+      <p className="mt-3 leading-7 text-muted-foreground">Every page has a practice terminal in your browser, in R and Python. No programming needed and nothing to install.</p>
       <div className="mt-6">
         <Link
           to={`/${resume ? resume.slug : CHAPTERS[0].slug}`}
@@ -56,7 +56,7 @@ export function Home() {
           </ol>
         </section>
       ))}
-      <p className="mt-6 text-sm text-muted-foreground">Next up: drafts and reviews, undo, automatic checks, the same setup everywhere, and running it remotely with Docker.</p>
+      <p className="mt-6 text-sm text-muted-foreground">Next up: what changed and who changed it, two people editing the same file, packages that change, automatic checks, running it somewhere else, and asking for help.</p>
     </div>
   )
 }

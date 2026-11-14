@@ -7,9 +7,9 @@ Status: agreed. PR A (this move) puts the Data Vault guide at `/#/datavault/`. A
 ## 0. In one page
 
 - **What:** one website, *Build it right*, that holds several books. The existing Data Vault guide becomes one book. A new book, working title *Foundations*, teaches what AI coding tools (Claude Code, Codex, Cursor, Lovable) do under the hood and how to handle the code they produce: the terminal, git, reproducible setup, CI and troubleshooting.
-- **Who:** the new book is written for students who are not programmers and want to use AI tools seriously, at any university and in any degree. Technical students read the same core and open the optional "Go deeper" pages. The mentee is a reader.
+- **Who:** the new book is for anyone in a data course or a first data job, with R and Python side by side, including teachers who link students to single pages. Technical readers can open the optional "Go deeper" pages.
 - **How it feels:** nothing to install at the start. Each page has a practice terminal in the browser, a drawing that reacts to what you type, one task, a few sentences, and a "Why it matters with AI tools" box. Real setup on your own machine comes later and is optional for non-programmers.
-- **Voice:** "for dummies". Every page starts from a real moment in Pietro's DTU group projects (section 2.7), says the idea in plain words with something the reader already knows (Track Changes, Google Docs version history, `report_v2_FINAL_final.xlsx`), and only then names the technical term. About 100 words of core text per page; every task can be done by tapping chips, so the book works on a phone.
+- **Voice:** plain and problem-first. Every page starts with an everyday problem, explains the solution in words the reader already knows (Track Changes, Google Docs version history, `analysis_final_v2.R`), and only then names the technical term. About 100 words of core text per page; every task can be done by tapping chips, so the book works on a phone.
 - **How it is built:** the current repo is renamed to `build-it-right` and becomes one Vite app with a bookshelf at `/`, each book under its own path, and shared parts (drawing kit, practice terminal, quick checks, reading mode) used by every book.
 - **Order of work:** restructure the repo with no visible change (PR A to C), then the Foundations shell and module 1 (PR D), then one PR per module. About 10 to 12 Devin sessions for the MVP book (section 10).
 
@@ -21,7 +21,7 @@ Status: agreed. PR A (this move) puts the Data Vault guide at `/#/datavault/`. A
 
 | Book | Path | Reader | Status |
 |---|---|---|---|
-| Foundations: shipping code in the age of AI tools (working title) | `/#/foundations/` | Non-programmers first, technical students via "Go deeper" | New |
+| Foundations: shipping code in the age of AI tools (working title) | `/#/foundations/` | Anyone in a data course or first data job; R and Python | New |
 | The dbt + Data Vault guide | `/#/datavault/` | Data and analytics engineers | Existing, unchanged content |
 
 Later books cost little once the shared parts exist (ideas, not commitments: SQL for analysts, dbt for analysts). Foundations comes first on the shelf because it is the entry point; the Data Vault book is the natural "next book" for readers who go into data.
@@ -81,15 +81,15 @@ Every page must teach the shell, git, a reproducible setup, CI, or how to troubl
 
 | Reader | Starts with | Path |
 |---|---|---|
-| S1 Non-programmer student (main) | Excel, maybe a statistics course, has tried ChatGPT or Lovable. Any OS. | Core pages; "Bring it home" optional |
-| S2 Technical student (BSc or MSc) | Python or R from a course, an IDE or RStudio | Core plus "Go deeper", "Bring it home", broken labs |
-| S3 The mentee | Like S1 | Like S1, as a reader |
+| S1 Learner in a data course | Excel or basic R or Python, has tried ChatGPT or Lovable. Any OS. | Core pages; "Bring it home" optional |
+| S2 Analyst in a first data job | Uses Python or R in an IDE or RStudio | Core plus "Go deeper", "Bring it home", broken labs |
+| S3 Teacher | Wants to link learners to a single page | Individual pages and the core path |
 
 ### 2.4 Page template
 
 Every section page has the same shape, so an interrupted reader always knows where they are:
 
-0. **From DTU:** a short box with a real moment from Pietro's 02806 or 02476 project (`Story` component), linking the repository.
+0. **The problem:** a short box with one everyday situation from a data or analysis project (`Problem` component), without names or external project references.
 1. Title, then the idea in one or two plain sentences.
 2. Task list (one to three tasks) and the practice terminal, with the reacting drawing beside it on wide screens and below it on phones.
 3. Three to five sentences.
@@ -114,7 +114,7 @@ The book's practical takeaway, one or two rules per part, collected on a printab
 
 ### 2.6 The running project
 
-`orders-report`: three small CSVs (customers, nations, orders) and the same report twice, `report.py` and `report.R`, printing orders and revenue per nation. The reader picks Python or R once; the choice is remembered. Revenue is business data on purpose: when an AI edit moves the number, any reader sees why it matters. The DTU projects are the story (section 2.7); `orders-report` stays the hands-on project.
+`orders-report`: three small CSVs (customers, nations, orders) and the same report twice, `report.py` and `report.R`, printing orders and revenue per nation. The reader picks Python or R once; the choice is remembered. Revenue is business data on purpose: when an AI edit moves the number, any reader sees why it matters. `orders-report` is the worked example throughout the book.
 
 What the project contains as the book goes on (in the practice terminal first; in the real template repo from "Bring it home"):
 
@@ -126,41 +126,22 @@ What the project contains as the book goes on (in the practice terminal first; i
 | Part IV | `.github/workflows/ci.yml`, tests and lint as required checks, a scheduled run publishing the report |
 | Part V | nothing new: broken copies to fix |
 
-### 2.7 The story
+### 2.7 Problem first
 
-The book follows Pietro through two real DTU group projects, both public on GitHub. They show the same student before and after, and their histories already hold the problems the book solves. Teammates are never named; they are "a teammate".
+Audience: anyone in a data course or a first data job, R and Python side by side, including teachers who link students to single pages. Each chapter is one problem people actually hit, then how to solve it. Every action is shown in layers: the button (RStudio, VS Code, GitHub Desktop, an AI tool), the command it runs, and what git does. The book takes ideas, not text, from The Missing Semester, Software Carpentry, Happy Git with R, What They Forgot to Teach You About R and CodeRefinery, and links to them under "Go further"; what it adds is interaction, drawings and the AI-tool angle.
 
-- **02806 Social Data Analysis and Visualization** (spring 2021, 3 students, [repo](https://github.com/peterampazzo/dtu-02806)): notebooks, 6 commits all on a single day, `useful_functions.ipynb` next to `useful_functions-2.ipynb`, a two-line `requirements.txt`, setup living in Deepnote. The "before".
-- **02476 Machine Learning Operations** (January 2022, 4 students, two weeks, [repo](https://github.com/peterampazzo/dtu-02476)): 210 commits, 22 pull requests, one branch per feature, pre-commit hooks, a lint check on every PR, pinned `requirements.txt` and `environment.yml`, `.env.example`, Docker images built by GitHub Actions and run on Google Cloud. The "after".
+Chapters:
+1. I made something. How do I share it with my team? (Share your project)
+2. It runs on my laptop but not on yours. (folders, paths, RStudio Projects vs setwd, running a script)
+3. Which version is the right one? (snapshots, the layers interactive)
+4. Someone, or the AI, changed my analysis. What changed? (diff, reviewing a pull request)
+5. Two of us edited the same file. (branches, merging)
+6. It worked last month; now the packages are different. (renv, requirements.txt)
+7. Did my change break the results? (tests, then CI on every PR)
+8. It has to run somewhere else, or every night. (Docker)
+9. It's broken and I need help. (exact command, error, a small reproducible example)
 
-The five things the book teaches, each with the real moment that opens it:
-
-| Part | Problem | Real moment |
-|---|---|---|
-| I. Work on a codebase (terminal) | "I've got the project. Where is everything and how do I run it?" | `python3 src/data/make_dataset.py data/raw data/processed` only works from the top folder; the Makefile says `python3`, the Docker script says `python` |
-| II. Check other people's code (git) | "A teammate, or the AI, changed it and the number moved. What changed? Do I accept it?" | `useful_functions-2.ipynb`; the commit "Fixing accuracy calculations"; one branch and PR per feature |
-| III. Test it automatically (CI) | "Every push must still work, without me checking by hand." | lint check on every PR; "fixed isort-black conflict" and "Revert 'set isort with black profile'" |
-| IV. Same setup everywhere | "It works on my laptop, not on yours." | the commit "add google-cloud to requirements.txt"; `.env.example` with `WANDB_API=` and `GC_KEY=` |
-| V. Run it remotely (Docker) | "It has to run on a server, not my laptop." | 87,000 training images; `train.dockerfile` built by GitHub Actions and run on Google Cloud; "fix docker file", "fix entrypoint filename" |
-
-Troubleshooting stays a "When it breaks" page at the end of every module, plus the labs at the end.
-
-### 2.8 The daily loop
-
-The book is organised around the loop a team repeats every day, whether a teammate or an AI tool writes the code. 02806 had no loop; 02476 had one.
-
-0. **Share your project** (new first chapter): code lives in a git repository, private if needed, not in Drive, Dropbox or email. Sort the folder (code in git, data in a data store, output rebuilt, secrets never shared), write a README, first commit, push.
-1. **Start the day:** get the latest version and see what changed (pull, log).
-2. **Make room:** work on your own draft (branch).
-3. **Make the change:** yourself or with an AI tool; small commits with messages that say why.
-4. **Check it yourself:** diff, run, test, does the number still make sense.
-5. **Ask for a review:** a PR that says what, why and how to check it.
-6. **Review someone else's work:** what to look at, how to comment, when to say no.
-7. **Let the machine check:** CI on every PR.
-8. **Merge and deliver:** main, then run it elsewhere (Docker, server).
-9. **When it breaks:** go back, find the change, report it properly (command, output, exit code).
-
-Two threads run through every step: the same setup for everyone (README, pinned packages, `.vscode/`, `.env.example`), and communication (commit messages, PR descriptions, review comments, bug reports). The terminal modules (1 to 3) are the on-ramp that makes "run this command" unscary.
+The current modules 1, 2 and 4 are reworked into chapters 2 and 3 in a later PR.
 
 ---
 
@@ -372,7 +353,7 @@ Each PR is based on the previous one and merged in order. Lint, unit tests, buil
 | B | Shelf landing page and book registry; per-book header, about and glossary | New landing page |
 | C | Shared `Deeper` component and the learning design rule for it; per-book scope rules in `AGENTS.md` | None |
 | D | Foundations shell: cover, contents, data, glossary, house-rules page; practice terminal from the prototype with its tests; module 1 | Foundations book with one module |
-| E onward | One PR per module in MVP order: 2, 4, a rewrite of 1, 2 and 4 around the DTU story, 5, 6, Bring it home, 11, 7, 9, 10, 14; then 3, 8, 10, 12, 13, 15 and the cheat sheet | One module each |
+| E onward | One PR per module in MVP order: 2, 4, a problem-first rewrite of modules 1, 2 and 4 into chapters 2 and 3, 5, 6, Bring it home, 11, 7, 9, 10, 14; then 3, 8, 10, 12, 13, 15 and the cheat sheet | One module each |
 
 The `orders-report` template repo (public, with Python and R, `Makefile`, lockfiles, CI) is created alongside "Bring it home".
 
@@ -380,8 +361,8 @@ The `orders-report` template repo (public, with Python and R, `Makefile`, lockfi
 
 ## 7. Writing
 
-- Chapters stay TSX like the Data Vault book. The earlier MDX idea is dropped: the mentee is a reader, not an author, and one format keeps the rules and tests uniform.
-- Voice: plain English, short sentences, no jargon before it is defined. Real moment first, familiar comparison second, technical term last.
+- Chapters stay TSX like the Data Vault book. The earlier MDX idea is dropped: this book is for readers, not authors, and one format keeps the rules and tests uniform.
+- Voice: plain English, short sentences, no jargon before it is defined. Problem first, familiar comparison second, technical term last.
 - Every term is defined at first use and added to the Foundations glossary.
 - Every page is checked against the learning design success criteria S1 to S7 and the UX audit before its PR.
 
@@ -391,9 +372,11 @@ The `orders-report` template repo (public, with Python and R, `Makefile`, lockfi
 
 Syllabus and "Go deeper" links; our text and exercises are written fresh around `orders-report`.
 
-- DTU MLOps (Apache 2.0): command line, package manager, git, Docker, config files, debugging, unit testing, GitHub Actions, pre-commit. Credited in a NOTICE file if we adapt any exercise.
-- Software Carpentry, The Unix Shell (CC BY 4.0): pacing model for Part I.
-- MIT, The Missing Semester of Your CS Education.
+- The Missing Semester of Your CS Education.
+- Software Carpentry, Version Control with Git (CC BY 4.0).
+- Happy Git and GitHub for the useR.
+- What They Forgot to Teach You About R.
+- CodeRefinery lessons.
 - Pro Git (Chacon and Straub).
 - uv, renv and r-lib/actions documentation.
 - Claude Code, Codex, Cursor and Lovable docs only as links, for the mapping in section 2.1.
@@ -423,7 +406,7 @@ Rough, in Devin sessions: PR A to C one to two; PR D one (most of it exists); Pa
 ## 11. Decided
 
 - One site, *Build it right*, with separate books; the Data Vault guide becomes one book, content unchanged.
-- Foundations is for non-programmer students first; technical students get "Go deeper". Python and R are run, not taught. The mentee is a reader.
+- Foundations is for people in data courses or first data jobs, with R and Python side by side. Python and R are run, not taught.
 - AI tools are the reason for the book, not a topic in it: no tool-specific prompting.
 - No install to start; real machine from "Bring it home", optional for non-programmers: Linux and macOS natively, Windows through WSL. No Codespaces.
 - Keep this repo and rename it `build-it-right`. Case studies: the Data Vault guide and vm-infra.

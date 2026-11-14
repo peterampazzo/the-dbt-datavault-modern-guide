@@ -48,10 +48,10 @@ export const CHAPTERS = [
         why: 'Sync tools copy files. Git records every change with an author and a note, and shows the exact lines.',
       },
       {
-        q: 'Does putting code on GitHub make it public?',
-        options: ['No: each repository is public or private, and private ones are visible only to people you invite', 'Yes, always', 'Only for students'],
+        q: 'If you host a git repository on GitHub, is it automatically public?',
+        options: ['No: hosting sites let you choose whether each repository is public or private; private ones are visible only to people you invite', 'Yes, always', 'Only for students'],
         answer: 0,
-        why: 'Visibility is a setting per repository.',
+        why: 'Git keeps the history; GitHub hosts the repository, and its visibility is a setting.',
       },
       {
         q: 'git status lists .env right before your first commit. What do you do?',
@@ -160,7 +160,7 @@ export const CHAPTERS = [
     quiz: [
       {
         q: 'Which of these can git version and show line by line?',
-        options: ['report.R, a settings file and .vscode/settings.json', 'Only Python code', 'Only files stored on GitHub'],
+        options: ['report.R, a settings file and .vscode/settings.json', 'Only Python code', 'Only files in a GitHub-hosted repository'],
         answer: 0,
         why: 'Git works with any text file. Binary files such as spreadsheets can be saved too, but without line-by-line changes.',
       },
