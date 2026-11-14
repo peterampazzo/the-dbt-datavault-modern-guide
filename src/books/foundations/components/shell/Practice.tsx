@@ -1,8 +1,7 @@
 import { useCallback, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { Check, Circle, Sparkles } from 'lucide-react'
-import { aiChange, aiChanged, type ShellState } from '@/books/foundations/lib/shell/shell'
-import { AI_REQUEST } from '@/books/foundations/lib/shell/git'
+import { aiChange, aiChanged, DEFAULT_SCRIPT, type AiScript, type ShellState } from '@/books/foundations/lib/shell/shell'
 import { GitPanel } from './GitPanel'
 import { display } from '@/books/foundations/lib/shell/fs'
 import { FolderTree, relativePath } from './FolderTree'
@@ -34,9 +33,10 @@ export function Practice({
   /** Show the folder / staged / history panel under the terminal. */
   git?: boolean
   /** Show the button that lets the simulated AI tool change files. */
-  ai?: boolean
+  ai?: boolean | AiScript
 }) {
   const { state, exec, reset, update } = usePractice(id, cwd, start)
+  const aiScript = ai && typeof ai === 'object' ? ai : DEFAULT_SCRIPT
   const [selected, setSelected] = useState<string>()
   const [draft, setDraft] = useState<string>()
   const clearDraft = useCallback(() => setDraft(undefined), [])
@@ -68,12 +68,12 @@ export function Practice({
           {ai && (
             <button
               type="button"
-              disabled={aiChanged(state)}
-              onClick={() => update(aiChange)}
+              disabled={aiChanged(state, aiScript)}
+              onClick={() => update((s) => aiChange(s, aiScript))}
               className="mb-2 inline-flex min-h-11 items-center gap-2 rounded-lg border border-violet-500/40 bg-violet-500/10 px-3 font-sans text-sm font-medium text-violet-900 hover:bg-violet-500/20 focus-visible:outline-2 focus-visible:outline-sky-500 disabled:opacity-60 dark:text-violet-200"
             >
               <Sparkles aria-hidden className="size-4" />
-              {aiChanged(state) ? 'Your AI tool has made its change' : `Ask your AI tool: “${AI_REQUEST}”`}
+              {aiChanged(state, aiScript) ? 'Your AI tool has made its change' : `Ask your AI tool: “${aiScript.request}”`}
             </button>
           )}
           <Terminal state={state} exec={exec} reset={reset} chips={chips} draft={draft} onDraftUsed={clearDraft} label={`practice-${id}`} />
@@ -86,7 +86,7 @@ export function Practice({
         </div>
         {tree && (
           <div className="min-w-0">
-            <FolderTree cwd={state.cwd} event={last?.event} selected={walker ? selected : undefined} onSelect={walker ? setSelected : undefined} />
+            <FolderTree cwd={state.cwd} event={last?.event} fs={state.fs} selected={walker ? selected : undefined} onSelect={walker ? setSelected : undefined} />
             {walker && (
               <div className="mt-2 rounded-xl border bg-card/60 p-3 font-sans text-sm" aria-live="polite">
                 {selected ? (

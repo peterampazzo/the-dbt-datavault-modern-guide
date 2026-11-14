@@ -8,7 +8,7 @@ type ChapterDefinition = {
   title: string
   short: string
   minutes: number
-  part: 1 | 2
+  part: 1 | 2 | 3
   audience: Audience
   summary: [string, string, string]
   recap: [string, string, string]
@@ -17,17 +17,57 @@ type ChapterDefinition = {
 }
 
 export const PARTS = [
-  { n: 1, title: 'The terminal' },
-  { n: 2, title: 'Git' },
+  { n: 1, title: 'Start here' },
+  { n: 2, title: 'The terminal' },
+  { n: 3, title: 'Git' },
 ] as const
 
 export const CHAPTERS = [
+  {
+    slug: 'share-your-project',
+    title: 'Share your project',
+    short: 'Share',
+    minutes: 12,
+    part: 1,
+    audience: 'core',
+    summary: [
+      'Code goes in a git repository, private if you like, not in Drive, Dropbox or an email.',
+      'Before sharing, sort the folder: code in git, data in a data store, output rebuilt, secrets never shared.',
+      'A README, a first snapshot and git push give your team the whole project and its history.',
+    ],
+    recap: [
+      'A private GitHub repository is visible only to the people you invite.',
+      '.gitignore keeps .env, raw data and output out; check git status before the first commit.',
+      'git remote add connects the folder to GitHub; git push sends the snapshots.',
+    ],
+    quiz: [
+      {
+        q: 'Your team shares code through a Dropbox folder. What is the main problem?',
+        options: ['Nobody can see who changed what, or why', 'Dropbox cannot store .py files', 'Dropbox makes the code public'],
+        answer: 0,
+        why: 'Sync tools copy files. Git records every change with an author and a note, and shows the exact lines.',
+      },
+      {
+        q: 'Does putting code on GitHub make it public?',
+        options: ['No: each repository is public or private, and private ones are visible only to people you invite', 'Yes, always', 'Only for students'],
+        answer: 0,
+        why: 'Visibility is a setting per repository.',
+      },
+      {
+        q: 'git status lists .env right before your first commit. What do you do?',
+        options: ['Add .env to .gitignore before committing', 'Commit it, the repository is private', 'Rename it to env.txt'],
+        answer: 0,
+        why: 'Private repositories get shared, forked and cloned. Keys stay on your machine.',
+      },
+    ],
+    Component: lazy(() => import('./ShareYourProject')),
+  },
   {
     slug: 'where-am-i',
     title: 'Where am I?',
     short: 'Terminal',
     minutes: 10,
-    part: 1,
+    part: 2,
     audience: 'core',
     summary: [
       'The terminal is a window where you type a command and press Enter; the computer runs it and prints the answer.',
@@ -66,7 +106,7 @@ export const CHAPTERS = [
     title: 'Running a program',
     short: 'Programs',
     minutes: 10,
-    part: 1,
+    part: 2,
     audience: 'core',
     summary: [
       'Pressing Enter splits the line, finds the program on PATH, runs it in your folder and gets back an exit code.',
@@ -105,7 +145,7 @@ export const CHAPTERS = [
     title: 'Snapshots',
     short: 'Snapshots',
     minutes: 12,
-    part: 2,
+    part: 3,
     audience: 'core',
     summary: [
       'Git keeps every snapshot of a folder’s text files: Python and R code, settings, even editor settings, so you can see what changed and go back.',

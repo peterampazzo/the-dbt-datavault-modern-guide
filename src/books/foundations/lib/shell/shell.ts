@@ -1,5 +1,5 @@
 import { PROJECT, caseMatch, createFs, display, findByName, lookup, resolve, sortNames, split, type FsNode } from './fs'
-import { AI_FILES, AI_REQUEST, EMPTY_GIT, aiEdits, files, git, ignored, reportFlags, type GitState } from './git'
+import { AI_FILES, AI_REQUEST, EMPTY_GIT, aiEdits, files, git, ignored, reportFlags, type Files, type GitState } from './git'
 
 export type ShellEvent =
   | { kind: 'cd'; from: string; to: string }
@@ -12,7 +12,7 @@ export type ShellEvent =
 /** `status` is the exit code: 0 means it worked, anything else means it failed. */
 export type Entry = { cwd: string; input: string; output: string; ok: boolean; command: string; event: ShellEvent; status?: number }
 /** `fs` and `git` are only set once a page changes files or takes a snapshot; until then the machine is `FS` with an empty repository. */
-export type ShellState = { cwd: string; entries: Entry[]; visited: string[]; fs?: FsNode; git?: GitState }
+export type ShellState = { cwd: string; entries: Entry[]; visited: string[]; fs?: FsNode; git?: GitState; ai?: string[] }
 
 export const PATH = '/usr/local/bin:/usr/bin:/bin'
 
@@ -267,7 +267,7 @@ function execute(cwd: string, line: string, status: number): Result {
 export function run(state: ShellState, line: string): ShellState {
   const input = line.trim()
   if (!input) return { ...state, entries: [...state.entries, { cwd: state.cwd, input: '', output: '', ok: true, command: '', event: { kind: 'none' } }] }
-  if (input === 'clear') return { ...state, entries: [] }
+  if (input === 'clear') return { ...state, entries: [], ai: state.ai }
   root = state.fs ?? FS
   repo = state.git ?? EMPTY_GIT
   let cwd = state.cwd
@@ -294,16 +294,36 @@ function write(node: FsNode, parts: string[], content: string): FsNode {
   return { kind: 'dir', children: { ...node.children, [name]: rest.length ? write(child, rest, content) : { kind: 'file', content } } }
 }
 
-/** The scripted "your AI tool changed files" event: it writes the edits and adds a note to the terminal. */
-export function aiChange(state: ShellState): ShellState {
-  let fs = state.fs ?? FS
-  for (const [path, content] of Object.entries(aiEdits())) fs = write(fs, split(`${PROJECT}/${path}`), content)
-  const note = `You asked your AI tool: “${AI_REQUEST}”\nIt changed ${AI_FILES.length} files: ${AI_FILES.join(', ')}`
-  const entry: Entry = { cwd: state.cwd, input: '', output: note, ok: true, command: 'ai', event: { kind: 'none' }, status: lastStatus(state) }
-  return { ...state, fs, entries: [...state.entries, entry] }
+function remove(node: FsNode, parts: string[]): FsNode {
+  if (node.kind !== 'dir') return node
+  const [name, ...rest] = parts
+  if (!(name in node.children)) return node
+  const children = { ...node.children }
+  if (rest.length) children[name] = remove(children[name], rest)
+  else delete children[name]
+  return { kind: 'dir', children }
 }
 
-export const aiChanged = (state: ShellState) => state.entries.some((e) => e.command === 'ai') || Boolean(state.fs)
+export type AiScript = { request: string; writes: Files; removes?: string[] }
+const defaultEdits = aiEdits()
+export const DEFAULT_SCRIPT: AiScript = {
+  request: AI_REQUEST,
+  writes: Object.fromEntries(AI_FILES.map((name) => [name, defaultEdits[name]])) as Files,
+}
+
+/** The scripted "your AI tool changed files" event: it writes the edits and adds a note to the terminal. */
+export function aiChange(state: ShellState, script = DEFAULT_SCRIPT): ShellState {
+  let fs = state.fs ?? FS
+  for (const [path, content] of Object.entries(script.writes)) fs = write(fs, split(`${PROJECT}/${path}`), content)
+  for (const path of script.removes ?? []) fs = remove(fs, split(`${PROJECT}/${path}`))
+  const changed = [...Object.keys(script.writes), ...(script.removes ?? []).map((path) => `deleted ${path}`)]
+  const note = `You asked your AI tool: “${script.request}”\nIt changed ${changed.length} files: ${changed.join(', ')}`
+  const entry: Entry = { cwd: state.cwd, input: '', output: note, ok: true, command: 'ai', event: { kind: 'none' }, status: lastStatus(state) }
+  const ai = state.ai?.includes(script.request) ? state.ai : [...(state.ai ?? []), script.request]
+  return { ...state, fs, ai, entries: [...state.entries, entry] }
+}
+
+export const aiChanged = (state: ShellState, script = DEFAULT_SCRIPT) => state.ai?.includes(script.request) ?? false
 
 /** A shell whose project already has one snapshot of every file, as if someone ran git add . and git commit. */
 export function committedShell(cwd: string, message = 'Add the orders report'): ShellState {

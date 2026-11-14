@@ -35,9 +35,9 @@ test('the bookshelf opens Foundations, a book of its own', async ({ page }) => {
   await expect(page).toHaveURL(/#\/foundations$/)
   await expect(page.locator('main h1').first()).toHaveText('Shipping code in the age of AI tools')
   await expect(page.getByRole('banner').getByText('Foundations', { exact: true })).toBeVisible()
-  await page.getByRole('link', { name: /Start: Where am I\?/ }).click()
-  await expect(page).toHaveURL(/#\/foundations\/where-am-i$/)
-  await expect(page.getByText('Chapter 1 of 3 · Part 1: The terminal')).toBeVisible()
+  await page.getByRole('link', { name: /Start: Share your project/ }).click()
+  await expect(page).toHaveURL(/#\/foundations\/share-your-project$/)
+  await expect(page.getByText('Chapter 1 of 4 · Part 1: Start here')).toBeVisible()
 })
 
 test('Foundations keeps its own progress, apart from the Data Vault book', async ({ page }) => {
@@ -97,7 +97,54 @@ test('Snapshots: commit, then read what the AI tool changed', async ({ page }) =
   await expect(page.getByText('Done: Show the changed lines and find the one you did not ask for.')).toBeAttached()
 })
 
-for (const path of ['/#/foundations/', '/#/foundations/where-am-i/the-prompt', '/#/foundations/snapshots/any-text-file', '/#/foundations/snapshots/what-did-the-tool-change', '/#/foundations/running-a-program/press-enter', '/#/foundations/running-a-program/approve-or-not']) {
+test('Share your project: tidy secrets and push privately using chips', async ({ page }) => {
+  const runChip = async (command: string) => {
+    await page.getByRole('button', { name: command, exact: true }).first().click()
+    await page.getByRole('textbox').first().press('Enter')
+  }
+  await page.goto('/#/foundations/share-your-project/get-the-secrets-out')
+  await runChip('git init')
+  await runChip('git status')
+  await page.getByRole('button', { name: /Ask your AI tool: “Get this ready to share/ }).click()
+  await runChip('git status')
+  await expect(page.locator('[data-practice="s3-tidy"] li .sr-only').filter({ hasText: 'Done:' })).toHaveCount(4)
+
+  await page.goto('/#/foundations/share-your-project/put-it-on-github-privately')
+  await runChip('git push')
+  await runChip('git remote add origin https://github.com/your-team/orders-report.git')
+  await runChip('git push -u origin main')
+  await runChip('git push')
+  await expect(page.locator('[data-practice="s6-push"] li .sr-only').filter({ hasText: 'Done:' })).toHaveCount(4)
+
+  await page.goto('/#/foundations/share-your-project/write-down-how-to-run-it')
+  await runChip('Rscript report.R')
+  await expect(page.locator('[data-practice="s4-readme"] li .sr-only').filter({ hasText: 'Done:' })).toHaveCount(1)
+
+  await page.goto('/#/foundations/share-your-project/when-it-breaks')
+  await runChip('git init')
+  await runChip('git commit -m "First version"')
+  await expect(page.locator('[data-practice="s7-breaks"] li .sr-only').filter({ hasText: 'Done:' })).toHaveCount(1)
+})
+
+const sharePages = [
+  '/#/foundations/share-your-project/where-should-the-code-live',
+  '/#/foundations/share-your-project/sort-the-folder',
+  '/#/foundations/share-your-project/get-the-secrets-out',
+  '/#/foundations/share-your-project/write-down-how-to-run-it',
+  '/#/foundations/share-your-project/take-the-first-snapshot',
+  '/#/foundations/share-your-project/put-it-on-github-privately',
+  '/#/foundations/share-your-project/when-it-breaks',
+]
+
+for (const path of [
+  '/#/foundations/',
+  '/#/foundations/where-am-i/the-prompt',
+  '/#/foundations/snapshots/any-text-file',
+  '/#/foundations/snapshots/what-did-the-tool-change',
+  '/#/foundations/running-a-program/press-enter',
+  '/#/foundations/running-a-program/approve-or-not',
+  ...sharePages,
+]) {
   for (const theme of ['dark', 'light'] as const) {
     test(`${path} passes WCAG 2.2 AA (${theme})`, async ({ page }) => {
       await page.addInitScript((t) => localStorage.setItem('theme', t), theme)
@@ -110,7 +157,14 @@ for (const path of ['/#/foundations/', '/#/foundations/where-am-i/the-prompt', '
 }
 
 for (const width of [320, 390, 1280]) {
-  for (const path of ['/#/foundations/', '/#/foundations/where-am-i/move-around', '/#/foundations/running-a-program/press-enter', '/#/foundations/snapshots/any-text-file', '/#/foundations/snapshots/what-did-the-tool-change']) {
+  for (const path of [
+    '/#/foundations/',
+    '/#/foundations/where-am-i/move-around',
+    '/#/foundations/running-a-program/press-enter',
+    '/#/foundations/snapshots/any-text-file',
+    '/#/foundations/snapshots/what-did-the-tool-change',
+    ...sharePages,
+  ]) {
     test(`${path} has no horizontal overflow @${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 700 })
       await page.goto(path)

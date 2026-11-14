@@ -19,8 +19,6 @@ function rows(node: FsNode, path = '', depth = 0, out: Row[] = []): Row[] {
   return out
 }
 
-const ROWS: Row[] = [{ path: '/', name: '/', depth: 0, dir: true }, ...rows(FS, '', 1)]
-
 export function relativePath(from: string, to: string) {
   const a = split(from)
   const b = split(to)
@@ -35,23 +33,26 @@ const parent = (path: string) => '/' + split(path).slice(0, -1).join('/')
 export function FolderTree({
   cwd,
   event,
+  fs = FS,
   selected,
   onSelect,
 }: {
   cwd: string
   event?: ShellEvent
+  fs?: FsNode
   selected?: string
   onSelect?: (path: string) => void
 }) {
-  const here = Math.max(0, ROWS.findIndex((r) => r.path === cwd))
+  const treeRows: Row[] = [{ path: '/', name: '/', depth: 0, dir: true }, ...rows(fs, '', 1)]
+  const here = Math.max(0, treeRows.findIndex((r) => r.path === cwd))
   const glow = event?.kind === 'list' || event?.kind === 'read' || event?.kind === 'ran' ? event.path : undefined
   const looked = event?.kind === 'missing' ? event.looked : undefined
-  const lookedRow = looked && (ROWS.some((r) => r.path === looked) ? looked : parent(looked))
+  const lookedRow = looked && (treeRows.some((r) => r.path === looked) ? looked : parent(looked))
   const actual = event?.kind === 'missing' ? event.actual : undefined
 
   return (
     <figure className="overflow-x-auto rounded-xl border bg-card/60 p-3" aria-label="Folder tree of the practice machine">
-      <div className="relative min-w-max" style={{ height: ROWS.length * ROW }}>
+      <div className="relative min-w-max" style={{ height: treeRows.length * ROW }}>
         <motion.div
           aria-hidden
           className="pointer-events-none absolute right-0 left-0 rounded-md bg-sky-500/10 ring-1 ring-sky-500/40"
@@ -61,7 +62,7 @@ export function FolderTree({
           transition={{ type: 'spring', stiffness: 380, damping: 32 }}
         />
         <ul className="relative">
-          {ROWS.map((r) => {
+          {treeRows.map((r) => {
             const isHere = r.path === cwd
             const status = r.path === lookedRow ? 'looked' : r.path === actual ? 'actual' : r.path === glow ? 'glow' : undefined
             const Icon = r.dir ? Folder : File
