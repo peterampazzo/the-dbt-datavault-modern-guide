@@ -11,7 +11,7 @@ const file = (content: string): FsNode => ({ kind: 'file', content })
 export const HOME = '/home/student'
 export const PROJECT = `${HOME}/orders-report`
 
-const REPORT_PY = `import csv
+export const REPORT_PY = `import csv
 
 nations = {r["n_nationkey"]: r["n_name"] for r in csv.DictReader(open("data/nation.csv"))}
 customers = {r["c_custkey"]: nations[r["c_nationkey"]] for r in csv.DictReader(open("data/customer.csv"))}
@@ -42,7 +42,7 @@ report <- data.frame(
 print(report, row.names = FALSE)
 `
 
-const README = `# orders-report
+export const README = `# orders-report
 
 Reads the orders, customers and nations in data/ and prints orders and revenue per nation.
 
@@ -56,12 +56,44 @@ const TEST_PY = `def test_placeholder():
     assert True
 `
 
+const GITIGNORE = `# Secrets and local files: never commit these
+.env
+__pycache__/
+.Rhistory
+.Rproj.user/
+`
+
+const ENV = `SALES_API_KEY=practice-key-not-real
+`
+
+const ENV_EXAMPLE = `# Copy to .env and fill in. .env stays on your machine.
+SALES_API_KEY=
+`
+
+const VSCODE_SETTINGS = `{
+  "editor.formatOnSave": true,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "[python]": { "editor.defaultFormatter": "charliermarsh.ruff" },
+  "[r]": { "editor.tabSize": 2 }
+}
+`
+
+const VSCODE_EXTENSIONS = `{
+  "recommendations": ["ms-python.python", "charliermarsh.ruff", "REditorSupport.r"]
+}
+`
+
 /** The practice machine: a home folder with the orders-report project, plus the system folders where programs live. */
 export function createFs(): FsNode {
   return dir({
     home: dir({
       student: dir({
         'orders-report': dir({
+          '.env': file(ENV),
+          '.env.example': file(ENV_EXAMPLE),
+          '.gitignore': file(GITIGNORE),
+          '.vscode': dir({ 'extensions.json': file(VSCODE_EXTENSIONS), 'settings.json': file(VSCODE_SETTINGS) }),
           'README.md': file(README),
           data: dir({
             'customer.csv': file(csv(CUSTOMERS)),

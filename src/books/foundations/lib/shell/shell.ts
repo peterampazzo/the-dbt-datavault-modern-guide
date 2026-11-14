@@ -1,4 +1,5 @@
-import { caseMatch, createFs, display, findByName, lookup, resolve, sortNames, split, type FsNode } from './fs'
+import { PROJECT, caseMatch, createFs, display, findByName, lookup, resolve, sortNames, split, type FsNode } from './fs'
+import { AI_FILES, AI_REQUEST, EMPTY_GIT, aiEdits, files, git, ignored, reportFlags, type GitState } from './git'
 
 export type ShellEvent =
   | { kind: 'cd'; from: string; to: string }
@@ -10,11 +11,16 @@ export type ShellEvent =
 
 /** `status` is the exit code: 0 means it worked, anything else means it failed. */
 export type Entry = { cwd: string; input: string; output: string; ok: boolean; command: string; event: ShellEvent; status?: number }
-export type ShellState = { cwd: string; entries: Entry[]; visited: string[] }
+/** `fs` and `git` are only set once a page changes files or takes a snapshot; until then the machine is `FS` with an empty repository. */
+export type ShellState = { cwd: string; entries: Entry[]; visited: string[]; fs?: FsNode; git?: GitState }
 
 export const PATH = '/usr/local/bin:/usr/bin:/bin'
 
 export const FS = createFs()
+
+// The files and repository of the state being run; set by `run` before each command.
+let root: FsNode = FS
+let repo: GitState = EMPTY_GIT
 
 export function createShell(cwd: string): ShellState {
   return { cwd, entries: [], visited: [cwd] }
@@ -33,7 +39,6 @@ const LATER: Record<string, string> = {
   env: 'module 9',
   export: 'module 9',
   chmod: 'a later module',
-  git: 'module 4',
   make: 'module 7',
   docker: 'a later module',
   curl: 'a later module',
@@ -59,6 +64,7 @@ const HELP = `Commands on this page:
   which program     show where a program lives
   echo text         print text; echo $? prints the last exit code
   a && b            run b only if a worked
+  git ...           take snapshots: type git help
   clear             clear the screen
 Tab completes names. Up and Down bring back earlier commands.`
 
@@ -70,7 +76,7 @@ const notFound = (output: string): Result => fail(output, { kind: 'none' }, 127)
 
 function missing(path: string) {
   const name = split(path).at(-1) ?? ''
-  const actual = caseMatch(FS, path) ?? findByName(FS, name)
+  const actual = caseMatch(root, path) ?? findByName(root, name)
   return { kind: 'missing', looked: path, actual: actual && actual !== path ? actual : undefined } as const
 }
 
@@ -85,10 +91,10 @@ function ls(cwd: string, args: string[]): Result {
   if (bad) return fail(`ls: invalid option -- '${bad.replace(/[-la]/g, '')[0]}'\nTry 'ls --help' for more information.`)
   const target = args.find((a) => !a.startsWith('-')) ?? '.'
   const path = resolve(cwd, target)
-  const node = lookup(FS, path)
+  const node = lookup(root, path)
   if (!node) return fail(`ls: cannot access '${target}': No such file or directory`, missing(path))
   if (node.kind === 'file') return ok(long ? row(target, node) : target, { kind: 'list', path })
-  const names = sortNames(Object.keys(node.children))
+  const names = sortNames(Object.keys(node.children)).filter((n) => all || !n.startsWith('.'))
   const shown = all ? ['.', '..', ...names] : names
   if (!long) return ok(shown.join('  '), { kind: 'list', path })
   const rows = shown.map((name) => row(name, name === '.' || name === '..' ? node : node.children[name]))
@@ -104,7 +110,7 @@ function row(name: string, node: FsNode) {
 function readFile(cwd: string, cmd: string, target: string | undefined, notFound: (t: string) => string): Result | { content: string; path: string } {
   if (!target) return fail(`${cmd}: missing file operand`)
   const path = resolve(cwd, target)
-  const node = lookup(FS, path)
+  const node = lookup(root, path)
   if (!node) return fail(notFound(target), missing(path))
   if (node.kind === 'dir') return fail(`${cmd}: ${target}: Is a directory`)
   return { content: node.content, path }
@@ -114,7 +120,7 @@ function cd(cwd: string, args: string[]): Result {
   const target = args[0] ?? '~'
   if (args.length > 1) return fail('bash: cd: too many arguments')
   const path = resolve(cwd, target)
-  const node = lookup(FS, path)
+  const node = lookup(root, path)
   if (!node) return fail(`bash: cd: ${target}: No such file or directory`, missing(path))
   if (node.kind === 'file') return fail(`bash: cd: ${target}: Not a directory`)
   return ok('', { kind: 'cd', from: cwd, to: path }, path)
@@ -123,7 +129,7 @@ function cd(cwd: string, args: string[]): Result {
 function report(cwd: string, program: 'python3' | 'Rscript', target: string | undefined): Result {
   if (!target) return fail(program === 'python3' ? 'Interactive Python is not on this page. Give it a file: python3 report.py' : 'Usage: Rscript file')
   const path = resolve(cwd, target)
-  const node = lookup(FS, path)
+  const node = lookup(root, path)
   if (!node || node.kind === 'dir') {
     return fail(
       program === 'python3'
@@ -133,7 +139,7 @@ function report(cwd: string, program: 'python3' | 'Rscript', target: string | un
       2,
     )
   }
-  const csvAt = (name: string) => lookup(FS, resolve(cwd, `data/${name}`))
+  const csvAt = (name: string) => lookup(root, resolve(cwd, `data/${name}`))
   const data = ['nation.csv', 'customer.csv', 'orders.csv'].map(csvAt)
   if (data.some((d) => d?.kind !== 'file')) {
     const looked = resolve(cwd, 'data/nation.csv')
@@ -144,9 +150,10 @@ function report(cwd: string, program: 'python3' | 'Rscript', target: string | un
       missing(looked),
     )
   }
-  const totals = summarise(...(data.map((d) => (d as { content: string }).content) as [string, string, string]))
+  const flags = program === 'python3' ? reportFlags(node.content) : { title: false, rounded: false }
+  const totals = summarise(...(data.map((d) => (d as { content: string }).content) as [string, string, string]), flags.rounded)
   if (program === 'python3') {
-    const lines = [`${'nation'.padEnd(10)}${'orders'.padStart(7)}${'revenue'.padStart(10)}`]
+    const lines = [...(flags.title ? ['Orders and revenue per nation'] : []), `${'nation'.padEnd(10)}${'orders'.padStart(7)}${'revenue'.padStart(10)}`]
     for (const t of totals) lines.push(`${t.nation.padEnd(10)}${String(t.orders).padStart(7)}${t.revenue.toFixed(2).padStart(10)}`)
     return ok(lines.join('\n'), { kind: 'ran', path })
   }
@@ -166,19 +173,19 @@ function parse(content: string) {
   return rows.map((r) => Object.fromEntries(r.split(',').map((v, i) => [keys[i], v])))
 }
 
-export function summarise(nationCsv: string, customerCsv: string, ordersCsv: string) {
+export function summarise(nationCsv: string, customerCsv: string, ordersCsv: string, rounded = false) {
   const nations = new Map(parse(nationCsv).map((r) => [r.n_nationkey, r.n_name]))
   const customers = new Map(parse(customerCsv).map((r) => [r.c_custkey, nations.get(r.c_nationkey) ?? '?']))
   const totals = new Map<string, { orders: number; revenue: number }>()
   for (const o of parse(ordersCsv)) {
     const nation = customers.get(o.o_custkey) ?? '?'
     const t = totals.get(nation) ?? { orders: 0, revenue: 0 }
-    totals.set(nation, { orders: t.orders + 1, revenue: t.revenue + Number(o.o_totalprice) })
+    totals.set(nation, { orders: t.orders + 1, revenue: t.revenue + (rounded ? Math.round(Number(o.o_totalprice)) : Number(o.o_totalprice)) })
   }
   return [...totals].sort(([a], [b]) => a.localeCompare(b)).map(([nation, t]) => ({ nation, ...t }))
 }
 
-const PROGRAMS = ['python3', 'Rscript', 'pwd', 'ls', 'cat', 'head', 'wc', 'echo', 'which']
+const PROGRAMS = ['python3', 'Rscript', 'pwd', 'ls', 'cat', 'head', 'wc', 'echo', 'which', 'git']
 const BUILTIN = ['cd', 'help', 'clear']
 
 function which(args: string[]): Result {
@@ -238,6 +245,11 @@ function execute(cwd: string, line: string, status: number): Result {
       return ok(args.join(' '))
     case 'which':
       return which(args)
+    case 'git': {
+      const g = git(root, repo, cwd, args)
+      if (g.git) repo = g.git
+      return g.status === 0 ? ok(g.output) : fail(g.output, { kind: 'none' }, g.status)
+    }
     case 'python':
       return notFound(`Command 'python' not found, did you mean:\n  command 'python3' from deb python3`)
     case 'python3':
@@ -256,6 +268,8 @@ export function run(state: ShellState, line: string): ShellState {
   const input = line.trim()
   if (!input) return { ...state, entries: [...state.entries, { cwd: state.cwd, input: '', output: '', ok: true, command: '', event: { kind: 'none' } }] }
   if (input === 'clear') return { ...state, entries: [] }
+  root = state.fs ?? FS
+  repo = state.git ?? EMPTY_GIT
   let cwd = state.cwd
   let status = lastStatus(state)
   let r: Result = ok('')
@@ -269,7 +283,33 @@ export function run(state: ShellState, line: string): ShellState {
     if (status !== 0) break
   }
   const entry: Entry = { cwd: state.cwd, input, output: outputs.join('\n'), ok: status === 0, command: tokenize(input)[0], event: r.event, status }
-  return { cwd, entries: [...state.entries, entry], visited: state.visited.includes(cwd) ? state.visited : [...state.visited, cwd] }
+  const visited = state.visited.includes(cwd) ? state.visited : [...state.visited, cwd]
+  return { ...state, cwd, entries: [...state.entries, entry], visited, ...(repo !== (state.git ?? EMPTY_GIT) && { git: repo }) }
+}
+
+function write(node: FsNode, parts: string[], content: string): FsNode {
+  if (node.kind !== 'dir') return node
+  const [name, ...rest] = parts
+  const child = node.children[name] ?? { kind: 'dir', children: {} }
+  return { kind: 'dir', children: { ...node.children, [name]: rest.length ? write(child, rest, content) : { kind: 'file', content } } }
+}
+
+/** The scripted "your AI tool changed files" event: it writes the edits and adds a note to the terminal. */
+export function aiChange(state: ShellState): ShellState {
+  let fs = state.fs ?? FS
+  for (const [path, content] of Object.entries(aiEdits())) fs = write(fs, split(`${PROJECT}/${path}`), content)
+  const note = `You asked your AI tool: “${AI_REQUEST}”\nIt changed ${AI_FILES.length} files: ${AI_FILES.join(', ')}`
+  const entry: Entry = { cwd: state.cwd, input: '', output: note, ok: true, command: 'ai', event: { kind: 'none' }, status: lastStatus(state) }
+  return { ...state, fs, entries: [...state.entries, entry] }
+}
+
+export const aiChanged = (state: ShellState) => state.entries.some((e) => e.command === 'ai') || Boolean(state.fs)
+
+/** A shell whose project already has one snapshot of every file, as if someone ran git add . and git commit. */
+export function committedShell(cwd: string, message = 'Add the orders report'): ShellState {
+  const work = files(FS)
+  const index = Object.fromEntries(Object.entries(work).filter(([f]) => !ignored(work, f)))
+  return { ...createShell(cwd), git: { index, commits: [{ id: '4f1c2a9e0b7d36c58a1e92f4d0b6c3a7e5f81d20', message, files: index }] } }
 }
 
 /** The exit code of the last command, as `$?` shows it. */
@@ -279,20 +319,20 @@ export function lastStatus(state: ShellState) {
 }
 
 /** Complete the last word of the line against names in the folder it points to. */
-export function complete(cwd: string, line: string): string {
+export function complete(cwd: string, line: string, fs: FsNode = FS): string {
   const match = /(\S*)$/.exec(line)
   const word = match?.[1] ?? ''
   const head = line.slice(0, line.length - word.length)
   if (!head.trim()) {
-    const commands = ['pwd', 'ls', 'cd', 'cat', 'head', 'wc', 'python3', 'Rscript', 'which', 'echo', 'clear', 'help'].filter((c) => c.startsWith(word))
+    const commands = ['pwd', 'ls', 'cd', 'cat', 'head', 'wc', 'python3', 'Rscript', 'which', 'echo', 'git', 'clear', 'help'].filter((c) => c.startsWith(word))
     return commands.length === 1 ? `${commands[0]} ` : line
   }
   const slash = word.lastIndexOf('/')
   const folderPart = slash >= 0 ? word.slice(0, slash + 1) : ''
   const prefix = word.slice(slash + 1)
-  const folder = lookup(FS, resolve(cwd, folderPart || '.'))
+  const folder = lookup(fs, resolve(cwd, folderPart || '.'))
   if (folder?.kind !== 'dir') return line
-  const names = sortNames(Object.keys(folder.children)).filter((n) => n.startsWith(prefix))
+  const names = sortNames(Object.keys(folder.children)).filter((n) => n.startsWith(prefix) && (prefix.startsWith('.') || !n.startsWith('.')))
   if (!names.length) return line
   if (names.length === 1) {
     const node = folder.children[names[0]]

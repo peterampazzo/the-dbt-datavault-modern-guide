@@ -1,7 +1,9 @@
 import { useCallback, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
-import { Check, Circle } from 'lucide-react'
-import { type ShellState } from '@/books/foundations/lib/shell/shell'
+import { Check, Circle, Sparkles } from 'lucide-react'
+import { aiChange, aiChanged, type ShellState } from '@/books/foundations/lib/shell/shell'
+import { AI_REQUEST } from '@/books/foundations/lib/shell/git'
+import { GitPanel } from './GitPanel'
 import { display } from '@/books/foundations/lib/shell/fs'
 import { FolderTree, relativePath } from './FolderTree'
 import { Terminal } from './Terminal'
@@ -17,6 +19,9 @@ export function Practice({
   chips,
   tree,
   walker,
+  start,
+  git,
+  ai,
 }: {
   id: string
   cwd: string
@@ -24,8 +29,14 @@ export function Practice({
   chips?: string[]
   tree?: boolean
   walker?: boolean
+  /** The state a fresh terminal starts in, for pages that begin after a snapshot. Define it outside the component so it stays the same function. */
+  start?: () => ShellState
+  /** Show the folder / staged / history panel under the terminal. */
+  git?: boolean
+  /** Show the button that lets the simulated AI tool change files. */
+  ai?: boolean
 }) {
-  const { state, exec, reset } = usePractice(id, cwd)
+  const { state, exec, reset, update } = usePractice(id, cwd, start)
   const [selected, setSelected] = useState<string>()
   const [draft, setDraft] = useState<string>()
   const clearDraft = useCallback(() => setDraft(undefined), [])
@@ -54,7 +65,19 @@ export function Practice({
       </ul>
       <div className={tree ? 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_23rem]' : undefined}>
         <div className="min-w-0">
+          {ai && (
+            <button
+              type="button"
+              disabled={aiChanged(state)}
+              onClick={() => update(aiChange)}
+              className="mb-2 inline-flex min-h-11 items-center gap-2 rounded-lg border border-violet-500/40 bg-violet-500/10 px-3 font-sans text-sm font-medium text-violet-900 hover:bg-violet-500/20 focus-visible:outline-2 focus-visible:outline-sky-500 disabled:opacity-60 dark:text-violet-200"
+            >
+              <Sparkles aria-hidden className="size-4" />
+              {aiChanged(state) ? 'Your AI tool has made its change' : `Ask your AI tool: “${AI_REQUEST}”`}
+            </button>
+          )}
           <Terminal state={state} exec={exec} reset={reset} chips={chips} draft={draft} onDraftUsed={clearDraft} label={`practice-${id}`} />
+          {git && <GitPanel state={state} />}
           {all && (
             <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} role="status" className="mt-2 font-sans text-sm text-emerald-700 dark:text-emerald-400">
               Done. Keep exploring, or go to the next page.

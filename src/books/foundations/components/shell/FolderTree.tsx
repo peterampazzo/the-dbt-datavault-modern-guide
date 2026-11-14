@@ -10,7 +10,7 @@ type Row = { path: string; name: string; depth: number; dir: boolean }
 
 function rows(node: FsNode, path = '', depth = 0, out: Row[] = []): Row[] {
   if (node.kind !== 'dir') return out
-  for (const name of sortNames(Object.keys(node.children))) {
+  for (const name of sortNames(Object.keys(node.children)).filter((n) => !n.startsWith('.'))) {
     const child = node.children[name]
     const p = `${path}/${name}`
     out.push({ path: p, name, depth, dir: child.kind === 'dir' })

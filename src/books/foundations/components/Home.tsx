@@ -55,7 +55,7 @@ export function Home() {
           </ol>
         </section>
       ))}
-      <p className="mt-6 text-sm text-muted-foreground">Next up: git, reproducible setup, CI and troubleshooting. Those modules are on the way.</p>
+      <p className="mt-6 text-sm text-muted-foreground">Next up: drafts and approvals, undo, reproducible setup, CI and troubleshooting. Those modules are on the way.</p>
     </div>
   )
 }

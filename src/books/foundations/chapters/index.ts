@@ -8,7 +8,7 @@ type ChapterDefinition = {
   title: string
   short: string
   minutes: number
-  part: 1
+  part: 1 | 2
   audience: Audience
   summary: [string, string, string]
   recap: [string, string, string]
@@ -16,7 +16,10 @@ type ChapterDefinition = {
   Component: ReturnType<typeof lazy>
 }
 
-export const PARTS = [{ n: 1, title: 'The terminal' }] as const
+export const PARTS = [
+  { n: 1, title: 'The terminal' },
+  { n: 2, title: 'Git' },
+] as const
 
 export const CHAPTERS = [
   {
@@ -96,5 +99,44 @@ export const CHAPTERS = [
       },
     ],
     Component: lazy(() => import('./RunningAProgram')),
+  },
+  {
+    slug: 'snapshots',
+    title: 'Snapshots',
+    short: 'Snapshots',
+    minutes: 12,
+    part: 2,
+    audience: 'core',
+    summary: [
+      'Git keeps every snapshot of a folder’s text files: Python and R code, settings, even editor settings, so you can see what changed and go back.',
+      'git add chooses what goes in the next snapshot, git commit saves it, and git diff shows the exact lines an AI tool changed.',
+      'Editor settings in the repository give every colleague and every machine the same setup; secrets stay out, in .env.',
+    ],
+    recap: [
+      'git status says what changed and what to type next. Run it whenever you are unsure.',
+      'Commit before you let a tool loose, then read its git diff: if you can’t explain a line, don’t commit it.',
+      '.vscode/ and .env.example go in the repository; .env with the real key goes in .gitignore.',
+    ],
+    quiz: [
+      {
+        q: 'Which of these can git version and show line by line?',
+        options: ['report.R, a settings file and .vscode/settings.json', 'Only Python code', 'Only files stored on GitHub'],
+        answer: 0,
+        why: 'Git works with any text file. Binary files such as spreadsheets can be saved too, but without line-by-line changes.',
+      },
+      {
+        q: 'Your AI tool says it changed 2 files. Which command shows the exact lines?',
+        options: ['git diff', 'git log', 'git commit'],
+        answer: 0,
+        why: 'git status lists the files; git diff shows the removed (-) and added (+) lines.',
+      },
+      {
+        q: 'Where does the real API key for the report go?',
+        options: ['In .env, which is listed in .gitignore', 'In .vscode/settings.json, so everyone has it', 'In the commit message'],
+        answer: 0,
+        why: 'Secrets stay on each machine. The repository gets .env.example, with the names and no values.',
+      },
+    ],
+    Component: lazy(() => import('./Snapshots')),
   },
 ] as const satisfies readonly ChapterDefinition[]
