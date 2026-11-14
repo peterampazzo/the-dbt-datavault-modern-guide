@@ -7,8 +7,9 @@ Status: agreed. PR A (this move) puts the Data Vault guide at `/#/datavault/`. A
 ## 0. In one page
 
 - **What:** one website, *Build it right*, that holds several books. The existing Data Vault guide becomes one book. A new book, working title *Foundations*, teaches what AI coding tools (Claude Code, Codex, Cursor, Lovable) do under the hood and how to handle the code they produce: the terminal, git, reproducible setup, CI and troubleshooting.
-- **Who:** the new book is written for a business student (for example Business Administration at CBS) who wants to use AI tools seriously. Technical students read the same core and open the optional "Go deeper" pages. The mentee is a reader.
-- **How it feels:** nothing to install at the start. Each page has a practice terminal in the browser, a drawing that reacts to what you type, one task, a few sentences, and a "Why it matters with AI tools" box. Real setup on your own machine comes later and is optional for business readers.
+- **Who:** the new book is written for students who are not programmers and want to use AI tools seriously, at any university and in any degree. Technical students read the same core and open the optional "Go deeper" pages. The mentee is a reader.
+- **How it feels:** nothing to install at the start. Each page has a practice terminal in the browser, a drawing that reacts to what you type, one task, a few sentences, and a "Why it matters with AI tools" box. Real setup on your own machine comes later and is optional for non-programmers.
+- **Voice:** "for dummies". Every page starts from a real moment in Pietro's DTU group projects (section 2.7), says the idea in plain words with something the reader already knows (Track Changes, Google Docs version history, `report_v2_FINAL_final.xlsx`), and only then names the technical term. About 100 words of core text per page; every task can be done by tapping chips, so the book works on a phone.
 - **How it is built:** the current repo is renamed to `build-it-right` and becomes one Vite app with a bookshelf at `/`, each book under its own path, and shared parts (drawing kit, practice terminal, quick checks, reading mode) used by every book.
 - **Order of work:** restructure the repo with no visible change (PR A to C), then the Foundations shell and module 1 (PR D), then one PR per module. About 10 to 12 Devin sessions for the MVP book (section 10).
 
@@ -20,7 +21,7 @@ Status: agreed. PR A (this move) puts the Data Vault guide at `/#/datavault/`. A
 
 | Book | Path | Reader | Status |
 |---|---|---|---|
-| Foundations: shipping code in the age of AI tools (working title) | `/#/foundations/` | Business students first, technical students via "Go deeper" | New |
+| Foundations: shipping code in the age of AI tools (working title) | `/#/foundations/` | Non-programmers first, technical students via "Go deeper" | New |
 | The dbt + Data Vault guide | `/#/datavault/` | Data and analytics engineers | Existing, unchanged content |
 
 Later books cost little once the shared parts exist (ideas, not commitments: SQL for analysts, dbt for analysts). Foundations comes first on the shelf because it is the entry point; the Data Vault book is the natural "next book" for readers who go into data.
@@ -80,7 +81,7 @@ Every page must teach the shell, git, a reproducible setup, CI, or how to troubl
 
 | Reader | Starts with | Path |
 |---|---|---|
-| S1 Business student (main) | Excel, maybe a statistics course, has tried ChatGPT or Lovable. Any OS. | Core pages; "Bring it home" optional |
+| S1 Non-programmer student (main) | Excel, maybe a statistics course, has tried ChatGPT or Lovable. Any OS. | Core pages; "Bring it home" optional |
 | S2 Technical student (BSc or MSc) | Python or R from a course, an IDE or RStudio | Core plus "Go deeper", "Bring it home", broken labs |
 | S3 The mentee | Like S1 | Like S1, as a reader |
 
@@ -88,7 +89,8 @@ Every page must teach the shell, git, a reproducible setup, CI, or how to troubl
 
 Every section page has the same shape, so an interrupted reader always knows where they are:
 
-1. Title and one-line lead.
+0. **From DTU:** a short box with a real moment from Pietro's 02806 or 02476 project (`Story` component), linking the repository.
+1. Title, then the idea in one or two plain sentences.
 2. Task list (one to three tasks) and the practice terminal, with the reacting drawing beside it on wide screens and below it on phones.
 3. Three to five sentences.
 4. **Why it matters with AI tools:** one short box tying the page to what the reader will see in Claude Code, Codex, Cursor or Lovable.
@@ -112,7 +114,7 @@ The book's practical takeaway, one or two rules per part, collected on a printab
 
 ### 2.6 The running project
 
-`orders-report`: three small CSVs (customers, nations, orders) and the same report twice, `report.py` and `report.R`, printing orders and revenue per nation. The reader picks Python or R once; the choice is remembered. Revenue is business data on purpose: when an AI edit moves the number, a business reader sees why it matters.
+`orders-report`: three small CSVs (customers, nations, orders) and the same report twice, `report.py` and `report.R`, printing orders and revenue per nation. The reader picks Python or R once; the choice is remembered. Revenue is business data on purpose: when an AI edit moves the number, any reader sees why it matters. The DTU projects are the story (section 2.7); `orders-report` stays the hands-on project.
 
 What the project contains as the book goes on (in the practice terminal first; in the real template repo from "Bring it home"):
 
@@ -123,6 +125,25 @@ What the project contains as the book goes on (in the practice terminal first; i
 | Part III | `pyproject.toml` + `uv.lock` or `renv.lock`; `Makefile` (`make run`, `make test`); `.env.example`; a `Dockerfile` (Go deeper) |
 | Part IV | `.github/workflows/ci.yml`, tests and lint as required checks, a scheduled run publishing the report |
 | Part V | nothing new: broken copies to fix |
+
+### 2.7 The story
+
+The book follows Pietro through two real DTU group projects, both public on GitHub. They show the same student before and after, and their histories already hold the problems the book solves. Teammates are never named; they are "a teammate".
+
+- **02806 Social Data Analysis and Visualization** (spring 2021, 3 students, [repo](https://github.com/peterampazzo/dtu-02806)): notebooks, 6 commits all on a single day, `useful_functions.ipynb` next to `useful_functions-2.ipynb`, a two-line `requirements.txt`, setup living in Deepnote. The "before".
+- **02476 Machine Learning Operations** (January 2022, 4 students, two weeks, [repo](https://github.com/peterampazzo/dtu-02476)): 210 commits, 22 pull requests, one branch per feature, pre-commit hooks, a lint check on every PR, pinned `requirements.txt` and `environment.yml`, `.env.example`, Docker images built by GitHub Actions and run on Google Cloud. The "after".
+
+The five things the book teaches, each with the real moment that opens it:
+
+| Part | Problem | Real moment |
+|---|---|---|
+| I. Work on a codebase (terminal) | "I've got the project. Where is everything and how do I run it?" | `python3 src/data/make_dataset.py data/raw data/processed` only works from the top folder; the Makefile says `python3`, the Docker script says `python` |
+| II. Check other people's code (git) | "A teammate, or the AI, changed it and the number moved. What changed? Do I accept it?" | `useful_functions-2.ipynb`; the commit "Fixing accuracy calculations"; one branch and PR per feature |
+| III. Test it automatically (CI) | "Every push must still work, without me checking by hand." | lint check on every PR; "fixed isort-black conflict" and "Revert 'set isort with black profile'" |
+| IV. Same setup everywhere | "It works on my laptop, not on yours." | the commit "add google-cloud to requirements.txt"; `.env.example` with `WANDB_API=` and `GC_KEY=` |
+| V. Run it remotely (Docker) | "It has to run on a server, not my laptop." | 87,000 training images; `train.dockerfile` built by GitHub Actions and run on Google Cloud; "fix docker file", "fix entrypoint filename" |
+
+Troubleshooting stays a "When it breaks" page at the end of every module, plus the labs at the end.
 
 ---
 
@@ -183,7 +204,27 @@ Times are core-path estimates. **MVP** marks the first release. For each module:
 - Open a terminal on your own machine: Terminal on macOS, the terminal on Linux, Ubuntu under WSL on Windows. Install git and uv or R. Clone the `orders-report` template, commit, push. Same commands as the practice terminal.
 - When it breaks: WSL not enabled, `git` asks for a username, push rejected (authentication).
 
-### Part III. Reproducible setup
+### Part III. Test it automatically (CI)
+
+**11. CI is a terminal somewhere else** (10 min, MVP)
+- Task: push in the practice terminal; a drawn runner checks out the last commit on a fresh machine, runs `make test`, and shows the log step by step and a green or red check on the PR. A file that was never committed makes CI fail even though it works locally.
+- Drawing: push, fresh machine, steps in order, first failure stops it, status on the PR.
+- Why it matters: the same check runs on your changes and the AI's.
+- Go deeper: reading `ci.yml`, `astral-sh/setup-uv` and `r-lib/actions`.
+- When it breaks: the failing step, "works locally" because of an uncommitted file.
+
+**12. Checks that stop bad changes** (8 min)
+- Task: an AI edit changes the revenue number; all checks stay green; the reader adds one test (filled in for them) and sees the next run catch it.
+- Drawing: a required check as a gate before merge.
+- Why it matters: tests are how you tell the tool what "correct" means.
+- Go deeper: pytest and ruff, or testthat and lintr; pre-commit; Dependabot.
+
+**13. Scheduled jobs** (6 min)
+- Task: the report runs every morning at 07:00 and publishes to Pages; the reader reads one scheduled run's log.
+- Drawing: a calendar trigger instead of a push.
+- Go deeper: artifacts, secrets in CI.
+
+### Part IV. Same setup everywhere
 
 **7. Works on my machine** (10 min, MVP)
 - Task: three drawn machines (the AI tool's sandbox, your laptop, CI) install the project; without a lockfile they get different versions and one fails; add the lockfile and all three match.
@@ -206,33 +247,23 @@ Times are core-path estimates. **MVP** marks the first release. For each module:
 - Go deeper: secrets in CI, rotating a leaked key.
 - When it breaks: a variable that is set in one terminal but not another.
 
-**10. Containers, briefly** (6 min)
-- Task: none in the terminal; a drawing-led page with a three-step stepper.
-- Drawing: image vs container; a container gives the code a known, fixed machine to run on, the same idea behind the hosted previews AI app builders show you.
+### Part V. Run it remotely
+
+**10. Containers: a box that runs anywhere** (8 min, MVP)
+- Task: a drawing-led page with a three-step stepper (recipe, box, run), then `docker run` in the practice terminal starting the report in a simulated container that has its own Python and R, whatever the laptop has.
+- Drawing: image vs container; the same container on your laptop, a server and the cloud, the idea behind the hosted previews AI app builders show you.
 - Why it matters: "it runs in the container" is the strongest version of "it runs on every machine".
 - Go deeper: a `Dockerfile` for the report (`python` or `rocker/r-ver` base), mounting the data folder, devcontainers.
+- When it breaks: "No such file" inside the container because the data folder was not mounted.
 
-### Part IV. Automation
+**10b. Built by CI, run in the cloud** (8 min)
+- Task: a drawn pipeline: push, GitHub Actions builds the image, stores it in a registry, a cloud machine runs it with secrets from its own settings, not from the repo.
+- Drawing: laptop to registry to cloud.
+- Why it matters: this is what "deploy" means when an AI tool offers to do it.
+- Go deeper: registries, tags, passing secrets to a container.
+- When it breaks: the image builds but the container exits at once (read its logs).
 
-**11. CI is a terminal somewhere else** (10 min, MVP)
-- Task: push in the practice terminal; a drawn runner checks out the last commit on a fresh machine, runs `make test`, and shows the log step by step and a green or red check on the PR. A file that was never committed makes CI fail even though it works locally.
-- Drawing: push, fresh machine, steps in order, first failure stops it, status on the PR.
-- Why it matters: the same check runs on your changes and the AI's.
-- Go deeper: reading `ci.yml`, `astral-sh/setup-uv` and `r-lib/actions`.
-- When it breaks: the failing step, "works locally" because of an uncommitted file.
-
-**12. Checks that stop bad changes** (8 min)
-- Task: an AI edit changes the revenue number; all checks stay green; the reader adds one test (filled in for them) and sees the next run catch it.
-- Drawing: a required check as a gate before merge.
-- Why it matters: tests are how you tell the tool what "correct" means.
-- Go deeper: pytest and ruff, or testthat and lintr; pre-commit; Dependabot.
-
-**13. Scheduled jobs** (6 min)
-- Task: the report runs every morning at 07:00 and publishes to Pages; the reader reads one scheduled run's log.
-- Drawing: a calendar trigger instead of a push.
-- Go deeper: artifacts, secrets in CI.
-
-### Part V. Troubleshooting
+### Part VI. Troubleshooting
 
 **14. A method for when it breaks** (8 min, MVP)
 - Task: a red run; the reader clicks the line that explains the failure, reproduces it in the practice terminal, fixes it, and writes a three-line problem report from a template (what I ran, what happened, what I expected).
@@ -249,7 +280,9 @@ Times are core-path estimates. **MVP** marks the first release. For each module:
 
 **Cheat sheet:** the eight house rules on one page, printable.
 
-MVP: modules 1, 2, 4, 5, 6, 7, 9, 11, 14 (the core of every part), plus "Bring it home". About 85 minutes of core reading.
+MVP: modules 1, 2, 4, 5, 6, 11, 7, 9, 10, 14 (the core of every part, in reading order), plus "Bring it home". About 95 minutes of core reading.
+
+Module numbers are ids, not reading order: after Part II comes Automation (11 to 13), then Same setup everywhere (7 to 9), then Run it remotely (10, 10b). A failing check that turns out to be a missing package is what leads from CI into setup.
 
 ---
 
@@ -320,7 +353,7 @@ Each PR is based on the previous one and merged in order. Lint, unit tests, buil
 | B | Shelf landing page and book registry; per-book header, about and glossary | New landing page |
 | C | Shared `Deeper` component and the learning design rule for it; per-book scope rules in `AGENTS.md` | None |
 | D | Foundations shell: cover, contents, data, glossary, house-rules page; practice terminal from the prototype with its tests; module 1 | Foundations book with one module |
-| E onward | One PR per module in MVP order: 2, 4, 5, 6, Bring it home, 7, 9, 11, 14; then 3, 8, 10, 12, 13, 15 and the cheat sheet | One module each |
+| E onward | One PR per module in MVP order: 2, 4, a rewrite of 1, 2 and 4 around the DTU story, 5, 6, Bring it home, 11, 7, 9, 10, 14; then 3, 8, 10, 12, 13, 15 and the cheat sheet | One module each |
 
 The `orders-report` template repo (public, with Python and R, `Makefile`, lockfiles, CI) is created alongside "Bring it home".
 
@@ -329,7 +362,7 @@ The `orders-report` template repo (public, with Python and R, `Makefile`, lockfi
 ## 7. Writing
 
 - Chapters stay TSX like the Data Vault book. The earlier MDX idea is dropped: the mentee is a reader, not an author, and one format keeps the rules and tests uniform.
-- Voice: plain English, short sentences, no jargon before it is defined, business examples first.
+- Voice: plain English, short sentences, no jargon before it is defined. Real moment first, familiar comparison second, technical term last.
 - Every term is defined at first use and added to the Foundations glossary.
 - Every page is checked against the learning design success criteria S1 to S7 and the UX audit before its PR.
 
@@ -358,7 +391,7 @@ Case studies ("In a real repo"): the-dbt-datavault-modern-guide (PR flow, CI, pr
 | Tool names in the copy go stale | Only in the "Why it matters" boxes and section 2.1; the engine and tasks stay generic ("your AI tool") |
 | The git simulation grows into a full git | Fixed command list in section 4; anything else replies "not in this lesson yet" |
 | Moving the Data Vault book breaks links or progress | Redirect test for every old slug; progress key unchanged |
-| Business readers find Parts III and IV too technical | Core pages stay drawing-led with one task; code goes to "Go deeper" |
+| Non-programmers find the later parts too technical | Core pages stay drawing-led with one task; code goes to "Go deeper" |
 
 ---
 
@@ -371,9 +404,9 @@ Rough, in Devin sessions: PR A to C one to two; PR D one (most of it exists); Pa
 ## 11. Decided
 
 - One site, *Build it right*, with separate books; the Data Vault guide becomes one book, content unchanged.
-- Foundations is for business students first; technical students get "Go deeper". Python and R are run, not taught. The mentee is a reader.
+- Foundations is for non-programmer students first; technical students get "Go deeper". Python and R are run, not taught. The mentee is a reader.
 - AI tools are the reason for the book, not a topic in it: no tool-specific prompting.
-- No install to start; real machine from "Bring it home", optional for business readers: Linux and macOS natively, Windows through WSL. No Codespaces.
+- No install to start; real machine from "Bring it home", optional for non-programmers: Linux and macOS natively, Windows through WSL. No Codespaces.
 - Keep this repo and rename it `build-it-right`. Case studies: the Data Vault guide and vm-infra.
 
 ## 12. Open questions
