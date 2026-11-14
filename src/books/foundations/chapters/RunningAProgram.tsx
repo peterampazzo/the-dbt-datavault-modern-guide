@@ -3,6 +3,7 @@ import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { ApproveOrNot } from '@/books/foundations/components/ApproveOrNot'
 import { Deeper } from '@/books/foundations/components/Deeper'
 import { EnterDrawing } from '@/books/foundations/components/drawing/EnterDrawing'
+import { Story } from '@/books/foundations/components/Story'
 import { Practice, type Task } from '@/books/foundations/components/shell/Practice'
 import { WhyAI } from '@/books/foundations/components/WhyAI'
 import { PROJECT } from '@/books/foundations/lib/shell/fs'
@@ -38,37 +39,42 @@ export default function RunningAProgram() {
     <Chapter>
       <ChapterHeader
         title="Running a program"
-        lead="Every command you type, and every command an AI tool asks to run, starts a program. See what happens when you press Enter, and how to tell if it worked."
+        lead="Every command you type, and every command an AI tool asks to run, starts a program. The program runs, then reports back whether it worked. Learn to read that, and to decide what to approve."
       />
-      <Section
-        title="Press Enter"
-        lead="orders-report has the same report twice: report.py in Python and report.R in R. Run one of them."
-        keyPoint="Pressing Enter starts a program in the folder you are in."
-      >
+      <Section title="Press Enter" keyPoint="Pressing Enter starts a program in the folder you are in.">
+        <Story course="02476">
+          The same project ran in three places: on each student&apos;s laptop, inside a Docker container in the cloud, and on GitHub for every pull request.
+          Every time, it started the same way: a program, given a file to run.
+        </Story>
+        <P>
+          Pressing Enter is like double-clicking an app: it starts a program. The practice project has the same report twice, in Python and in R. Run either.
+        </P>
         <Practice id="m2-enter" cwd={PROJECT} tasks={tasks.enter} chips={['python3 report.py', 'Rscript report.R']} />
         <EnterDrawing />
         <P>
-          <Code>python3</Code> and <Code>Rscript</Code> are programs. <Code>report.py</Code> is the argument: the file you ask them to run. The report reads the
-          three CSV files in <Code>data</Code> and prints orders and revenue per nation. You don&apos;t need to read the code to run it.
+          <Code>python3</Code> and <Code>Rscript</Code> are the programs; <Code>report.py</Code> is the file you hand them. The report reads the three files in{' '}
+          <Code>data</Code> and prints orders and revenue per country. You don&apos;t need to read the code to run it.
         </P>
         <WhyAI>
-          When Claude Code or Codex shows “Run <Code>python3 report.py</Code>?”, this is what you are approving: a program, started in a folder, with your
-          permissions.
+          When Claude Code or Codex asks “Run <Code>python3 report.py</Code>?”, this is what you approve: a program, started in a folder, allowed to do what
+          you can do.
         </WhyAI>
       </Section>
-      <Section
-        title="Where programs live"
-        lead="The shell has to find python3 before it can run it. It looks in a short list of folders called PATH."
-        keyPoint="which shows the program a command name will start."
-      >
+      <Section title="Where programs live" keyPoint="which shows the program a name will start.">
+        <Story course="02476">
+          The project&apos;s Makefile says <Code>python3</Code>. The Docker start script in the same project says <Code>python</Code>. Both were right, each on
+          its own machine. Which name works depends on what that machine has installed.
+        </Story>
+        <P>
+          Your computer keeps a short list of folders where programs live, called <strong>PATH</strong>. Ask where <Code>python3</Code> is.
+        </P>
         <Practice id="m2-path" cwd={PROJECT} tasks={tasks.path} chips={['which python3', 'echo $PATH']} />
         <P>
-          A program is a file too. <Code>which python3</Code> prints its address, <Code>/usr/bin/python3</Code>. <Code>PATH</Code> is a list of folders separated
-          by <Code>:</Code>. The shell tries them in order and runs the first match. If no folder has it, you get <Code>command not found</Code>.
+          A program is a file too: <Code>which python3</Code> prints its address. The computer looks through the PATH folders in order and runs the first match.
+          No match means <Code>command not found</Code>.
         </P>
         <WhyAI>
-          “It works in my terminal but not in the tool” often means the two have a different PATH, so the same name starts a different program, or none.
-          <Code>which</Code> settles it.
+          “It works in my terminal but not in the tool” often means the two look in different folders. <Code>which</Code> settles it.
         </WhyAI>
         <Deeper title="environment variables">
           <p>
@@ -78,19 +84,19 @@ export default function RunningAProgram() {
           </p>
         </Deeper>
       </Section>
-      <Section
-        title="Did it work?"
-        lead="Every program ends with a number, its exit code. 0 means it worked; anything else means it failed. The shell keeps the last one in $?."
-        keyPoint="Exit code 0 means success. Anything else is a failure, even when nothing is printed."
-      >
-        <Practice id="m2-status" cwd={PROJECT} tasks={tasks.status} chips={['python3 report.py', 'echo $?', 'python3 nope.py']} />
+      <Section title="Did it work?" keyPoint="0 means it worked. Any other number means it failed, even if nothing was printed.">
+        <Story course="02476">
+          The project&apos;s Docker start script begins with a check: if nobody said what to run, print <Code>No argument supplied</Code> and exit with 1. That 1
+          is how the script tells the computer “I failed”.
+        </Story>
         <P>
-          <Code>echo</Code> prints what you give it, and <Code>$?</Code> is the exit code of the command before. A missing file gives 2; a command that does not
-          exist gives 127. The numbers differ from program to program, but 0 always means success.
+          Every program ends by handing back a number, its <strong>exit code</strong>. 0 means it worked; anything else means it failed. <Code>echo $?</Code>{' '}
+          shows the last one.
         </P>
+        <Practice id="m2-status" cwd={PROJECT} tasks={tasks.status} chips={['python3 report.py', 'echo $?', 'python3 nope.py']} />
+        <P>A missing file gives 2, a command that does not exist gives 127. The other numbers vary, but 0 always means success.</P>
         <WhyAI>
-          AI tools, and CI later in this book, decide “passed” or “failed” from the exit code, not from what the output says. A test run that prints a lot but
-          exits with 0 is green.
+          AI tools, and the automatic checks later in this book, decide “passed” or “failed” from this number, not from what the output says.
         </WhyAI>
         <Deeper title="output and errors">
           <p>
@@ -100,52 +106,56 @@ export default function RunningAProgram() {
           </p>
         </Deeper>
       </Section>
-      <Section
-        title="One after another"
-        lead="&& joins two commands: the second runs only if the first exits with 0."
-        keyPoint="a && b runs b only when a worked."
-      >
+      <Section title="One after another" keyPoint="a && b runs b only if a worked.">
+        <Story course="02476">
+          <Code>make data</Code> first installed the packages, and only then built the dataset. If installing failed, there was no point carrying on.
+        </Story>
+        <P>
+          <Code>&amp;&amp;</Code> joins two commands and means “and then, if that worked”. Try one chain that works and one that stops early.
+        </P>
         <Practice id="m2-chain" cwd={PROJECT} tasks={tasks.chain} chips={['cd data && wc -l orders.csv', 'cd .. && python3 nope.py && echo done']} />
         <P>
-          Read <Code>&amp;&amp;</Code> as “and then, if that worked”. A chain stops at the first failure, so <Code>done</Code> is never printed when the report
-          before it fails. Look at the exit code with <Code>echo $?</Code> after a chain: it is the code of the last part that ran.
+          The chain stops at the first failure, so <Code>done</Code> is never printed.
         </P>
         <WhyAI>
-          Agents chain commands a lot, for example <Code>cd app &amp;&amp; npm install &amp;&amp; npm test</Code>. Read the whole line before approving: each
-          part is a separate program, and the last one only runs if all the others worked.
+          AI tools chain a lot, for example <Code>cd app &amp;&amp; npm install &amp;&amp; npm test</Code>. Each part is a separate program: read the whole line
+          before you approve.
         </WhyAI>
       </Section>
-      <Section
-        title="Approve or not"
-        lead="An AI tool asks to run three commands. For each, decide: run it, or look closer first?"
-        keyPoint="Approve commands that read or test. Stop and check commands that delete, or download and run something."
-      >
+      <Section title="Approve or not" keyPoint="Approve commands that read or test. Stop and check commands that delete, or download and run something.">
+        <Story course="02476">
+          The project had a <Code>make clean</Code> command that deletes files. Useful and harmless there, but you would want to know what it deletes before
+          letting anyone, or any tool, run it.
+        </Story>
+        <P>An AI tool asks to run three commands. For each one, decide: run it, or look closer first?</P>
         <ApproveOrNot />
         <P>
-          You don&apos;t need to know every command. Ask three questions: what program does it start, which folder does it touch, and can I undo it? If you can&apos;t
-          answer, ask the tool to explain before you approve.
+          You don&apos;t need to know every command. Ask three questions: which program, which folder, and can I undo it? If you can&apos;t answer, ask the tool
+          to explain first.
         </P>
         <WhyAI>
-          This is what the approval prompt in Claude Code, Codex or Cursor is asking you. “Always allow” is fine for tests and reading files, and a bad idea for
+          This is what the approval prompt in Claude Code, Codex or Cursor is asking. “Always allow” is fine for tests and reading files, and a bad idea for
           anything that deletes or installs.
         </WhyAI>
       </Section>
       <Section
         title="When it breaks"
-        lead="Three errors you will see when a program does not start. Each one is about the name, not the code."
-        keyPoint={<>Read <Code>command not found</Code> as “the shell found no program with that exact name on PATH”.</>}
+        keyPoint={
+          <>
+            <Code>command not found</Code> means no program with that exact name was found.
+          </>
+        }
       >
-        <Practice id="m2-breaks" cwd={PROJECT} tasks={tasks.breaks} chips={['python report.py', 'which python', 'which python3', 'Python3 report.py']} />
         <P>
-          On many Linux and macOS machines the program is called <Code>python3</Code>, and <Code>python</Code> does not exist. Instructions written for another
-          machine often say <Code>python</Code>. <Code>which</Code> prints nothing and exits with 1 when it finds no match.
+          Remember <Code>python3</Code> in one file and <Code>python</Code> in the other? On many laptops only one of them exists. Try both, and a capital P.
         </P>
+        <Practice id="m2-breaks" cwd={PROJECT} tasks={tasks.breaks} chips={['python report.py', 'python3 report.py', 'which python', 'which python3', 'Python3 report.py']} />
         <P>
-          Names are case sensitive: <Code>Python3</Code> is not <Code>python3</Code>. When a program does start but fails, the exit code is not 0 and the last
-          lines of the output say why. Read those first.
+          <Code>which</Code> prints nothing when it finds no match. Capitals count: <Code>Python3</Code> is not <Code>python3</Code>. When a program does start
+          but fails, the last lines of its output say why. Read those first.
         </P>
         <WhyAI>
-          When you report a failure to the tool or a colleague, include the exact command, the last lines of output and the exit code. “It doesn&apos;t work”
+          When you report a failure to the tool or a teammate, include the exact command, the last lines of output and the exit code. “It doesn&apos;t work”
           gives them nothing to go on.
         </WhyAI>
       </Section>

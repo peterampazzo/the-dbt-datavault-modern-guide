@@ -14,11 +14,14 @@ export function Home() {
       <p className="font-sans text-sm font-medium text-violet-700 dark:text-violet-400">Build it right · Foundations</p>
       <h1 className="mt-2 text-4xl font-semibold tracking-tight text-balance">Shipping code in the age of AI tools</h1>
       <p className="mt-4 text-lg leading-8 text-muted-foreground">
-        Tools like Claude Code, Codex and Lovable write code for you. They run it in a terminal, save it with git and check it in CI. This book shows what
-        happens under the hood, so you can tell where the code runs, what changed, how to undo it and why a check went red.
+        Tools like Claude Code, Codex and Lovable write code for you. Someone still has to work on that code with others, check it, test it, set up the
+        machines it runs on and run it somewhere other than a laptop. This book shows how.
       </p>
       <p className="mt-3 leading-7 text-muted-foreground">
-        No programming needed and nothing to install: each page has a practice terminal that runs in your browser. Python and R are run, not taught.
+        It follows Pietro through two DTU group projects: <a className="underline" href="https://github.com/peterampazzo/dtu-02806" target="_blank" rel="noreferrer">02806</a>, where the work
+        lived in notebooks, and <a className="underline" href="https://github.com/peterampazzo/dtu-02476" target="_blank" rel="noreferrer">02476</a>, where four students worked through git,
+        automatic checks and Docker. Each page starts from a real moment in those projects, then you try it in a practice terminal in your browser. No
+        programming needed and nothing to install.
       </p>
       <div className="mt-6">
         <Link

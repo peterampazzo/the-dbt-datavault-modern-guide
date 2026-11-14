@@ -3,6 +3,7 @@ import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { Deeper } from '@/books/foundations/components/Deeper'
 import { SameSetupDrawing } from '@/books/foundations/components/drawing/SameSetupDrawing'
 import { TextFilesDrawing } from '@/books/foundations/components/drawing/TextFilesDrawing'
+import { Story } from '@/books/foundations/components/Story'
 import { Practice, type Task } from '@/books/foundations/components/shell/Practice'
 import { WhyAI } from '@/books/foundations/components/WhyAI'
 import { PROJECT } from '@/books/foundations/lib/shell/fs'
@@ -113,38 +114,38 @@ export default function Snapshots() {
     <Chapter>
       <ChapterHeader
         title="Snapshots"
-        lead="Git keeps every saved version of your project's text files, shows what changed between them, and lets a team work on the same files. It is not new; most people just never start."
+        lead="May 2021, DTU 02806: three students, one folder of notebooks, and 6 saved versions in total, all made on a single day. January 2022, DTU 02476: four students, 210 saved versions and 22 pull requests in two weeks. Same student. The difference was git."
       />
-      <Section
-        title="Any text file"
-        lead="Version control is not only for programmers. Anything stored as text can be versioned: Python and R code, settings files, even your editor's settings."
-        keyPoint="If you can open it in a text editor, git can keep every version of it and show what changed."
-      >
+      <Section title="Any text file" keyPoint="If you can open it in a text editor, git can keep every version of it and show what changed.">
+        <Story course="02806">
+          The project ended up with both <Code>useful_functions.ipynb</Code> and <Code>useful_functions-2.ipynb</Code>, and they are not the same. Which one is
+          right? The names can&apos;t tell you. It is <Code>report_v2_FINAL_final.xlsx</Code>, in code.
+        </Story>
+        <P>
+          <strong>Git</strong> is like Google Docs version history, for a whole folder. It works for anything stored as text: Python and R code, settings files,
+          even your editor&apos;s settings. Look at the hidden settings files in the practice project.
+        </P>
         <Practice id="m4-files" cwd={PROJECT} tasks={tasks.files} chips={['ls -a', 'cat .vscode/settings.json', 'cat .env.example']} />
         <P>
-          Files whose name starts with a dot are hidden, and <Code>ls -a</Code> shows them. <Code>.vscode/settings.json</Code> is the editor&apos;s setup for
-          this project, and <Code>.env.example</Code> lists the settings the report needs, without the secret values. They are text, like <Code>report.py</Code>{' '}
-          and <Code>report.R</Code>, so git can keep them all.
+          Names that start with a dot are hidden; <Code>ls -a</Code> shows them. <Code>.vscode/settings.json</Code> is the editor&apos;s setup for this project.{' '}
+          <Code>.env.example</Code> lists the settings the report needs, without the secret values. All text, so git can keep them.
         </P>
         <TextFilesDrawing />
         <P>
-          Git is a <strong>version control</strong> system: it saves snapshots of a folder and remembers every one. It works best with text, because it can show
-          the exact lines that changed. Spreadsheets, slides and images can be saved too, but git can only tell you that they changed, not what changed inside.
+          Spreadsheets, slides and images can be saved too, but git can only say that they changed, not what changed inside. None of this is new: git is from
+          2005. It looks harder than it is. Day to day you need four commands, on the next page.
         </P>
-        <P>
-          None of this is new. Git dates from 2005, and teams have used version control since the 1970s. It looks harder than it is: day to day you need four
-          commands, and they are on the next page.
-        </P>
-        <WhyAI>
-          Everything Claude Code, Codex or Lovable produces is text: code, configuration, instructions. If it is in git, you can see what the tool did and go
-          back to any earlier version.
-        </WhyAI>
+        <WhyAI>Everything Claude Code, Codex or Lovable produces is text. If it is in git, you can see what the tool did and go back to any earlier version.</WhyAI>
       </Section>
-      <Section
-        title="Take a snapshot"
-        lead="This folder is a git repository with nothing saved yet. Save its first snapshot in two steps: choose what goes in, then commit."
-        keyPoint="git add chooses what goes in the next snapshot; git commit saves it with a message."
-      >
+      <Section title="Take a snapshot" keyPoint="git add chooses what goes in the snapshot; git commit saves it with a note.">
+        <Story course="02476">
+          Every change came with a short note: “add google-cloud to requirements.txt”, “Fixing accuracy calculations”. 210 of them. Each one is a snapshot anyone
+          on the team could look at, or go back to.
+        </Story>
+        <P>
+          Saving a snapshot is like sending a parcel: put things in the box (<Code>git add</Code>), then seal it and write a label (<Code>git commit</Code>).
+          This folder has nothing saved yet.
+        </P>
         <Practice
           id="m4-snapshot"
           cwd={PROJECT}
@@ -153,17 +154,13 @@ export default function Snapshots() {
           chips={['git status', 'git add .', 'git commit -m "Add the orders report"', 'git log --oneline']}
         />
         <P>
-          A <strong>repository</strong> is a folder whose history git keeps. A <strong>commit</strong> is one snapshot of it, with a message saying why. Before
-          committing you <strong>stage</strong> changes with <Code>git add</Code>; <Code>git add .</Code> means everything in this folder. The panel under the
-          terminal shows where each file is: changed in your folder, staged, or saved in the history.
+          A snapshot is called a <strong>commit</strong>. Putting files in the box is called <strong>staging</strong>; <Code>git add .</Code> means everything
+          here. A folder whose history git keeps is a <strong>repository</strong>. The panel under the terminal shows where each file is.
         </P>
         <P>
-          <Code>git status</Code> is the command to run when in doubt. It says what changed and what to type next.
+          When in doubt, run <Code>git status</Code>. It says what changed and what to type next.
         </P>
-        <WhyAI>
-          Commit before you let a tool loose. Then everything the tool does shows up as a change against a known, working snapshot, and you can always go back
-          to it.
-        </WhyAI>
+        <WhyAI>Commit before you let a tool loose. Then everything it does shows up as a change against a version you know works.</WhyAI>
         <Deeper title="what is inside a commit">
           <p>
             Each commit has an id (the long hexadecimal number; the first 7 characters are enough to name it), an author, a date, the message, and a pointer to
@@ -172,44 +169,50 @@ export default function Snapshots() {
           </p>
         </Deeper>
       </Section>
-      <Section
-        title="What did the tool change?"
-        lead="The project has one snapshot. You ask your AI tool for a small change. Before you accept it, find out exactly what it did."
-        keyPoint="git status shows which files changed; git diff shows which lines."
-      >
+      <Section title="What did the tool change?" keyPoint="git status shows which files changed; git diff shows which lines.">
+        <Story course="02476">
+          One commit is called “Fixing accuracy calculations”. A small edit, and the model&apos;s headline number changes. When a number in your report moves, the
+          first question is: which line changed?
+        </Story>
+        <P>
+          You have one snapshot. Now ask your AI tool for a small change, then look at exactly what it did, like Track Changes in Word.
+        </P>
         <Practice id="m4-diff" cwd={PROJECT} start={afterFirstSnapshot} tasks={tasks.diff} ai git chips={['git status', 'git diff', 'python3 report.py']} />
         <P>
-          In a diff, lines starting with <Code>-</Code> were removed and lines starting with <Code>+</Code> were added. The tool added the title you asked for.
-          It also wrapped every order price in <Code>round(...)</Code>, which you did not ask for, and the revenue per nation changed.
+          Lines starting with <Code>-</Code> were removed, lines starting with <Code>+</Code> were added. The tool added the title you asked for. It also wrapped
+          every price in <Code>round(...)</Code>, which you did not ask for, and the revenue changed.
         </P>
         <P>
-          You don&apos;t need to read Python to spot this. Read the <Code>+</Code> lines and ask: did I ask for this? Here the answer is no, and the report
-          proves it. Module 6 shows how to throw a change away.
+          You don&apos;t need to read Python to spot this. Read the <Code>+</Code> lines and ask: did I ask for this? A later module shows how to throw a change
+          away.
         </P>
         <WhyAI>
-          Every tool shows its changes in its own way. <Code>git diff</Code> is the same everywhere and shows everything. If you can&apos;t explain a diff,
-          don&apos;t commit it: ask the tool why it changed that line.
+          Every tool shows its changes its own way. <Code>git diff</Code> is the same everywhere and shows everything. If you can&apos;t explain a line,
+          don&apos;t commit it: ask the tool why.
         </WhyAI>
       </Section>
-      <Section
-        title="Same setup everywhere"
-        lead="Editor settings are text files too. Put them in the repository and every colleague, every machine and your next laptop get the same setup."
-        keyPoint="Project settings in the repository travel with the code: clone it, and the editor is set up."
-      >
+      <Section title="Same setup everywhere" keyPoint="Settings in the repository travel with the code: get the project, get the setup.">
+        <Story course="02476">
+          The repository held the team&apos;s settings files: code formatting rules, style checks, and an <Code>.env.example</Code>. So four laptops formatted code
+          the same way and knew which settings to fill in, without anyone emailing instructions.
+        </Story>
+        <P>
+          Editor settings are text files too. Put them in the repository and every teammate, every machine and your next laptop get the same setup.
+        </P>
         <Practice id="m4-setup" cwd={PROJECT} start={afterFirstSnapshot} tasks={tasks.setup} git chips={['cat .vscode/extensions.json', 'git status']} />
         <SameSetupDrawing />
         <P>
-          VS Code reads <Code>.vscode/settings.json</Code> when you open the folder, so the formatting rules are the same for everyone. When it finds{' '}
-          <Code>.vscode/extensions.json</Code>, it offers to install the recommended extensions: here the Python, Ruff and R ones. Cursor and other editors
-          built on VS Code read the same files. RStudio keeps its project settings in a <Code>.Rproj</Code> file, which also belongs in the repository.
+          VS Code reads <Code>.vscode/settings.json</Code> when you open the folder, and offers to install the extensions listed in{' '}
+          <Code>.vscode/extensions.json</Code>. Cursor reads the same files. RStudio keeps its project settings in a <Code>.Rproj</Code> file, which belongs in
+          the repository too.
         </P>
         <P>
-          Settings with secrets are the exception. The real key goes in <Code>.env</Code>, which stays on your machine; the repository has{' '}
-          <Code>.env.example</Code>, with the names and no values, so a new machine knows what to fill in.
+          Secrets are the exception. The real key goes in <Code>.env</Code>, which stays on your machine. The repository gets <Code>.env.example</Code>: the names,
+          no values.
         </P>
         <WhyAI>
-          AI tools read instruction files from the repository too: <Code>AGENTS.md</Code>, <Code>CLAUDE.md</Code>, <Code>.cursor/rules</Code>. They are text.
-          Commit them, and every person and every tool on the project works by the same rules.
+          AI tools read instruction files from the repository too: <Code>AGENTS.md</Code>, <Code>CLAUDE.md</Code>, <Code>.cursor/rules</Code>. Commit them, and
+          every person and every tool works by the same rules.
         </WhyAI>
         <Deeper title="personal settings and other editors">
           <p>
@@ -219,11 +222,12 @@ export default function Snapshots() {
           </p>
         </Deeper>
       </Section>
-      <Section
-        title="When it breaks"
-        lead="The AI change from before is back in your folder. Three messages you will meet in your first week with git."
-        keyPoint="Read git's message to the end: it usually says what to type next."
-      >
+      <Section title="When it breaks" keyPoint="Read git's message to the end: it usually says what to type next.">
+        <Story course="02476">
+          The project&apos;s <Code>.env.example</Code> lists names like <Code>WANDB_API=</Code> and <Code>GC_KEY=</Code>, with nothing after the equals sign. The
+          real keys stayed on each laptop and never went into git.
+        </Story>
+        <P>The tool&apos;s change is back in your folder. Here are three messages you will meet in your first week with git.</P>
         <Practice
           id="m4-breaks"
           cwd={PROJECT}
@@ -233,17 +237,17 @@ export default function Snapshots() {
           chips={['git commit -m "Add a title"', 'git add .env', 'git add .', 'git status']}
         />
         <P>
-          <Code>no changes added to commit</Code>: you changed files but staged nothing, so there is nothing to save. Run <Code>git add</Code> first.{' '}
-          <Code>nothing to commit, working tree clean</Code>: everything is already saved. That is good news.
+          <Code>no changes added to commit</Code>: nothing is in the box yet. Run <Code>git add</Code> first. <Code>nothing to commit, working tree clean</Code>:
+          everything is saved. Good news.
         </P>
         <P>
           <Code>ignored by one of your .gitignore files</Code>: <Code>.gitignore</Code> lists files git must leave alone, and <Code>.env</Code> is on it.
-          Don&apos;t force it in with <Code>-f</Code>. Once a key is committed it stays in the history, even after you delete the file; the only fix is to
-          cancel the key and make a new one.
+          Don&apos;t force it in. Once a key is committed it stays in the history, even after you delete the file. The only fix is to cancel the key and make a
+          new one.
         </P>
         <WhyAI>
-          Secrets never go in the code, the repository or the prompt. If a tool suggests pasting an API key into a file, ask it to read the key from{' '}
-          <Code>.env</Code> instead, and check that <Code>.env</Code> is in <Code>.gitignore</Code>.
+          Secrets never go in the code, the repository or the prompt. If a tool pastes an API key into a file, ask it to read the key from <Code>.env</Code>{' '}
+          instead.
         </WhyAI>
       </Section>
     </Chapter>
