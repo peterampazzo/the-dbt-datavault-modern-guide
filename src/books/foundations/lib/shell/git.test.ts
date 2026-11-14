@@ -84,4 +84,11 @@ describe('practice git', () => {
     expect(s.entries[1].output).toContain('diff --git a/README.md b/README.md')
     expect(s.entries[3].output).toContain('diff --git a/report.py b/report.py')
   })
+  it('stages the whole repository with git add -A from a subfolder, and only the named path when one is given', () => {
+    const s = go(aiChange(createShell(`${PROJECT}/data`)), 'git add -A', 'git status')
+    expect(s.entries[2].output).toContain('new file:   ../report.py')
+    expect(s.entries[2].output).toContain('new file:   ../.vscode/settings.json')
+    const named = go(aiChange(committedShell(PROJECT)), 'git add -A README.md', 'git status')
+    expect(named.entries[2].output).toMatch(/Changes to be committed:[\s\S]*modified:   README.md[\s\S]*Changes not staged[\s\S]*modified:   report.py/)
+  })
 })

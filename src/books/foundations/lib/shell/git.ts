@@ -127,7 +127,7 @@ function add(root: FsNode, git: GitState, cwd: string, args: string[]): GitResul
   const work = files(root)
   const index = { ...git.index }
   const refused: string[] = []
-  for (const target of all ? ['.'] : paths) {
+  for (const target of paths.length ? paths : [PROJECT]) {
     const path = resolve(cwd, target)
     if (path !== PROJECT && !path.startsWith(`${PROJECT}/`))
       return {
