@@ -86,7 +86,16 @@ const tasks: Record<string, Task[]> = {
   ],
   breaks: [
     { label: <>Get “not a git repository” by running <Code>git status</Code> before init.</>, done: (s) => attempted(s, (e) => e.input === 'git status' && e.output.startsWith('fatal: not a git repository')) },
-    { label: <>After init, try a commit with nothing staged and read the no-commits message.</>, done: (s) => attempted(s, (e) => e.input.startsWith('git commit') && e.output.includes('nothing to commit')) },
+    {
+      label: <>After init, try a commit with nothing staged and read the no-commits message.</>,
+      done: (s) =>
+        attempted(
+          s,
+          (e) =>
+            e.input.startsWith('git commit') &&
+            (e.output.includes('nothing to commit') || e.output.includes('nothing added to commit but untracked files present')),
+        ),
+    },
     { label: <>After init, try <Code>git push</Code> without a remote.</>, done: (s) => attempted(s, (e) => e.input === 'git push' && e.output.includes('No configured push destination')) },
   ],
 }

@@ -115,6 +115,11 @@ test('Share your project: tidy secrets and push privately using chips', async ({
   await runChip('git push -u origin main')
   await runChip('git push')
   await expect(page.locator('[data-practice="s6-push"] li .sr-only').filter({ hasText: 'Done:' })).toHaveCount(4)
+
+  await page.goto('/#/foundations/share-your-project/when-it-breaks')
+  await runChip('git init')
+  await runChip('git commit -m "First version"')
+  await expect(page.locator('[data-practice="s7-breaks"] li .sr-only').filter({ hasText: 'Done:' })).toHaveCount(1)
 })
 
 const sharePages = [
