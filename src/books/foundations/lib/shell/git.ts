@@ -222,7 +222,7 @@ function diff(from: Files, to: Files, only: string[], newFiles: boolean) {
   for (const f of changes(from, to)) {
     if (!(f in to)) continue
     if (!newFiles && !(f in from)) continue
-    if (only.length && !only.some((o) => f === o || f.startsWith(`${o}/`))) continue
+    if (only.length && !only.some((o) => !o || f === o || f.startsWith(`${o}/`))) continue
     const isNew = !(f in from)
     out.push(`diff --git a/${f} b/${f}`)
     if (isNew) out.push('new file mode 100644', `index 0000000..${hash(to[f]).slice(0, 7)}`, '--- /dev/null')

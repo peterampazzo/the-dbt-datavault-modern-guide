@@ -78,4 +78,10 @@ describe('practice git', () => {
   it('diffs lines by longest common subsequence', () => {
     expect(diffLines('a\nb\nc\n', 'a\nx\nc\n').map((o) => o.kind + o.line)).toEqual([' a', '-b', '+x', ' c'])
   })
+  it('treats . at the top of the project as every file in git diff', () => {
+    const s = go(aiChange(committedShell(PROJECT)), 'git diff .', 'git add .', 'git diff --staged .')
+    expect(s.entries[1].output).toContain('diff --git a/report.py b/report.py')
+    expect(s.entries[1].output).toContain('diff --git a/README.md b/README.md')
+    expect(s.entries[3].output).toContain('diff --git a/report.py b/report.py')
+  })
 })
