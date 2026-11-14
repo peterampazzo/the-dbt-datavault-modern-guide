@@ -105,6 +105,7 @@ export function Terminal({
         ref={screen}
         role="log"
         aria-label="Terminal output"
+        tabIndex={0}
         className="max-h-80 min-h-28 overflow-y-auto px-3 py-2 font-mono text-[13px] leading-5"
         onClick={() => input.current?.focus()}
       >

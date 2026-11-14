@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { HOME, PROJECT, display, resolve } from './fs'
-import { complete, createShell, prompt, run, type ShellState } from './shell'
+import { HOME, PROJECT, createMessyFs, display, lookup, resolve } from './fs'
+import { aiChange, aiChanged, complete, createShell, prompt, run, type ShellState } from './shell'
+import { files } from './git'
 
 const go = (state: ShellState, ...lines: string[]) => lines.reduce(run, state)
 const last = (state: ShellState) => state.entries[state.entries.length - 1]
@@ -111,5 +112,43 @@ describe('practice shell', () => {
   it('suggests the right case for a known program', () => {
     expect(last(go(createShell(PROJECT), 'Python3 report.py')).output).toBe('bash: Python3: command not found\nCommands are case sensitive: try python3')
   })
-})
 
+  it('applies a custom AI script, including deletions', () => {
+    const start = { ...createShell(PROJECT), fs: createMessyFs() }
+    const script = {
+      request: 'Tidy this folder.',
+      writes: { 'README.md': '# orders-report\n', 'nested/setup.txt': 'ready\n' },
+      removes: ['report_old.py'],
+    }
+    const changed = aiChange(start, script)
+    expect(lookup(changed.fs!, `${PROJECT}/README.md`)).toEqual({ kind: 'file', content: '# orders-report\n' })
+    expect(lookup(changed.fs!, `${PROJECT}/nested/setup.txt`)).toEqual({ kind: 'file', content: 'ready\n' })
+    expect(lookup(changed.fs!, `${PROJECT}/report_old.py`)).toBeUndefined()
+    expect(last(changed).output).toBe('You asked your AI tool: “Tidy this folder.”\nIt changed 3 files: README.md, nested/setup.txt, deleted report_old.py')
+    expect(aiChanged(changed, script)).toBe(true)
+    expect(aiChanged(changed)).toBe(false)
+    expect(aiChanged(start)).toBe(false)
+  })
+
+  it('builds the unsorted project with only the intended files', () => {
+    const fs = createMessyFs()
+    expect(Object.keys(files(fs)).sort()).toEqual([
+      '__pycache__/report.cpython-312.pyc',
+      'config.py',
+      'data/customer.csv',
+      'data/nation.csv',
+      'data/orders.csv',
+      'data/raw/orders_full_export.csv',
+      'output/report.csv',
+      'output/revenue_by_nation.png',
+      'report.R',
+      'report.py',
+      'report_old.py',
+    ])
+    expect(lookup(fs, `${PROJECT}/config.py`)).toEqual({
+      kind: 'file',
+      content: '# Used to download fresh orders from the sales system\nSALES_API_KEY = "sk-live-7Hq2v9XbP4mN8rT1"\n',
+    })
+    expect(lookup(fs, `${PROJECT}/report_old.py`)?.kind).toBe('file')
+  })
+})

@@ -1,13 +1,59 @@
 import { describe, expect, it } from 'vitest'
 import { PROJECT } from './fs'
 import { aiChange, committedShell, createShell, run, FS, type ShellState } from './shell'
-import { diffLines, view } from './git'
+import { diffLines, ignored, view } from './git'
 
 const go = (state: ShellState, ...lines: string[]) => lines.reduce(run, state)
 const out = (state: ShellState) => state.entries[state.entries.length - 1].output
 const status = (state: ShellState) => state.entries[state.entries.length - 1].status
 
 describe('practice git', () => {
+  it('requires git init before commands in an uninitialized project', () => {
+    const start = { ...createShell(PROJECT), git: { index: {}, commits: [], uninitialized: true } }
+    const s = go(start, 'git status', 'git init', 'git status')
+    expect(s.entries[0].output).toBe('fatal: not a git repository (or any of the parent directories): .git')
+    expect(s.entries[0].status).toBe(128)
+    expect(s.entries[1].output).toBe(`Initialized empty Git repository in ${PROJECT}/.git/`)
+    expect(s.entries[2].output).toContain('No commits yet')
+    expect(s.git?.uninitialized).toBe(false)
+  })
+
+  it('connects to a remote and pushes the first commit once', () => {
+    const remote = 'https://github.com/your-team/orders-report.git'
+    const s = go(
+      createShell(PROJECT),
+      'git init',
+      'git push',
+      `git remote add origin ${remote}`,
+      `git remote add origin ${remote}`,
+      'git remote -v',
+      'git push',
+      'git add .',
+      'git commit -m "First working version"',
+      'git push -u origin main',
+      'git push',
+    )
+    expect(s.entries[1].output).toMatch(/^fatal: No configured push destination\.\nEither specify the URL/)
+    expect(s.entries[1].status).toBe(128)
+    expect(s.entries[2].output).toBe('')
+    expect(s.entries[3].output).toBe('error: remote origin already exists.')
+    expect(s.entries[3].status).toBe(3)
+    expect(s.entries[4].output).toBe(`${remote}\t(origin) (fetch)\n${remote}\t(origin) (push)`)
+    expect(s.entries[5].output).toBe(`error: src refspec main does not match any\nerror: failed to push some refs to '${remote}'`)
+    expect(s.entries[5].status).toBe(1)
+    expect(s.entries[8].output).toContain(`To ${remote}\n * [new branch]      main -> main\nbranch 'main' set up to track 'origin/main'.`)
+    expect(s.entries[9].output).toBe('Everything up-to-date')
+    expect(s.git?.pushed).toBe(s.git?.commits.at(-1)?.id)
+  })
+
+  it('matches multi-segment ignore rules against file paths', () => {
+    const work = { '.gitignore': '.env\ndata/raw/\noutput/\n' }
+    expect(ignored(work, '.env')).toBe(true)
+    expect(ignored(work, 'data/raw/orders_full_export.csv')).toBe(true)
+    expect(ignored(work, 'output/report.csv')).toBe(true)
+    expect(ignored(work, 'data/orders.csv')).toBe(false)
+  })
+
   it('starts with untracked files, hides ignored ones, and collapses new folders', () => {
     const s = go(createShell(PROJECT), 'git status')
     expect(out(s)).toContain('No commits yet')

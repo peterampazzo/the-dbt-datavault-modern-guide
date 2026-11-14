@@ -110,6 +110,37 @@ export function createFs(): FsNode {
   })
 }
 
+export function createMessyFs(): FsNode {
+  return dir({
+    home: dir({
+      student: dir({
+        'orders-report': dir({
+          'config.py': file('# Used to download fresh orders from the sales system\nSALES_API_KEY = "sk-live-7Hq2v9XbP4mN8rT1"\n'),
+          data: dir({
+            'customer.csv': file(csv(CUSTOMERS)),
+            'nation.csv': file(csv(NATIONS)),
+            'orders.csv': file(csv(ORDERS)),
+            raw: dir({
+              'orders_full_export.csv': file(
+                'order_id,customer_id,order_date,total_price\n1001,1,2023-12-30,250.00\n1002,3,2023-12-31,1800.00\n1003,2,2024-01-02,95.90\n',
+              ),
+            }),
+          }),
+          output: dir({
+            'revenue_by_nation.png': file('PNG image data'),
+            'report.csv': file('nation,orders,revenue\nBrazil,1,310.00\nCanada,1,420.00\nFrance,2,310.00\nGermany,1,1800.00\nJapan,1,95.90\n'),
+          }),
+          '__pycache__': dir({ 'report.cpython-312.pyc': file('compiled Python') }),
+          'report_old.py': file(REPORT_PY.replace('print(f"{\'nation\':<10}{\'orders\':>7}{\'revenue\':>10}")\n', '')),
+          'report.R': file(REPORT_R),
+          'report.py': file(REPORT_PY),
+        }),
+      }),
+    }),
+    usr: dir({ bin: dir({ python3: file(''), Rscript: file('') }) }),
+  })
+}
+
 export function split(path: string) {
   return path.split('/').filter(Boolean)
 }

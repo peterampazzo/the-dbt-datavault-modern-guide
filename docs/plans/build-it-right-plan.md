@@ -145,11 +145,30 @@ The five things the book teaches, each with the real moment that opens it:
 
 Troubleshooting stays a "When it breaks" page at the end of every module, plus the labs at the end.
 
+### 2.8 The daily loop
+
+The book is organised around the loop a team repeats every day, whether a teammate or an AI tool writes the code. 02806 had no loop; 02476 had one.
+
+0. **Share your project** (new first chapter): code lives in a git repository, private if needed, not in Drive, Dropbox or email. Sort the folder (code in git, data in a data store, output rebuilt, secrets never shared), write a README, first commit, push.
+1. **Start the day:** get the latest version and see what changed (pull, log).
+2. **Make room:** work on your own draft (branch).
+3. **Make the change:** yourself or with an AI tool; small commits with messages that say why.
+4. **Check it yourself:** diff, run, test, does the number still make sense.
+5. **Ask for a review:** a PR that says what, why and how to check it.
+6. **Review someone else's work:** what to look at, how to comment, when to say no.
+7. **Let the machine check:** CI on every PR.
+8. **Merge and deliver:** main, then run it elsewhere (Docker, server).
+9. **When it breaks:** go back, find the change, report it properly (command, output, exit code).
+
+Two threads run through every step: the same setup for everyone (README, pinned packages, `.vscode/`, `.env.example`), and communication (commit messages, PR descriptions, review comments, bug reports). The terminal modules (1 to 3) are the on-ramp that makes "run this command" unscary.
+
 ---
 
 ## 3. Modules
 
 Times are core-path estimates. **MVP** marks the first release. For each module: the task in the practice terminal, the drawing, why it matters with AI tools, what goes into "Go deeper", and "When it breaks".
+
+**0. Share your project** (12 min): pages on where code lives, sorting the folder, getting secrets out, writing down how to run it, taking the first snapshot, pushing privately, and when it breaks.
 
 ### Part I. The terminal
 

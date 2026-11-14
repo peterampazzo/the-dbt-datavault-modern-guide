@@ -3,7 +3,7 @@ import { PROJECT, README, REPORT_PY, lookup, resolve, split, type FsNode } from 
 /** Files by path inside the project, e.g. `report.py` or `data/orders.csv`. */
 export type Files = Record<string, string>
 export type Commit = { id: string; message: string; files: Files }
-export type GitState = { index: Files; commits: Commit[] }
+export type GitState = { index: Files; commits: Commit[]; uninitialized?: boolean; remote?: string; pushed?: string }
 
 export type GitResult = { output: string; status: number; git?: GitState }
 
@@ -30,7 +30,8 @@ function ignoreRules(work: Files) {
 
 export function ignored(work: Files, path: string) {
   const rules = ignoreRules(work)
-  return split(path).some((part) => rules.includes(part))
+  const parts = split(path)
+  return rules.some((rule) => (rule.includes('/') ? path === rule || path.startsWith(`${rule}/`) : parts.includes(rule)))
 }
 
 const head = (git: GitState): Files => git.commits.at(-1)?.files ?? {}
@@ -280,6 +281,7 @@ function commit(root: FsNode, git: GitState, cwd: string, args: string[]): GitRe
     output: [`[main${parent ? '' : ' (root-commit)'} ${id.slice(0, 7)}] ${message}`, ` ${counts.join(', ')}`, ...created].join('\n'),
     status: 0,
     git: {
+      ...git,
       index: { ...git.index },
       commits: [...git.commits, { id, message, files: { ...git.index } }],
     },
@@ -321,18 +323,30 @@ const LATER: Record<string, string> = {
   revert: 'module 6',
   reset: 'module 6',
   stash: 'module 6',
-  push: 'a later module',
   pull: 'a later module',
   clone: 'a later module',
   fetch: 'a later module',
 }
 
 const USAGE = `git commands on this page:
+  git init                start a repository in this folder
   git status              what changed since the last snapshot
   git add <file or .>     put changes in the next snapshot
   git commit -m "..."     take the snapshot, with a message
   git log [--oneline]     list the snapshots, newest first
-  git diff [--staged]     show the changed lines`
+  git diff [--staged]     show the changed lines
+  git remote add origin <url>  connect to a shared repository
+  git remote -v           show the connected repository
+  git push -u origin main send snapshots to GitHub`
+
+const NO_PUSH_DESTINATION = `fatal: No configured push destination.
+Either specify the URL from the command-line or configure a remote repository using
+
+    git remote add <name> <url>
+
+and then push using the remote name
+
+    git push <name>`
 
 export function git(root: FsNode, state: GitState, cwd: string, args: string[]): GitResult {
   if (cwd !== PROJECT && !cwd.startsWith(`${PROJECT}/`))
@@ -341,6 +355,11 @@ export function git(root: FsNode, state: GitState, cwd: string, args: string[]):
       status: 128,
     }
   const [sub, ...rest] = args
+  if (state.uninitialized && sub !== 'init' && sub !== 'help' && sub !== '--help' && sub !== undefined)
+    return {
+      output: 'fatal: not a git repository (or any of the parent directories): .git',
+      status: 128,
+    }
   switch (sub) {
     case undefined:
     case 'help':
@@ -348,8 +367,9 @@ export function git(root: FsNode, state: GitState, cwd: string, args: string[]):
       return { output: USAGE, status: sub ? 0 : 1 }
     case 'init':
       return {
-        output: `Reinitialized existing Git repository in ${PROJECT}/.git/`,
+        output: `${state.uninitialized ? 'Initialized empty' : 'Reinitialized existing'} Git repository in ${PROJECT}/.git/`,
         status: 0,
+        git: state.uninitialized ? { ...state, uninitialized: false } : state,
       }
     case 'status':
       return { output: status(root, state, cwd), status: 0 }
@@ -371,6 +391,30 @@ export function git(root: FsNode, state: GitState, cwd: string, args: string[]):
         status: 0,
       }
     }
+    case 'remote':
+      if (rest[0] === '-v')
+        return {
+          output: state.remote ? `${state.remote}\t(origin) (fetch)\n${state.remote}\t(origin) (push)` : '',
+          status: 0,
+        }
+      if (rest[0] === 'add' && rest[1] === 'origin' && rest[2]) {
+        if (state.remote) return { output: 'error: remote origin already exists.', status: 3 }
+        return { output: '', status: 0, git: { ...state, remote: rest[2] } }
+      }
+      return { output: "error: usage: git remote add <name> <url>", status: 2 }
+    case 'push':
+      if (!state.remote) return { output: NO_PUSH_DESTINATION, status: 128 }
+      if (!state.commits.length)
+        return {
+          output: `error: src refspec main does not match any\nerror: failed to push some refs to '${state.remote}'`,
+          status: 1,
+        }
+      if (state.pushed === state.commits.at(-1)!.id) return { output: 'Everything up-to-date', status: 0 }
+      return {
+        output: [`To ${state.remote}`, ' * [new branch]      main -> main', ...(rest.includes('-u') ? ["branch 'main' set up to track 'origin/main'."] : [])].join('\n'),
+        status: 0,
+        git: { ...state, pushed: state.commits.at(-1)!.id },
+      }
     default:
       if (LATER[sub])
         return {
