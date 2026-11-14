@@ -168,7 +168,7 @@ export function Terminal({
                 setLine(c)
                 input.current?.focus()
               }}
-              className="rounded-md border border-zinc-700 px-2 py-0.5 font-mono text-xs text-zinc-200 hover:border-zinc-500 focus-visible:outline-2 focus-visible:outline-sky-400"
+              className="min-h-6 rounded-md border border-zinc-700 px-2 py-0.5 font-mono text-xs text-zinc-200 hover:border-zinc-500 focus-visible:outline-2 focus-visible:outline-sky-400"
             >
               {c}
             </button>
