@@ -156,9 +156,11 @@ Times are core-path estimates. **MVP** marks the first release. For each module:
 
 ### Part II. Git
 
-**4. Snapshots** (10 min, MVP)
-- Task: `git status`, `git add`, `git commit`, `git log --oneline`. Then a simulated "the tool changed 2 files" event; the reader uses `git status` and `git diff` to see what changed and spots that the revenue line was edited.
-- Drawing: working folder, staging area, history; a commit as a snapshot.
+**4. Snapshots** (12 min, MVP)
+- Opening idea: version control works for any text file, not only code: Python and R, settings files without secrets (`.env.example`), and editor settings (`.vscode/settings.json`, `.vscode/extensions.json`). It shows what changed, keeps every version and lets a group work on the same files. It is old, proven practice that most people never start because it looks complicated.
+- Task: `ls -a` and `cat` the hidden settings files; `git status`, `git add`, `git commit`, `git log --oneline`. Then a simulated "the tool changed 2 files" event; the reader uses `git status` and `git diff` to see what changed and spots that the revenue line was edited.
+- Same setup everywhere: editor settings in the repo give every colleague, every machine and a new laptop the same setup (VS Code and its forks read `.vscode/`; RStudio uses `.Rproj`). AI instruction files (`AGENTS.md`, `CLAUDE.md`) are versioned the same way.
+- Drawing: any text file goes into the history and `git diff` shows the changed lines; one repository giving three machines the same setup, with `.env` staying local. A live panel under the terminal shows folder, staged and history.
 - Why it matters: commit before the tool edits, and `git diff` shows exactly what it did.
 - Go deeper: `.gitignore`, writing a good commit message, `git show`.
 - When it breaks: "nothing to commit", a file not staged, a data file committed by mistake.

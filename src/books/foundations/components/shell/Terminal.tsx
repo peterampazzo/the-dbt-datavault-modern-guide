@@ -1,7 +1,31 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
-import { complete, prompt, type ShellState } from '@/books/foundations/lib/shell/shell'
+import { complete, prompt, type Entry, type ShellState } from '@/books/foundations/lib/shell/shell'
 import { cn } from '@/lib/utils'
+
+const diffTone = (line: string) =>
+  line.startsWith('+') && !line.startsWith('+++')
+    ? 'text-emerald-300'
+    : line.startsWith('-') && !line.startsWith('---')
+      ? 'text-rose-300'
+      : line.startsWith('@@')
+        ? 'text-sky-300'
+        : undefined
+
+/** Command output; diffs get green and red lines, with the + and - kept so colour is not the only signal. */
+function Output({ entry }: { entry: Entry }) {
+  if (entry.ok && entry.command === 'git' && /^diff --git/m.test(entry.output))
+    return (
+      <pre className="whitespace-pre-wrap break-words font-mono text-zinc-200">
+        {entry.output.split('\n').map((line, i) => (
+          <span key={i} className={cn('block', diffTone(line))}>
+            {line || ' '}
+          </span>
+        ))}
+      </pre>
+    )
+  return <pre className={cn('whitespace-pre-wrap break-words font-mono', entry.ok ? 'text-zinc-200' : 'text-rose-300')}>{entry.output}</pre>
+}
 
 export function Terminal({
   state,
@@ -49,7 +73,7 @@ export function Terminal({
       submit()
     } else if (e.key === 'Tab' && line.trim() && !e.shiftKey) {
       e.preventDefault()
-      setLine(complete(state.cwd, line))
+      setLine(complete(state.cwd, line, state.fs))
     } else if (e.key === 'ArrowUp' && history.length) {
       e.preventDefault()
       const i = back < 0 ? history.length - 1 : Math.max(0, back - 1)
@@ -85,14 +109,20 @@ export function Terminal({
         onClick={() => input.current?.focus()}
       >
         {state.entries.length === 0 && <div className="text-zinc-400">Type a command and press Enter. Type help to see what works here.</div>}
-        {state.entries.map((e, i) => (
-          <div key={i} className="mb-1">
-            <div className="break-all">
-              <span className="text-emerald-400">{prompt(e.cwd)}</span> {e.input}
+        {state.entries.map((e, i) =>
+          e.command === 'ai' ? (
+            <div key={i} className="my-2 whitespace-pre-wrap rounded-md border border-violet-400/40 bg-violet-500/10 px-2 py-1 font-sans text-violet-100">
+              {e.output}
             </div>
-            {e.output && <pre className={cn('whitespace-pre-wrap break-words font-mono', e.ok ? 'text-zinc-200' : 'text-rose-300')}>{e.output}</pre>}
-          </div>
-        ))}
+          ) : (
+            <div key={i} className="mb-1">
+              <div className="break-all">
+                <span className="text-emerald-400">{prompt(e.cwd)}</span> {e.input}
+              </div>
+              {e.output && <Output entry={e} />}
+            </div>
+          ),
+        )}
       </div>
       <div className="sr-only" aria-live="polite">
         {lastOutput}

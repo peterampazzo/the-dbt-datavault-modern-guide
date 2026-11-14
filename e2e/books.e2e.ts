@@ -37,7 +37,7 @@ test('the bookshelf opens Foundations, a book of its own', async ({ page }) => {
   await expect(page.getByRole('banner').getByText('Foundations', { exact: true })).toBeVisible()
   await page.getByRole('link', { name: /Start: Where am I\?/ }).click()
   await expect(page).toHaveURL(/#\/foundations\/where-am-i$/)
-  await expect(page.getByText('Chapter 1 of 2 · Part 1: The terminal')).toBeVisible()
+  await expect(page.getByText('Chapter 1 of 3 · Part 1: The terminal')).toBeVisible()
 })
 
 test('Foundations keeps its own progress, apart from the Data Vault book', async ({ page }) => {
@@ -78,7 +78,26 @@ test('Running a program: exit codes, && and the approval exercise', async ({ pag
   await expect(page.getByText('This one is fine to run.')).toBeVisible()
 })
 
-for (const path of ['/#/foundations/', '/#/foundations/where-am-i/the-prompt', '/#/foundations/running-a-program/press-enter', '/#/foundations/running-a-program/approve-or-not']) {
+test('Snapshots: commit, then read what the AI tool changed', async ({ page }) => {
+  await page.goto('/#/foundations/snapshots/take-a-snapshot')
+  const terminal = page.getByRole('textbox').first()
+  for (const line of ['git add .', 'git commit -m "Add the orders report"']) {
+    await terminal.fill(line)
+    await terminal.press('Enter')
+  }
+  await expect(page.locator('[data-git-panel]').getByRole('region', { name: 'History' }).getByText('Add the orders report')).toBeVisible()
+  await expect(page.getByText('Done: Take the snapshot, with a message.')).toBeAttached()
+
+  await page.goto('/#/foundations/snapshots/what-did-the-tool-change')
+  await page.getByRole('button', { name: /Ask your AI tool/ }).click()
+  await expect(page.getByRole('region', { name: 'Your folder' }).getByText('report.py')).toBeVisible()
+  await page.getByRole('textbox').first().fill('git diff')
+  await page.getByRole('textbox').first().press('Enter')
+  await expect(page.getByRole('log').getByText('+    totals[nation] = (count + 1, revenue + round(float(order["o_totalprice"])))')).toBeVisible()
+  await expect(page.getByText('Done: Show the changed lines and find the one you did not ask for.')).toBeAttached()
+})
+
+for (const path of ['/#/foundations/', '/#/foundations/where-am-i/the-prompt', '/#/foundations/snapshots/any-text-file', '/#/foundations/snapshots/what-did-the-tool-change', '/#/foundations/running-a-program/press-enter', '/#/foundations/running-a-program/approve-or-not']) {
   for (const theme of ['dark', 'light'] as const) {
     test(`${path} passes WCAG 2.2 AA (${theme})`, async ({ page }) => {
       await page.addInitScript((t) => localStorage.setItem('theme', t), theme)
@@ -91,7 +110,7 @@ for (const path of ['/#/foundations/', '/#/foundations/where-am-i/the-prompt', '
 }
 
 for (const width of [320, 390, 1280]) {
-  for (const path of ['/#/foundations/', '/#/foundations/where-am-i/move-around', '/#/foundations/running-a-program/press-enter']) {
+  for (const path of ['/#/foundations/', '/#/foundations/where-am-i/move-around', '/#/foundations/running-a-program/press-enter', '/#/foundations/snapshots/any-text-file', '/#/foundations/snapshots/what-did-the-tool-change']) {
     test(`${path} has no horizontal overflow @${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 700 })
       await page.goto(path)
