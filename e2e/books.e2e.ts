@@ -138,6 +138,17 @@ test('Layers: commit and push with the RStudio buttons', async ({ page }) => {
   await expect(layers.getByRole('region', { name: 'GitHub · Private' })).toContainText('Add a title to the report')
 })
 
+test('Layers: keep the RStudio commit and push after reload', async ({ page }) => {
+  await page.goto('/#/foundations/share-your-project/put-it-on-github-privately')
+  let layers = page.locator('[data-layers]')
+  await layers.getByRole('button', { name: 'Commit', exact: true }).click()
+  await layers.getByRole('button', { name: /Push/ }).click()
+  await page.reload()
+  layers = page.locator('[data-layers]')
+  await expect(layers.getByRole('region', { name: 'GitHub · Private' })).toContainText('Add a title to the report')
+  await expect(layers.getByRole('log', { name: 'Commands run by the selected tool' })).toContainText('git push')
+})
+
 test('Layers: approve an AI tool commit', async ({ page }) => {
   await page.goto('/#/foundations/share-your-project/put-it-on-github-privately')
   const layers = page.locator('[data-layers]')

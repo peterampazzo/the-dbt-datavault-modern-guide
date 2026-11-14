@@ -1,10 +1,18 @@
 import { useState } from 'react'
+import { usePersistentState } from '@/lib/progress'
 import { cn } from '@/lib/utils'
 
 type Tool = 'rstudio' | 'vscode' | 'desktop' | 'ai'
 type Line = { kind: 'command' | 'output'; text: string }
 
 const MESSAGE = 'Add a title to the report'
+const INITIAL_STATE: { tool: Tool; message: string; committed: boolean; pushed: boolean; lines: Line[] } = {
+  tool: 'rstudio',
+  message: MESSAGE,
+  committed: false,
+  pushed: false,
+  lines: [],
+}
 const TOOLS: { id: Tool; label: string }[] = [
   { id: 'rstudio', label: 'RStudio' },
   { id: 'vscode', label: 'VS Code' },
@@ -29,12 +37,9 @@ function CommitDot({ message, id, fresh = false }: { message: string; id: string
 }
 
 export function Layers() {
-  const [tool, setTool] = useState<Tool>('rstudio')
-  const [message, setMessage] = useState(MESSAGE)
-  const [committed, setCommitted] = useState(false)
-  const [pushed, setPushed] = useState(false)
-  const [lines, setLines] = useState<Line[]>([])
+  const [state, setState] = usePersistentState<{ tool: Tool; message: string; committed: boolean; pushed: boolean; lines: Line[] }>('layers', INITIAL_STATE)
   const [highlight, setHighlight] = useState<'commit' | 'push' | null>(null)
+  const { tool, message, committed, pushed, lines } = state
   const file = tool === 'rstudio' ? 'report.R' : 'report.py'
   const cardClass = 'min-w-0 rounded-xl border bg-card p-4 text-card-foreground transition duration-300 motion-reduce:transition-none'
   const changedCardClass = cn(cardClass, highlight && 'border-violet-500 ring-2 ring-violet-500/30')
@@ -42,35 +47,38 @@ export function Layers() {
   const commit = () => {
     if (committed) return
     const note = message.trim() || MESSAGE
-    setMessage(note)
-    setCommitted(true)
-    setHighlight('commit')
-    setLines((current) => [
+    setState((current) => ({
       ...current,
-      { kind: 'command', text: `git add ${file}` },
-      { kind: 'command', text: `git commit -m "${note}"` },
-      { kind: 'output', text: `[main 3e1b7f0] ${note}` },
-      { kind: 'output', text: ' 1 file changed, 1 insertion(+)' },
-    ])
+      message: note,
+      committed: true,
+      lines: [
+        ...current.lines,
+        { kind: 'command', text: `git add ${file}` },
+        { kind: 'command', text: `git commit -m "${note}"` },
+        { kind: 'output', text: `[main 3e1b7f0] ${note}` },
+        { kind: 'output', text: ' 1 file changed, 1 insertion(+)' },
+      ],
+    }))
+    setHighlight('commit')
   }
 
   const push = () => {
     if (!committed || pushed) return
-    setPushed(true)
-    setHighlight('push')
-    setLines((current) => [
+    setState((current) => ({
       ...current,
-      { kind: 'command', text: 'git push' },
-      { kind: 'output', text: 'To github.com/your-team/orders-report.git' },
-      { kind: 'output', text: '   a05a2c9..3e1b7f0  main -> main' },
-    ])
+      pushed: true,
+      lines: [
+        ...current.lines,
+        { kind: 'command', text: 'git push' },
+        { kind: 'output', text: 'To github.com/your-team/orders-report.git' },
+        { kind: 'output', text: '   a05a2c9..3e1b7f0  main -> main' },
+      ],
+    }))
+    setHighlight('push')
   }
 
   const startOver = () => {
-    setMessage(MESSAGE)
-    setCommitted(false)
-    setPushed(false)
-    setLines([])
+    setState(INITIAL_STATE)
     setHighlight(null)
   }
 
@@ -83,7 +91,7 @@ export function Layers() {
             type="button"
             aria-pressed={tool === id}
             onClick={() => {
-              setTool(id)
+              setState((current) => ({ ...current, tool: id }))
               setHighlight(null)
             }}
             className={cn(
@@ -150,7 +158,7 @@ export function Layers() {
                   <span className="sr-only">{tool === 'desktop' ? 'Summary' : 'Commit message'}</span>
                   <input
                     value={message}
-                    onChange={(event) => setMessage(event.target.value)}
+                    onChange={(event) => setState((current) => ({ ...current, message: event.target.value }))}
                     disabled={committed}
                     placeholder={tool === 'desktop' ? 'Summary' : 'Commit message'}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-sky-500 disabled:opacity-60"
