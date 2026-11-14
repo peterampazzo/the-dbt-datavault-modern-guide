@@ -130,6 +130,15 @@ describe('practice shell', () => {
     expect(aiChanged(start)).toBe(false)
   })
 
+  it('keeps AI changes marked after clearing terminal history', () => {
+    const script = { request: 'Tidy this folder.', writes: { 'README.md': '# orders-report\n' } }
+    const changed = aiChange(createShell(PROJECT), script)
+    const cleared = run(changed, 'clear')
+    expect(cleared.entries).toEqual([])
+    expect(cleared.ai).toEqual([script.request])
+    expect(aiChanged(cleared, script)).toBe(true)
+  })
+
   it('builds the unsorted project with only the intended files', () => {
     const fs = createMessyFs()
     expect(Object.keys(files(fs)).sort()).toEqual([

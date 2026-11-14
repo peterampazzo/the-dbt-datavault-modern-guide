@@ -12,7 +12,7 @@ export type ShellEvent =
 /** `status` is the exit code: 0 means it worked, anything else means it failed. */
 export type Entry = { cwd: string; input: string; output: string; ok: boolean; command: string; event: ShellEvent; status?: number }
 /** `fs` and `git` are only set once a page changes files or takes a snapshot; until then the machine is `FS` with an empty repository. */
-export type ShellState = { cwd: string; entries: Entry[]; visited: string[]; fs?: FsNode; git?: GitState }
+export type ShellState = { cwd: string; entries: Entry[]; visited: string[]; fs?: FsNode; git?: GitState; ai?: string[] }
 
 export const PATH = '/usr/local/bin:/usr/bin:/bin'
 
@@ -267,7 +267,7 @@ function execute(cwd: string, line: string, status: number): Result {
 export function run(state: ShellState, line: string): ShellState {
   const input = line.trim()
   if (!input) return { ...state, entries: [...state.entries, { cwd: state.cwd, input: '', output: '', ok: true, command: '', event: { kind: 'none' } }] }
-  if (input === 'clear') return { ...state, entries: [] }
+  if (input === 'clear') return { ...state, entries: [], ai: state.ai }
   root = state.fs ?? FS
   repo = state.git ?? EMPTY_GIT
   let cwd = state.cwd
@@ -319,11 +319,11 @@ export function aiChange(state: ShellState, script = DEFAULT_SCRIPT): ShellState
   const changed = [...Object.keys(script.writes), ...(script.removes ?? []).map((path) => `deleted ${path}`)]
   const note = `You asked your AI tool: “${script.request}”\nIt changed ${changed.length} files: ${changed.join(', ')}`
   const entry: Entry = { cwd: state.cwd, input: '', output: note, ok: true, command: 'ai', event: { kind: 'none' }, status: lastStatus(state) }
-  return { ...state, fs, entries: [...state.entries, entry] }
+  const ai = state.ai?.includes(script.request) ? state.ai : [...(state.ai ?? []), script.request]
+  return { ...state, fs, ai, entries: [...state.entries, entry] }
 }
 
-export const aiChanged = (state: ShellState, script = DEFAULT_SCRIPT) =>
-  state.entries.some((e) => e.command === 'ai' && e.output.startsWith(`You asked your AI tool: “${script.request}”`))
+export const aiChanged = (state: ShellState, script = DEFAULT_SCRIPT) => state.ai?.includes(script.request) ?? false
 
 /** A shell whose project already has one snapshot of every file, as if someone ran git add . and git commit. */
 export function committedShell(cwd: string, message = 'Add the orders report'): ShellState {
