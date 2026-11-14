@@ -6,7 +6,8 @@ import { TextFilesDrawing } from '@/books/foundations/components/drawing/TextFil
 import { Practice, type Task } from '@/books/foundations/components/shell/Practice'
 import { WhyAI } from '@/books/foundations/components/WhyAI'
 import { PROJECT } from '@/books/foundations/lib/shell/fs'
-import { aiChange, aiChanged, committedShell, type Entry, type ShellState } from '@/books/foundations/lib/shell/shell'
+import { files, ignored } from '@/books/foundations/lib/shell/git'
+import { FS, aiChange, aiChanged, committedShell, type Entry, type ShellState } from '@/books/foundations/lib/shell/shell'
 
 const ran = (s: ShellState, test: (e: Entry) => boolean) => s.entries.some((e) => e.ok && test(e))
 const gitSaid = (s: ShellState, sub: string, text: string) => s.entries.some((e) => e.command === 'git' && e.input.includes(sub) && e.output.includes(text))
@@ -45,7 +46,10 @@ const tasks: Record<string, Task[]> = {
     },
     {
       label: <>Stage everything for the first snapshot.</>,
-      done: (s) => Object.keys(s.git?.index ?? {}).length > 0,
+      done: (s) => {
+        const work = files(s.fs ?? FS)
+        return Object.keys(work).every((f) => ignored(work, f) || f in (s.git?.index ?? {}))
+      },
     },
     {
       label: <>Take the snapshot, with a message.</>,
