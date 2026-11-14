@@ -100,7 +100,7 @@ test('Snapshots: commit, then read what the AI tool changed', async ({ page }) =
 test('Share your project: tidy secrets and push privately using chips', async ({ page }) => {
   const runChip = async (command: string) => {
     await page.getByRole('button', { name: command, exact: true }).first().click()
-    await page.getByRole('textbox').first().press('Enter')
+    await page.locator('[data-practice]').getByRole('textbox').first().press('Enter')
   }
   await page.goto('/#/foundations/share-your-project/get-the-secrets-out')
   await runChip('git init')
@@ -124,6 +124,27 @@ test('Share your project: tidy secrets and push privately using chips', async ({
   await runChip('git init')
   await runChip('git commit -m "First version"')
   await expect(page.locator('[data-practice="s7-breaks"] li .sr-only').filter({ hasText: 'Done:' })).toHaveCount(1)
+})
+
+test('Layers: commit and push with the RStudio buttons', async ({ page }) => {
+  await page.goto('/#/foundations/share-your-project/put-it-on-github-privately')
+  const layers = page.locator('[data-layers]')
+  const terminal = layers.getByRole('log', { name: 'Commands run by the selected tool' })
+  await layers.getByRole('button', { name: 'RStudio' }).click()
+  await layers.getByRole('button', { name: 'Commit', exact: true }).click()
+  await expect(terminal).toContainText('git add report.R')
+  await layers.getByRole('button', { name: /Push/ }).click()
+  await expect(terminal).toContainText('git push')
+  await expect(layers.getByRole('region', { name: 'GitHub · Private' })).toContainText('Add a title to the report')
+})
+
+test('Layers: approve an AI tool commit', async ({ page }) => {
+  await page.goto('/#/foundations/share-your-project/put-it-on-github-privately')
+  const layers = page.locator('[data-layers]')
+  await layers.getByRole('button', { name: 'AI tool' }).click()
+  await layers.getByRole('button', { name: 'Approve', exact: true }).click()
+  await expect(layers.getByRole('log', { name: 'Commands run by the selected tool' })).toContainText('git add report.py')
+  await expect(layers.getByRole('region', { name: 'Your laptop' })).toContainText('Add a title to the report')
 })
 
 const sharePages = [

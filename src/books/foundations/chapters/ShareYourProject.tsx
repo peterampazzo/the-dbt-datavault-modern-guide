@@ -1,10 +1,12 @@
 import { Chapter } from '@/components/Chapter'
-import { ChapterHeader, Code, P, Section } from '@/components/Prose'
+import { ChapterHeader, Code, P, RecapExtras, Section } from '@/components/Prose'
 import { Deeper } from '@/books/foundations/components/Deeper'
+import { GoFurther } from '@/books/foundations/components/GoFurther'
+import { Layers } from '@/books/foundations/components/Layers'
+import { Problem } from '@/books/foundations/components/Problem'
 import { PrivateRepoDrawing } from '@/books/foundations/components/drawing/PrivateRepoDrawing'
 import { ShareDrawing } from '@/books/foundations/components/drawing/ShareDrawing'
 import { SortFolder } from '@/books/foundations/components/SortFolder'
-import { Story } from '@/books/foundations/components/Story'
 import { Practice, type Task } from '@/books/foundations/components/shell/Practice'
 import { WhyAI } from '@/books/foundations/components/WhyAI'
 import { createMessyFs, PROJECT } from '@/books/foundations/lib/shell/fs'
@@ -111,15 +113,16 @@ export default function ShareYourProject() {
         lead="You built something with an AI tool. It works on your laptop. Now your team needs it. Where do you put it, and how?"
       />
       <Section title="Where should the code live?" keyPoint="Code goes in a git repository, which can be private. Sync folders copy files; git keeps who changed what, and why.">
-        <Story course="02806">
-          Three of us, one shared folder. By the end it held <Code>useful_functions.ipynb</Code> and <Code>useful_functions-2.ipynb</Code>, and they were not the same. Which one was right? Nobody could say.
-        </Story>
+        <Problem>
+          Three people share one analysis folder, and it ends up with <Code>analysis_final.R</Code> and <Code>analysis_final_v2.R</Code> that are not the same.
+          Which one is right?
+        </Problem>
         <P>
           The usual way to share is to zip the folder and email it, drop it in Google Drive or Dropbox, or paste the code in the group chat. Each one works for a day. Then there are three versions, a “conflicted copy”, and nobody knows who changed what.
         </P>
         <ShareDrawing />
         <P>
-          A <strong>repository</strong> on GitHub (or GitLab) is a shared folder with a memory: every change has an author, a date and a note, and you can see the exact lines. And it does not have to be public. A private repository is visible only to the people you invite.
+          <strong>Git</strong> is the technology: it keeps the history of a folder, called a <strong>repository</strong>. Every change has an author, a date and a note, and you can see the exact lines. <strong>GitHub</strong>, GitLab and Bitbucket are websites that host repositories so a team can share them. GitHub is the most widely used. And a repository does not have to be public: a private one is visible only to the people you invite.
         </P>
         <Practice id="s1-look" cwd={PROJECT} start={messy} tasks={tasks.look} tree chips={['ls -a', 'ls output', 'cat config.py', 'ls data/raw']} />
         <P>That folder mixes four kinds of things: code, data, generated output, and a password. Only one of them belongs in the repository as it is.</P>
@@ -131,9 +134,7 @@ export default function ShareYourProject() {
         </Deeper>
       </Section>
       <Section title="Sort the folder" keyPoint="Code and settings go in git. Data goes in a data store. Output can be rebuilt. Secrets never leave your machine.">
-        <Story course="02476">
-          The images we trained on were 1.1 GB in 87,036 files. They did not go in git. Git held a tiny file, <Code>data.dvc</Code>, saying where the data was, and a tool called DVC downloaded it.
-        </Story>
+        <Problem>The raw data is 1 GB. It can&apos;t go in git, but your teammates still need it.</Problem>
         <SortFolder />
         <P>Drive is fine for the big data, the slides and the final PDF. Code, settings and notebooks go in git.</P>
         <WhyAI>You can ask the tool to do the sorting. You still need to know what the right answer looks like, to check it.</WhyAI>
@@ -159,9 +160,9 @@ export default function ShareYourProject() {
         </WhyAI>
       </Section>
       <Section title="Write down how to run it" keyPoint="A README and a list of packages turn “it works on my laptop” into “it works on yours”.">
-        <Story course="02476">
-          Our README began with two commands: <Code>conda env create --file=environment.yml</Code> and <Code>conda activate mlops</Code>. Anyone joining ran those, and had the same setup as everyone else.
-        </Story>
+        <Problem>
+          A new teammate joins and needs to run <Code>orders-report</Code> on their own laptop. How do they install the packages and run the same report in R or Python?
+        </Problem>
         <Practice id="s4-readme" cwd={PROJECT} start={tidied} tasks={tasks.readme} git ai={README_SCRIPT} chips={['cat README.md', 'cat requirements.txt', 'python3 report.py', 'Rscript report.R']} />
         <P>Three steps any teammate can follow, including where the data is. Part IV shows how to pin package versions so the setup really is the same.</P>
       </Section>
@@ -171,6 +172,10 @@ export default function ShareYourProject() {
       </Section>
       <Section title="Put it on GitHub, privately" keyPoint="Create a private repository, connect it with git remote add, then git push.">
         <PrivateRepoDrawing />
+        <P>
+          You don&apos;t have to type these commands. RStudio, VS Code, GitHub Desktop and AI tools all have a button for them. Underneath, the button runs the same command you are about to type.
+        </P>
+        <Layers />
         <Practice
           id="s6-push"
           cwd={PROJECT}
@@ -194,6 +199,9 @@ export default function ShareYourProject() {
           <Code>not a git repository</Code>: the folder is not a repository yet, or you are in the wrong folder. Run <Code>pwd</Code>, then <Code>git init</Code>. <Code>No configured push destination</Code>: git does not know where GitHub is; add the remote. And if a key ever reaches GitHub, deleting the file is not enough. Cancel the key and make a new one.
         </P>
       </Section>
+      <RecapExtras>
+        <GoFurther />
+      </RecapExtras>
     </Chapter>
   )
 }

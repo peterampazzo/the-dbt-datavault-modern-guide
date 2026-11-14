@@ -2,7 +2,7 @@ import { Chapter } from '@/components/Chapter'
 import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { CommandAnatomyDrawing } from '@/books/foundations/components/drawing/CommandAnatomyDrawing'
 import { PromptDrawing } from '@/books/foundations/components/drawing/PromptDrawing'
-import { Story } from '@/books/foundations/components/Story'
+import { Problem } from '@/books/foundations/components/Problem'
 import { Practice, type Task } from '@/books/foundations/components/shell/Practice'
 import { WhyAI } from '@/books/foundations/components/WhyAI'
 import { HOME, PROJECT } from '@/books/foundations/lib/shell/fs'
@@ -44,11 +44,9 @@ export default function WhereAmI() {
         lead="You join a group project and get a folder full of other folders. Before you can run anything, or check what an AI tool did, you need to know where you are. The terminal on each page runs in your browser: nothing to install."
       />
       <Section title="The prompt" keyPoint="The prompt tells you which folder you are in before you type anything.">
-        <Story course="02476">
-          January 2022. Pietro joins a four-person project. The first instruction in it says: run{' '}
-          <Code>python3 src/data/make_dataset.py data/raw data/processed</Code>. Those paths only work from the project&apos;s top folder. So before anything
-          else: where am I?
-        </Story>
+        <Problem>
+          You are about to run <Code>python3 report.py</Code>, but aren&apos;t sure which folder the terminal is in. The prompt can tell you before you run it.
+        </Problem>
         <P>
           The terminal is a chat with your computer: you type a command, press Enter, and it answers. Ask it where you are with <Code>pwd</Code>.
         </P>
@@ -61,10 +59,9 @@ export default function WhereAmI() {
         <WhyAI>Claude Code and Codex also work inside one folder. The prompt tells you which project the tool can see and change.</WhyAI>
       </Section>
       <Section title="Folders are a tree" keyPoint="ls shows what is inside a folder. With nothing after it, it shows where you are.">
-        <Story course="02476">
-          The project had <Code>data</Code>, <Code>src</Code>, <Code>models</Code>, <Code>tests</Code> and <Code>docker</Code>, each with folders inside. The
-          raw images were in <Code>data/raw</Code>, the cleaned ones in <Code>data/processed</Code>.
-        </Story>
+        <Problem>
+          An analysis folder contains <Code>report.py</Code>, <Code>report.R</Code>, and a <Code>data</Code> folder with three CSVs. You need to see what is inside before running a report.
+        </Problem>
         <P>
           It is the same as folders in Finder, just typed. <Code>ls</Code> lists what is in a folder. Each <Code>ls</Code> lights up the folder in the tree.
         </P>
@@ -72,10 +69,9 @@ export default function WhereAmI() {
         <WhyAI>An AI tool works on the folder it was started in and everything below it. Start it in the wrong folder and it changes the wrong project.</WhyAI>
       </Section>
       <Section title="Anatomy of a command" keyPoint="A command is a program, then options, then what to work on.">
-        <Story course="02476">
-          The README said <Code>conda env create --file=environment.yml</Code>. It looks cryptic, but it has the same parts as every command: a program, what to
-          do, and the details.
-        </Story>
+        <Problem>
+          A README says <Code>Rscript report.R</Code> to run the analysis. The command has a program and a file to run.
+        </Problem>
         <P>Ask <Code>ls</Code> for more detail and look at the three parts.</P>
         <Practice id="m1-anatomy" cwd={PROJECT} tasks={tasks.anatomy} chips={['ls -l data']} />
         <CommandAnatomyDrawing />
@@ -89,10 +85,9 @@ export default function WhereAmI() {
         </WhyAI>
       </Section>
       <Section title="Move around" keyPoint="cd .. goes up one folder. A path starting with / works from anywhere.">
-        <Story course="02476">
-          Run <Code>python3 src/data/make_dataset.py data/raw data/processed</Code> from inside <Code>src</Code> and it looks for{' '}
-          <Code>src/src/data/make_dataset.py</Code>, which does not exist. Same command, wrong folder.
-        </Story>
+        <Problem>
+          You are inside <Code>data</Code> and run <Code>cat data/orders.csv</Code>. It looks for a second <Code>data</Code> folder, so the file is not found.
+        </Problem>
         <P>
           <Code>cd</Code> moves you into another folder, like double-clicking it. Watch the pin move, or tap a folder in the tree to get the command.
         </P>
@@ -111,10 +106,9 @@ export default function WhereAmI() {
         <WhyAI>Error messages from tools are full of full addresses. Read one and you know exactly where the tool was looking.</WhyAI>
       </Section>
       <Section title="Look before you trust" keyPoint="cat, head and wc show what is in a file without opening it.">
-        <Story course="02806">
-          The project started from a survey file from Barcelona&apos;s open data portal: answers from 3,962 children. Step one with any data: look at the top and
-          count the rows, before you trust anything built on it.
-        </Story>
+        <Problem>
+          The report&apos;s revenue looks unusual. Look at the first rows of <Code>data/orders.csv</Code> and count the rows before trusting the total.
+        </Problem>
         <P>Do the same with the practice project&apos;s order data.</P>
         <Practice id="m1-read" cwd={PROJECT} tasks={tasks.read} chips={['cat data/nation.csv', 'head -n 3 data/orders.csv', 'wc -l data/orders.csv']} tree />
         <P>

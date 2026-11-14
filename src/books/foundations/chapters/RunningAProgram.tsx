@@ -3,7 +3,7 @@ import { ChapterHeader, Code, P, Section } from '@/components/Prose'
 import { ApproveOrNot } from '@/books/foundations/components/ApproveOrNot'
 import { Deeper } from '@/books/foundations/components/Deeper'
 import { EnterDrawing } from '@/books/foundations/components/drawing/EnterDrawing'
-import { Story } from '@/books/foundations/components/Story'
+import { Problem } from '@/books/foundations/components/Problem'
 import { Practice, type Task } from '@/books/foundations/components/shell/Practice'
 import { WhyAI } from '@/books/foundations/components/WhyAI'
 import { PROJECT } from '@/books/foundations/lib/shell/fs'
@@ -42,10 +42,9 @@ export default function RunningAProgram() {
         lead="Every command you type, and every command an AI tool asks to run, starts a program. The program runs, then reports back whether it worked. Learn to read that, and to decide what to approve."
       />
       <Section title="Press Enter" keyPoint="Pressing Enter starts a program in the folder you are in.">
-        <Story course="02476">
-          The same project ran in three places: on each student&apos;s laptop, inside a Docker container in the cloud, and on GitHub for every pull request.
-          Every time, it started the same way: a program, given a file to run.
-        </Story>
+        <Problem>
+          You have a report in <Code>report.R</Code> or <Code>report.py</Code>, but a file does not run itself. You need the right program to start it.
+        </Problem>
         <P>
           Pressing Enter is like double-clicking an app: it starts a program. The practice project has the same report twice, in Python and in R. Run either.
         </P>
@@ -61,10 +60,9 @@ export default function RunningAProgram() {
         </WhyAI>
       </Section>
       <Section title="Where programs live" keyPoint="which shows the program a name will start.">
-        <Story course="02476">
-          The project&apos;s Makefile says <Code>python3</Code>. The Docker start script in the same project says <Code>python</Code>. Both were right, each on
-          its own machine. Which name works depends on what that machine has installed.
-        </Story>
+        <Problem>
+          The command <Code>python3</Code> works on one laptop but is not found on another. The program name depends on what is installed and where the computer looks.
+        </Problem>
         <P>
           Your computer keeps a short list of folders where programs live, called <strong>PATH</strong>. Ask where <Code>python3</Code> is.
         </P>
@@ -85,10 +83,9 @@ export default function RunningAProgram() {
         </Deeper>
       </Section>
       <Section title="Did it work?" keyPoint="0 means it worked. Any other number means it failed, even if nothing was printed.">
-        <Story course="02476">
-          The project&apos;s Docker start script begins with a check: if nobody said what to run, print <Code>No argument supplied</Code> and exit with 1. That 1
-          is how the script tells the computer “I failed”.
-        </Story>
+        <Problem>
+          A report stops without printing an error, but you still need to know whether it succeeded. An exit code answers that.
+        </Problem>
         <P>
           Every program ends by handing back a number, its <strong>exit code</strong>. 0 means it worked; anything else means it failed. <Code>echo $?</Code>{' '}
           shows the last one.
@@ -107,9 +104,9 @@ export default function RunningAProgram() {
         </Deeper>
       </Section>
       <Section title="One after another" keyPoint="a && b runs b only if a worked.">
-        <Story course="02476">
-          <Code>make data</Code> first installed the packages, and only then built the dataset. If installing failed, there was no point carrying on.
-        </Story>
+        <Problem>
+          You need to change into <Code>data</Code> and count rows in <Code>orders.csv</Code>. If the folder change fails, the count should not run.
+        </Problem>
         <P>
           <Code>&amp;&amp;</Code> joins two commands and means “and then, if that worked”. Try one chain that works and one that stops early.
         </P>
@@ -123,10 +120,9 @@ export default function RunningAProgram() {
         </WhyAI>
       </Section>
       <Section title="Approve or not" keyPoint="Approve commands that read or test. Stop and check commands that delete, or download and run something.">
-        <Story course="02476">
-          The project had a <Code>make clean</Code> command that deletes files. Useful and harmless there, but you would want to know what it deletes before
-          letting anyone, or any tool, run it.
-        </Story>
+        <Problem>
+          An AI tool wants to run <Code>rm -rf data</Code> to clean up an old export. It could delete the source data, so you need to inspect it first.
+        </Problem>
         <P>An AI tool asks to run three commands. For each one, decide: run it, or look closer first?</P>
         <ApproveOrNot />
         <P>
@@ -147,7 +143,7 @@ export default function RunningAProgram() {
         }
       >
         <P>
-          Remember <Code>python3</Code> in one file and <Code>python</Code> in the other? On many laptops only one of them exists. Try both, and a capital P.
+          <Code>python</Code> and <Code>python3</Code> are different program names. Try both, and try a capital P.
         </P>
         <Practice id="m2-breaks" cwd={PROJECT} tasks={tasks.breaks} chips={['python report.py', 'python3 report.py', 'which python', 'which python3', 'Python3 report.py']} />
         <P>
