@@ -70,7 +70,10 @@ const tasks: Record<string, Task[]> = {
   readme: [
     { label: <>Read the README.</>, done: read('README.md') },
     { label: <>Read <Code>requirements.txt</Code>.</>, done: read('requirements.txt') },
-    { label: <>Run the report.</>, done: (s) => ran(s, (e) => e.event.kind === 'ran' && e.input === 'python3 report.py') },
+    {
+      label: <>Run the report.</>,
+      done: (s) => ran(s, (e) => e.event.kind === 'ran' && (e.input === 'python3 report.py' || e.input === 'Rscript report.R')),
+    },
   ],
   commit: [
     { label: <>Check what git would save.</>, done: (s) => ran(s, (e) => e.input === 'git status') },
@@ -159,7 +162,7 @@ export default function ShareYourProject() {
         <Story course="02476">
           Our README began with two commands: <Code>conda env create --file=environment.yml</Code> and <Code>conda activate mlops</Code>. Anyone joining ran those, and had the same setup as everyone else.
         </Story>
-        <Practice id="s4-readme" cwd={PROJECT} start={tidied} tasks={tasks.readme} git ai={README_SCRIPT} chips={['cat README.md', 'cat requirements.txt', 'python3 report.py']} />
+        <Practice id="s4-readme" cwd={PROJECT} start={tidied} tasks={tasks.readme} git ai={README_SCRIPT} chips={['cat README.md', 'cat requirements.txt', 'python3 report.py', 'Rscript report.R']} />
         <P>Three steps any teammate can follow, including where the data is. Part IV shows how to pin package versions so the setup really is the same.</P>
       </Section>
       <Section title="Take the first snapshot" keyPoint="git add . then git commit saves the first version. Check git status first, every time.">
